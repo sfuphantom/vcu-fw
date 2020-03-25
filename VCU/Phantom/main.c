@@ -34,6 +34,8 @@
 
 #include "priorities.h" // holds the task priorities
 
+#include "vcu_rev2.h"   // holds the hardware defines for the VCU pinmux
+
 /* USER CODE END */
 
 /** @fn void main(void)
@@ -148,12 +150,12 @@ int main(void)
     gioInit();
     adcInit();
     hetInit();
-    pwmStop(hetRAM1, pwm0); // stop the ready to drive buzzer PWM from starting automatically
+    pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER); // stop the ready to drive buzzer PWM from starting automatically
 
     // turn off RGB LEDs
-    pwmStart(hetRAM1, BLUE_LED); // blue
-    pwmStart(hetRAM1, GREEN_LED); // green
-    pwmStart(hetRAM1, RED_LED); // red
+    pwmStart(RGB_LED_PORT, BLUE_LED); // blue
+    pwmStart(RGB_LED_PORT, GREEN_LED); // green
+    pwmStart(RGB_LED_PORT, RED_LED); // red
     // maybe this can be changed in halcogen?
 
     // initialize HET pins ALL to output.. may need to change this later
@@ -213,7 +215,7 @@ int main(void)
     if( xTimers[0] == NULL )
     {
          /* The timer was not created. */
-        UARTSend(sciREG, "The timer was not created.\r\n");
+        UARTSend(PC_UART, "The timer was not created.\r\n");
     }
     else
     {
@@ -224,14 +226,14 @@ int main(void)
          {
              /* The timer could not be set into the Active
              state. */
-             UARTSend(sciREG, "The timer could not be set into the active state.\r\n");
+             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
          }
     }
 
     if( xTimers[1] == NULL )
     {
          /* The timer was not created. */
-        UARTSend(sciREG, "The timer was not created.\r\n");
+        UARTSend(PC_UART, "The timer was not created.\r\n");
     }
     else
     {
@@ -242,7 +244,7 @@ int main(void)
          {
              /* The timer could not be set into the Active
              state. */
-             UARTSend(sciREG, "The timer could not be set into the active state.\r\n");
+             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
          }
     }
 /*********************************************************************************
@@ -261,7 +263,7 @@ int main(void)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
-        sciSend(sciREG,23,(unsigned char*)"StateMachineTask Creation Failed.\r\n");
+        sciSend(PC_UART,23,(unsigned char*)"StateMachineTask Creation Failed.\r\n");
         while(1);
     }
 
@@ -270,7 +272,7 @@ int main(void)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
-        sciSend(sciREG,23,(unsigned char*)"ThrottleTask Creation Failed.\r\n");
+        sciSend(PC_UART,23,(unsigned char*)"ThrottleTask Creation Failed.\r\n");
         while(1);
     }
 
@@ -279,7 +281,7 @@ int main(void)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
-        sciSend(sciREG,23,(unsigned char*)"SensorReadTask Creation Failed.\r\n");
+        sciSend(PC_UART,23,(unsigned char*)"SensorReadTask Creation Failed.\r\n");
         while(1);
     }
 
@@ -288,7 +290,7 @@ int main(void)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
-        sciSend(sciREG,23,(unsigned char*)"DataLoggingTask Creation Failed.\r\n");
+        sciSend(PC_UART,23,(unsigned char*)"DataLoggingTask Creation Failed.\r\n");
         while(1);
     }
 
@@ -296,12 +298,12 @@ int main(void)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
-        sciSend(sciREG,23,(unsigned char*)"WatchdogTask Creation Failed.\r\n");
+        sciSend(PC_UART,23,(unsigned char*)"WatchdogTask Creation Failed.\r\n");
         while(1);
     }
 
     // all tasks have been created successfully
-    UARTSend(sciREG, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
+    UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
     // will need our own hardware defines file to do this for all the ports and pins we use..
     // will need to be different based on the launchpad or VCU being used. This can be changed via build configurations
     // so one build has all the right files/linker included, right debugger, right MCU
@@ -352,7 +354,7 @@ static void vStateMachineTask(void *pvParameters){
         // for timing:
         gioSetBit(hetPORT1, 9, 1);
 
-        if (TASK_PRINT) {UARTSend(sciREG, "STATE MACHINE UPDATE TASK\r\n");}
+        if (TASK_PRINT) {UARTSend(PC_UART, "STATE MACHINE UPDATE TASK\r\n");}
 
 //        UARTSend(scilinREG, (char *)xLastWakeTime);
 
@@ -370,16 +372,16 @@ static void vStateMachineTask(void *pvParameters){
 
         if (state == TRACTIVE_OFF)
         {
-//            pwmSetDuty(hetRAM1, BLUE_LED, 50U); // blue LED
-            pwmSetDuty(hetRAM1, GREEN_LED, 100U); // green LED
-            pwmSetDuty(hetRAM1, RED_LED, 100U); // red LED
+//            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue LED
+            pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED
+            pwmSetDuty(RGB_LED_PORT, RED_LED, 100U); // red LED
 
             hetSIGNAL_t dutycycle_and_period;
             dutycycle_and_period.duty = blue_duty;
             dutycycle_and_period.period = 1000;
 //            = {(unsigned int)1, (double)100}; // duty cycle in %, period in us
 
-            pwmSetSignal(hetRAM1, BLUE_LED, dutycycle_and_period);
+            pwmSetSignal(RGB_LED_PORT, BLUE_LED, dutycycle_and_period);
 
             if (blue_duty <= 0)
             {
@@ -400,7 +402,7 @@ static void vStateMachineTask(void *pvParameters){
             }
 
 
-            if (STATE_PRINT) {UARTSend(sciREG, "********TRACTIVE_OFF********");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********");}
             if (BMS == 1 && IMD == 1 && BSPD == 1 && TSAL == 1 && BSE_FAULT == 0)
             {
                 // if BMS/IMD/BSPD = 1 then the shutdown circuit is closed
@@ -415,12 +417,12 @@ static void vStateMachineTask(void *pvParameters){
         }
         else if (state == TRACTIVE_ON)
         {
-            pwmSetDuty(hetRAM1, GREEN_LED, 100U);
-            pwmSetDuty(hetRAM1, RED_LED, 100U);
-            pwmSetDuty(hetRAM1, BLUE_LED, 50U); // blue
+            pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U);
+            pwmSetDuty(RGB_LED_PORT, RED_LED, 100U);
+            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue
 
 
-            if (STATE_PRINT) {UARTSend(sciREG, "********TRACTIVE_ON********");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
 
             if (RTDS == 1)
             {
@@ -432,11 +434,11 @@ static void vStateMachineTask(void *pvParameters){
         }
         else if (state == RUNNING)
         {
-            pwmSetDuty(hetRAM1, BLUE_LED, 100U); // blue LED
-            pwmSetDuty(hetRAM1, RED_LED, 100U); // red LED
-            pwmSetDuty(hetRAM1, GREEN_LED, 50U); // green LED
+            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 100U); // blue LED
+            pwmSetDuty(RGB_LED_PORT, RED_LED, 100U); // red LED
+            pwmSetDuty(RGB_LED_PORT, GREEN_LED, 50U); // green LED
 
-            if (STATE_PRINT) {UARTSend(sciREG, "********RUNNING********");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
 
             if (RTDS == 0)
             {
@@ -452,11 +454,11 @@ static void vStateMachineTask(void *pvParameters){
         }
         else if (state == FAULT)
         {
-            pwmSetDuty(hetRAM1, BLUE_LED, 100U); // blue LED
-            pwmSetDuty(hetRAM1, RED_LED, 50U); // red LED
-            pwmSetDuty(hetRAM1, GREEN_LED, 100U); // green LED
+            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 100U); // blue LED
+            pwmSetDuty(RGB_LED_PORT, RED_LED, 50U); // red LED
+            pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED
 
-            if (STATE_PRINT) {UARTSend(sciREG, "********FAULT********");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********");}
             // uhhh turn on a fault LED here??
             // how will we reset out of this?
 
@@ -466,7 +468,7 @@ static void vStateMachineTask(void *pvParameters){
             }
         }
 
-        if (STATE_PRINT) {UARTSend(sciREG, "\r\n");}
+        if (STATE_PRINT) {UARTSend(PC_UART, "\r\n");}
 
         // for timing:
         gioSetBit(hetPORT1, 9, 0);
@@ -507,19 +509,19 @@ static void vSensorReadTask(void *pvParameters){
 
 //        gioToggleBit(gioPORTA, 5);
 
-        RTDS_RAW = gioGetBit(gioPORTA, 2);
+        RTDS_RAW = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN);
 
         if ( gioGetBit(gioPORTA, 2) == 1)
         {
             RTDS = 0;
-//            UARTSend(sciREG, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
+//            UARTSend(PC_UART, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
         }
         else
         {
-//            UARTSend(sciREG, "RTDS RAW IS READ AS 0, RESETTING RTDS SIGNAL\r\n");
+//            UARTSend(PC_UART, "RTDS RAW IS READ AS 0, RESETTING RTDS SIGNAL\r\n");
         }
 
-        if (TASK_PRINT) {UARTSend(sciREG, "SENSOR READING TASK\r\n");}
+        if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
 //        UARTSend(scilinREG, xTaskGetTickCount());
         // read high voltage
 
@@ -577,7 +579,7 @@ static void vThrottleTask(void *pvParameters){
         gioSetBit(hetPORT1, 5, 1);
 
         // read APPS signals
-        if (TASK_PRINT) {UARTSend(sciREG, "THROTTLE CONTROL\r\n");}
+        if (TASK_PRINT) {UARTSend(PC_UART, "THROTTLE CONTROL\r\n");}
 //        UARTSend(scilinREG, xTaskGetTickCount());
 
         // how was this i from 0 to 10 selected?
@@ -608,12 +610,12 @@ static void vThrottleTask(void *pvParameters){
         // thresholds
 
         // check for short to GND/5V on BSE
-        if (BSE_sensor_sum < 409)
+        if (BSE_sensor_sum < BSE_MIN_VALUE)
         {
             // if it's less than 0.5V, then assume shorted to GND as this is not normal range
             BSE_FAULT = 1;
         }
-        else if (BSE_sensor_sum > 3685) // change from magic number to a #define BSE_MAX_VALUE
+        else if (BSE_sensor_sum > BSE_MAX_VALUE) // change from magic number to a #define BSE_MAX_VALUE
         {
             // if it's greater than 4.5V, then assume shorted to 5V as this is not normal range
             BSE_FAULT = 1;
@@ -649,29 +651,29 @@ static void vThrottleTask(void *pvParameters){
 //        if (APPS_PRINT) {UARTSend(scilinREG, "\r\n");}
 
         // brake light (flickers if pedal is around 2000 and is noisily jumping above and below!)
-        if (BSE_sensor_sum < 2000)
+        if (BSE_sensor_sum < BRAKING_THRESHOLD)
         {
-            gioSetBit(gioPORTA, 6, 1);
+            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
         }
         else
         {
-            gioSetBit(gioPORTA, 6, 0);
+            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
         }
 
         NumberOfChars = ltoa(BSE_sensor_sum,(char *)command);
-        if (BSE_PRINT) {UARTSend(sciREG, "*****BSE**** ");}
-        if (BSE_PRINT) {sciSend(sciREG, NumberOfChars, command);}
-        if (BSE_PRINT) {UARTSend(sciREG, "   ");}
+        if (BSE_PRINT) {UARTSend(PC_UART, "*****BSE**** ");}
+        if (BSE_PRINT) {sciSend(PC_UART, NumberOfChars, command);}
+        if (BSE_PRINT) {UARTSend(PC_UART, "   ");}
 
         NumberOfChars = ltoa(FP_sensor_1_sum,(char *)command);
-        if (BSE_PRINT) {UARTSend(sciREG, "*****APPS 1**** ");}
-        if (BSE_PRINT) {sciSend(sciREG, NumberOfChars, command);}
-        if (BSE_PRINT) {UARTSend(sciREG, "   ");}
+        if (BSE_PRINT) {UARTSend(PC_UART, "*****APPS 1**** ");}
+        if (BSE_PRINT) {sciSend(PC_UART, NumberOfChars, command);}
+        if (BSE_PRINT) {UARTSend(PC_UART, "   ");}
 
         NumberOfChars = ltoa(FP_sensor_2_sum,(char *)command);
-        if (BSE_PRINT) {UARTSend(sciREG, "*****APPS 2**** ");}
-        if (BSE_PRINT) {sciSend(sciREG, NumberOfChars, command);}
-        if (BSE_PRINT) {UARTSend(sciREG, "\r\n");}
+        if (BSE_PRINT) {UARTSend(PC_UART, "*****APPS 2**** ");}
+        if (BSE_PRINT) {sciSend(PC_UART, NumberOfChars, command);}
+        if (BSE_PRINT) {UARTSend(PC_UART, "\r\n");}
 
         xStatus = xQueueSendToBack(xq, &FP_sensor_1_avg, 0);
         xStatus = xQueueSendToBack(xq, &FP_sensor_2_avg, 0);
@@ -680,7 +682,7 @@ static void vThrottleTask(void *pvParameters){
         // 10% APPS redundancy check
         if(FP_sensor_diff > 0.10)
         {
-            UARTSend(sciREG, "SENSOR DIFFERENCE FAULT\r\n");
+            UARTSend(PC_UART, "SENSOR DIFFERENCE FAULT\r\n");
         }
 
         // need to do APPS plausibility check with BSE
@@ -700,8 +702,8 @@ static void vThrottleTask(void *pvParameters){
             NumberOfChars = ltoa(throttle,(char *)command);
 
             // printing debug:
-//            sciSend(sciREG, NumberOfChars, command);
-//            UARTSend(sciREG, "\r\n");
+//            sciSend(PC_UART, NumberOfChars, command);
+//            UARTSend(PC_UART, "\r\n");
         }
         else
         {
@@ -747,7 +749,7 @@ static void vDataLoggingTask(void *pvParameters){
 //        MCP48FV_Set_Value(300);
 
 //        gioToggleBit(gioPORTA, 7);
-        if (TASK_PRINT) {UARTSend(sciREG, "------------->DATA LOGGING TO DASHBOARD\r\n");}
+        if (TASK_PRINT) {UARTSend(PC_UART, "------------->DATA LOGGING TO DASHBOARD\r\n");}
 //            UARTSend(scilinREG, xTaskGetTickCount());
             //----> do we need to send battery voltage to dashboard?
 
@@ -788,10 +790,10 @@ static void vWatchdogTask(void *pvParameters){
         // Wait for the next cycle
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-        if (TASK_PRINT) {UARTSend(sciREG, "------------->WATCHDOG TASK\r\n");}
+        if (TASK_PRINT) {UARTSend(PC_UART, "------------->WATCHDOG TASK\r\n");}
 //            UARTSend(scilinREG, xTaskGetTickCount());
 
-        gioToggleBit(hetPORT1, 2);
+        gioToggleBit(WATCHDOG_PORT, WATCHDOG_PIN);
     }
 
 }
@@ -799,34 +801,34 @@ void gioNotification(gioPORT_t *port, uint32 bit)
 {
 /*  enter user code between the USER CODE BEGIN and USER CODE END. */
 /* USER CODE BEGIN (19) */
-//    UARTSend(sciREG, "---------Interrupt Request-------\r\n");
+//    UARTSend(PC_UART, "---------Interrupt Request-------\r\n");
     if (port == gioPORTA && bit == 2 && INTERRUPT_AVAILABLE)
     {
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         // RTDS switch
-        UARTSend(sciREG, "---------Interrupt Active\r\n");
+        UARTSend(PC_UART, "---------Interrupt Active\r\n");
         if (RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
         {
             if (BSE_sensor_sum < 2000)
             {
                 gioSetBit(gioPORTA, 6, 1);
                 RTDS = 1; // CHANGE STATE TO RUNNING
-                UARTSend(sciREG, "---------RTDS set to 1 in interrupt\r\n");
+                UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
 
                 // ready to drive buzzer, need to start a 2 second timer here
-                pwmStart(hetRAM1, pwm0);
+                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
 
                 // reset the 2 second timer to let the buzzer ring for 2 seconds
                 if (xTimerResetFromISR(xTimers[1], xHigherPriorityTaskWoken) != pdPASS)// after 2s the timer will allow the interrupt to toggle the signal again
                 {
                     // timer reset failed
-                    UARTSend(sciREG, "---------Timer reset failed-------\r\n");
+                    UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
                 }
             }
         }
 //        else
 //        {
-//            UARTSend(sciREG, "---------RTDS set to 0 in interrupt\r\n");
+//            UARTSend(PC_UART, "---------RTDS set to 0 in interrupt\r\n");
 //            RTDS = 0;
 //        }
 
@@ -834,7 +836,7 @@ void gioNotification(gioPORT_t *port, uint32 bit)
         if (xTimerResetFromISR(xTimers[0], xHigherPriorityTaskWoken) != pdPASS)// after 300ms the timer will allow the interrupt to toggle the signal again
         {
             // timer reset failed
-            UARTSend(sciREG, "---------Timer reset failed-------\r\n");
+            UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
         }
     }
 }
@@ -848,7 +850,7 @@ void gioNotification(gioPORT_t *port, uint32 bit)
  /* Timer callback when it expires for the ready to drive sound */
  void Timer_2s(TimerHandle_t xTimers)
  {
-     pwmStop(hetRAM1, pwm0);
+     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
      THROTTLE_AVAILABLE = true;
  }
 

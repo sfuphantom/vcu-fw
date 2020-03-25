@@ -53,9 +53,9 @@ bool MCP48FV_Write(uint32_t cmdString){
 
 //
     uint16_t txbuffer[]={(uint8_t) (cmdString>>16),(uint8_t) (cmdString>>8),(uint8_t) (cmdString>>0)};
-    mibspiSetData(mibspiREG1,0,txbuffer);
-    mibspiTransfer(mibspiREG1,0);
-    while(!(mibspiIsTransferComplete(mibspiREG1,0))); // need a timeout
+    mibspiSetData(DAC_SPI_PORT,0,txbuffer);
+    mibspiTransfer(DAC_SPI_PORT,0);
+    while(!(mibspiIsTransferComplete(DAC_SPI_PORT,0))); // need a timeout
     // start a timer, don't use a while loop forever
 
     return true;
@@ -73,7 +73,7 @@ uint16_t readRegister (uint8_t registerAddress){
 uint16_t MCP48FV_Read(){
 
     uint16_t rxBuffer[10]={0};
-    mibspiGetData(mibspiREG1,0,rxBuffer);
+    mibspiGetData(DAC_SPI_PORT,0,rxBuffer);
     return (rxBuffer[2]<<8+rxBuffer[1]<<8+rxBuffer[0]);
 }
 

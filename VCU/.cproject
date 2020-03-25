@@ -36,9 +36,10 @@
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.ENUM_TYPE.464890224" name="Designate enum type (--enum_type)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.ENUM_TYPE" value="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.ENUM_TYPE.packed" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.INCLUDE_PATH.327732539" name="Add dir to #include search path (--include_path, -I)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.INCLUDE_PATH" valueType="includePath">
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}"/>
-									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/tasks}"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/vcu_halcogen/include}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/tasks}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/hardware}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/UART}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/DAC_SPI}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/LV_Monitor_I2C}"/>
