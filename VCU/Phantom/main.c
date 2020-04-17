@@ -23,6 +23,8 @@
 #include "os_queue.h"
 #include "os_semphr.h"
 #include "os_timer.h"
+
+
 #include "Phantom_sci.h"
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 #include <stdio.h>
@@ -32,9 +34,17 @@
 
 #include "reg_het.h"
 
+#include "task_data_logging.h"
+#include "task_sensor_read.h"
+#include "task_statemachine.h"
+#include "task_throttle.h"
+#include "task_watchdog.h"
+
 #include "priorities.h" // holds the task priorities
 
 #include "vcu_rev2.h"   // holds the hardware defines for the VCU pinmux
+//#include "vcu_rev3.h"
+//#include "launchpad.h"
 
 /* USER CODE END */
 
@@ -47,22 +57,15 @@
 */
 
 /* USER CODE BEGIN (2) */
-/*********************************************************************************
- *                          DEBUG PRINTING DEFINES
- *********************************************************************************/
-#define TASK_PRINT  0
-#define STATE_PRINT 0
-#define APPS_PRINT  0 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
-#define BSE_PRINT   0 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
 
 /*********************************************************************************
  *                          TASK HEADER DECLARATIONS
  *********************************************************************************/
-static void vStateMachineTask(void *);  // This task will evaluate the state machine and decide whether or not to change states
-static void vSensorReadTask(void *);    // This task will read all the sensors in the vehicle (except for the APPS which requires more critical response)
-static void vThrottleTask(void *);      // This task reads the APPS, performs signal plausibility, and controls the inverter through a DAC
-static void vDataLoggingTask(void *);   // This task will send any important data over CAN to the dashboard for logging onto the SD card
-static void vWatchdogTask(void *);      // This task will monitor all the threads and make sure they are all running, if not (code hangs/freezes or task doesn't get run)
+//static void vStateMachineTask(void *);  // This task will evaluate the state machine and decide whether or not to change states
+//static void vSensorReadTask(void *);    // This task will read all the sensors in the vehicle (except for the APPS which requires more critical response)
+//static void vThrottleTask(void *);      // This task reads the APPS, performs signal plausibility, and controls the inverter through a DAC
+//static void vDataLoggingTask(void *);   // This task will send any important data over CAN to the dashboard for logging onto the SD card
+//static void vWatchdogTask(void *);      // This task will monitor all the threads and make sure they are all running, if not (code hangs/freezes or task doesn't get run)
                                         // it will fail to pet the watchdog and the watchdog timer will reset the MCU
 
 // task handle creation??? shouldn't they need to be passed into the xTaskCreate function?
@@ -81,16 +84,41 @@ bool THROTTLE_AVAILABLE = false; // used to only enable throttle after the buzze
 
 void Timer_300ms(TimerHandle_t xTimers);
 void Timer_2s(TimerHandle_t xTimers);
+
 /*********************************************************************************
  *                          STATE ENUMERATION
  *********************************************************************************/
-typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
+//typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
+State state;// = TRACTIVE_OFF;
 
-State state = TRACTIVE_OFF;
+
 /*********************************************************************************
  *                          GLOBAL VARIABLE DECLARATIONS
  *********************************************************************************/
-xQueueHandle xq;
+
+
+#define BLUE_LED  pwm1
+#define GREEN_LED pwm2
+#define RED_LED   pwm3
+
+uint8 i;
+char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
+long xStatus;
+
+/*********************************************************************************
+ *                               SYSTEM STATE FLAGS
+ *********************************************************************************/
+uint8_t TSAL = 0;
+uint8_t RTDS = 0;
+long RTDS_RAW = 0;
+uint8_t BMS  = 1;
+uint8_t IMD = 1;
+uint8_t BSPD = 1;
+uint8_t BSE_FAULT = 0;
+
+/*********************************************************************************
+                 ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
+ *********************************************************************************/
 adcData_t FP_data[3];
 adcData_t *FP_data_ptr = &FP_data[0];
 unsigned int FP_sensor_1_sum = 0;
@@ -111,36 +139,20 @@ uint16 FP_sensor_1_percentage;
 uint16 FP_sensor_2_percentage;
 uint16 FP_sensor_diff;
 
-#define BLUE_LED  pwm1
-#define GREEN_LED pwm2
-#define RED_LED   pwm3
 
-uint8 i;
-char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
-long xStatus;
-
-/*********************************************************************************
- *                               SYSTEM STATE FLAGS
- *********************************************************************************/
-uint8_t TSAL = 0;
-uint8_t RTDS = 0;
-long RTDS_RAW = 0;
-uint8_t BMS  = 1;
-uint8_t IMD  = 1;
-uint8_t BSPD = 1;
-uint8_t BSE_FAULT = 0;
-
-uint32_t blue_duty = 100;
-uint32_t blue_flag = 0;
 
 // change to better data type
-int lv_current = 0;
+//int lv_current = 0;
 
 
 /* USER CODE END */
 
 int main(void)
 {
+    // initialize a bunch of stuff poorly
+
+
+
 /* USER CODE BEGIN (3) */
 /*********************************************************************************
  *                          HALCOGEN PERIPHERAL INITIALIZATION
@@ -254,7 +266,7 @@ int main(void)
     // create a freeRTOS queue to pass data between tasks
     // this will be useful when passing the VCU data structure in between different tasks
 
-    xq = xQueueCreate(5, sizeof(long));
+//    xq = xQueueCreate(5, sizeof(long));
 
     // need to do an "if queue != NULL"
 
@@ -325,478 +337,7 @@ int main(void)
  *                          freeRTOS TASK IMPLEMENTATIONS
  *********************************************************************************/
 
-/***********************************************************
- * @function                - vStateMachineTask
- *
- * @brief                   - This task evaluates the state of the vehicle and controls any change of state
- *
- * @param[in]               - pvParameters
- *
- * @return                  - None
- * @Note                    - None
- ***********************************************************/
-static void vStateMachineTask(void *pvParameters){
-    uint32 lrval;
-    char stbuf[64];
-    int nchars;
 
-    TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 100; // task frequency in ms
-
-    // Initialize the xLastWakeTime variable with the current time;
-    xLastWakeTime = xTaskGetTickCount();
-
-    while(true)
-    {
-        // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
-        // for timing:
-        gioSetBit(hetPORT1, 9, 1);
-
-        if (TASK_PRINT) {UARTSend(PC_UART, "STATE MACHINE UPDATE TASK\r\n");}
-
-//        UARTSend(scilinREG, (char *)xLastWakeTime);
-
-        xStatus = xQueueReceive(xq, &lrval, 30);
-        nchars = ltoa(lrval, stbuf);
-//        if (TASK_PRINT) {UARTSend(scilinREG, (char *)stbuf);}
-//        if (TASK_PRINT) {UARTSend(scilinREG, "\r\n");}
-
-
-        // MAKE SOME LED BLINK ON THE VCU! TECHNICALLY U HAVE 6 DIFFERENT ONES U CAN BLINK
-        // MAKE EACH TASK BLINK A DIFFERENT LED
-
-/*********************** STATE MACHINE EVALUATION ***********************************/
-
-
-        if (state == TRACTIVE_OFF)
-        {
-//            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue LED
-            pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED
-            pwmSetDuty(RGB_LED_PORT, RED_LED, 100U); // red LED
-
-            hetSIGNAL_t dutycycle_and_period;
-            dutycycle_and_period.duty = blue_duty;
-            dutycycle_and_period.period = 1000;
-//            = {(unsigned int)1, (double)100}; // duty cycle in %, period in us
-
-            pwmSetSignal(RGB_LED_PORT, BLUE_LED, dutycycle_and_period);
-
-            if (blue_duty <= 0)
-            {
-                blue_flag = 1; // 1 means rising
-            }
-            else if (blue_duty >= 100)
-            {
-                blue_flag = 0; // 0 means falling
-            }
-
-            if (blue_flag == 1)
-            {
-                blue_duty+= 5;
-            }
-            else
-            {
-                blue_duty-= 5;
-            }
-
-
-            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********");}
-            if (BMS == 1 && IMD == 1 && BSPD == 1 && TSAL == 1 && BSE_FAULT == 0)
-            {
-                // if BMS/IMD/BSPD = 1 then the shutdown circuit is closed
-                // TSAL = 1 indicates that the AIRs have closed
-                // tractive system should now be active
-                state = TRACTIVE_ON;
-            }
-            else if (BSE_FAULT == 1)
-            {
-                state = FAULT;
-            }
-        }
-        else if (state == TRACTIVE_ON)
-        {
-            pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U);
-            pwmSetDuty(RGB_LED_PORT, RED_LED, 100U);
-            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue
-
-
-            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
-
-            if (RTDS == 1)
-            {
-                // ready to drive signal is switched
-                state = RUNNING;
-            }
-
-            // Mechanism to switch back to tractive off from this state? or into error state?
-        }
-        else if (state == RUNNING)
-        {
-            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 100U); // blue LED
-            pwmSetDuty(RGB_LED_PORT, RED_LED, 100U); // red LED
-            pwmSetDuty(RGB_LED_PORT, GREEN_LED, 50U); // green LED
-
-            if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
-
-            if (RTDS == 0)
-            {
-                // read to drive signal switched off
-                state = TRACTIVE_ON;
-            }
-            if (BMS == 0 || IMD == 0 || BSPD == 0 || TSAL == 0)
-            {
-                // FAULT in shutdown circuit, or AIRs have opened from TSAL
-                state = FAULT;
-            }
-
-        }
-        else if (state == FAULT)
-        {
-            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 100U); // blue LED
-            pwmSetDuty(RGB_LED_PORT, RED_LED, 50U); // red LED
-            pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED
-
-            if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********");}
-            // uhhh turn on a fault LED here??
-            // how will we reset out of this?
-
-            if (BSE_FAULT == 0)
-            {
-                state = TRACTIVE_OFF;
-            }
-        }
-
-        if (STATE_PRINT) {UARTSend(PC_UART, "\r\n");}
-
-        // for timing:
-        gioSetBit(hetPORT1, 9, 0);
-    }
-}
-
-/***********************************************************
- * @function                - vSensorReadTask
- *
- * @brief                   - This task will read all the sensors in the vehicle (except for the APPS which requires more critical response)
- *
- * @param[in]               - pvParameters
- *
- * @return                  - None
- * @Note                    - None
- ***********************************************************/
-static void vSensorReadTask(void *pvParameters){
-
-    // any initialization
-    TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 100; // task frequency in ms
-
-    // Initialize the xLastWakeTime variable with the current time;
-    xLastWakeTime = xTaskGetTickCount();
-
-    int nchars;
-    char stbuf[64];
-
-    while(true)
-    {
-        // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
-        // for timing:
-        gioSetBit(hetPORT1, 25, 1);
-
-//        MCP48FV_Set_Value(100);
-
-//        gioToggleBit(gioPORTA, 5);
-
-        RTDS_RAW = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN);
-
-        if ( gioGetBit(gioPORTA, 2) == 1)
-        {
-            RTDS = 0;
-//            UARTSend(PC_UART, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
-        }
-        else
-        {
-//            UARTSend(PC_UART, "RTDS RAW IS READ AS 0, RESETTING RTDS SIGNAL\r\n");
-        }
-
-        if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
-//        UARTSend(scilinREG, xTaskGetTickCount());
-        // read high voltage
-
-        // read HV current
-
-        // IMD data (maybe this needs to be a separate interrupt?)
-
-        // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
-
-        // TSAL state
-
-        // CAN status from BMS (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
-
-        // read LV voltage, current
-
-        lv_current = LV_reading(LV_current_register);
-
-        // make sure state machine signal flags are updated
-
-        // check for all errors here and update VCU data structure or state machine flags accordingly
-
-        // will also need a lookup table or data structure that has error messages and LED codes for whatever fault flags are on
-
-        // for timing:
-        gioSetBit(hetPORT1, 25, 0);
-    }
-}
-
-
-/***********************************************************
- * @function                - vThrottleTask
- *
- * @brief                   - This task reads the APPS, performs signal plausibility, and controls the inverter through a DAC
- *
- * @param[in]               - pvParameters
- *
- * @return                  - None
- * @Note                    - None
- ***********************************************************/
-static void vThrottleTask(void *pvParameters){
-
-    TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 10; // task frequency in ms
-
-    // Initialize the xLastWakeTime variable with the current time;
-    xLastWakeTime = xTaskGetTickCount();
-
-
-    while(true)
-    {
-        // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
-        // for timing:
-        gioSetBit(hetPORT1, 5, 1);
-
-        // read APPS signals
-        if (TASK_PRINT) {UARTSend(PC_UART, "THROTTLE CONTROL\r\n");}
-//        UARTSend(scilinREG, xTaskGetTickCount());
-
-        // how was this i from 0 to 10 selected?
-//        for(i=0; i<10; i++)
-//        {
-//            adcStartConversion(adcREG1, adcGROUP1);
-//            while(!adcIsConversionComplete(adcREG1, adcGROUP1));
-//            adcGetData(adcREG1, 1U, FP_data_ptr);
-//            FP_sensor_1_sum += (unsigned int)FP_data[0].value;
-//            FP_sensor_2_sum += (unsigned int)FP_data[1].value;
-//            BSE_sensor_sum  += (unsigned int)FP_data[2].value;
-//        }
-
-        adcStartConversion(adcREG1, adcGROUP1);
-        while(!adcIsConversionComplete(adcREG1, adcGROUP1));
-        adcGetData(adcREG1, 1U, FP_data_ptr);
-        BSE_sensor_sum = (unsigned int)FP_data[0].value;
-        FP_sensor_1_sum = (unsigned int)FP_data[1].value;
-        FP_sensor_2_sum = (unsigned int)FP_data[2].value;
-
-
-
-
-        // check for short to GND/5V on sensor 1
-        // thresholds
-
-        // check for short to GND/3V3 on sensor 2
-        // thresholds
-
-        // check for short to GND/5V on BSE
-        if (BSE_sensor_sum < BSE_MIN_VALUE)
-        {
-            // if it's less than 0.5V, then assume shorted to GND as this is not normal range
-            BSE_FAULT = 1;
-        }
-        else if (BSE_sensor_sum > BSE_MAX_VALUE) // change from magic number to a #define BSE_MAX_VALUE
-        {
-            // if it's greater than 4.5V, then assume shorted to 5V as this is not normal range
-            BSE_FAULT = 1;
-        }
-        else
-        {
-            // should be in normal range
-            BSE_FAULT = 0;
-        }
-
-        // moving average signal conditioning.. worth it to graph this out and find a good filter time constant
-//        FP_sensor_1_avg = FP_sensor_1_sum/10;
-//        FP_sensor_2_avg = FP_sensor_2_sum/10;
-//        BSE_sensor_avg  = BSE_sensor_sum;
-
-//        FP_sensor_1_sum = 0;
-//        FP_sensor_2_sum = 0;
-//        BSE_sensor_sum  = 0;
-
-//        BSE_sensor_sum  = (unsigned int)FP_data[2].value;
-
-//        FP_sensor_1_percentage = (FP_sensor_1_avg-FP_sensor_1_min)/(FP_sensor_1_max-FP_sensor_1_min);
-//        FP_sensor_2_percentage = (FP_sensor_2_avg-FP_sensor_2_min)/(FP_sensor_2_max-FP_sensor_2_min);
-//        FP_sensor_diff = abs(FP_sensor_2_percentage - FP_sensor_1_percentage);
-
-//        ltoa(FP_sensor_1_avg,(char *)command);
-//        if (APPS_PRINT) {UARTSend(scilinREG, "0x");}
-//        if (APPS_PRINT) {UARTSend(scilinREG, command);}
-//
-//        ltoa(FP_sensor_2_avg,(char *)command);
-//        if (APPS_PRINT) {UARTSend(scilinREG, "   0x");}
-//        if (APPS_PRINT) {UARTSend(scilinREG, command);}
-//        if (APPS_PRINT) {UARTSend(scilinREG, "\r\n");}
-
-        // brake light (flickers if pedal is around 2000 and is noisily jumping above and below!)
-        if (BSE_sensor_sum < BRAKING_THRESHOLD)
-        {
-            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
-        }
-        else
-        {
-            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
-        }
-
-        NumberOfChars = ltoa(BSE_sensor_sum,(char *)command);
-        if (BSE_PRINT) {UARTSend(PC_UART, "*****BSE**** ");}
-        if (BSE_PRINT) {sciSend(PC_UART, NumberOfChars, command);}
-        if (BSE_PRINT) {UARTSend(PC_UART, "   ");}
-
-        NumberOfChars = ltoa(FP_sensor_1_sum,(char *)command);
-        if (BSE_PRINT) {UARTSend(PC_UART, "*****APPS 1**** ");}
-        if (BSE_PRINT) {sciSend(PC_UART, NumberOfChars, command);}
-        if (BSE_PRINT) {UARTSend(PC_UART, "   ");}
-
-        NumberOfChars = ltoa(FP_sensor_2_sum,(char *)command);
-        if (BSE_PRINT) {UARTSend(PC_UART, "*****APPS 2**** ");}
-        if (BSE_PRINT) {sciSend(PC_UART, NumberOfChars, command);}
-        if (BSE_PRINT) {UARTSend(PC_UART, "\r\n");}
-
-        xStatus = xQueueSendToBack(xq, &FP_sensor_1_avg, 0);
-        xStatus = xQueueSendToBack(xq, &FP_sensor_2_avg, 0);
-
-
-        // 10% APPS redundancy check
-        if(FP_sensor_diff > 0.10)
-        {
-            UARTSend(PC_UART, "SENSOR DIFFERENCE FAULT\r\n");
-        }
-
-        // need to do APPS plausibility check with BSE
-
-        if (state == RUNNING && THROTTLE_AVAILABLE)
-        {
-            // send DAC to inverter
-            unsigned int apps_avg = 0.5*(FP_sensor_1_sum + FP_sensor_2_sum); // averaging the two foot pedal signals
-            unsigned int throttle = 0.23640662*apps_avg - 88.6524825; // equation mapping the averaged signals to 0->500 for the DAC driver
-            // ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
-            // i.e. map from 0.6V (60) to 4.5V (450) or something like that, instead of 0->500 (0V -> 5V)
-
-
-            MCP48FV_Set_Value(throttle); // send throttle value to DAC driver
-
-            // Print out DAC output
-            NumberOfChars = ltoa(throttle,(char *)command);
-
-            // printing debug:
-//            sciSend(PC_UART, NumberOfChars, command);
-//            UARTSend(PC_UART, "\r\n");
-        }
-        else
-        {
-            // send 0 to DAC
-            MCP48FV_Set_Value(0);
-            THROTTLE_AVAILABLE = false;
-        }
-
-        // for timing:
-        gioSetBit(hetPORT1, 5, 0);
-
-    }
-}
-
-/***********************************************************
- * @function                - vDataLoggingTask
- *
- * @brief                   - This task will send any important data over CAN to the dashboard for logging onto the SD card
- *
- * @param[in]               - pvParameters
- *
- * @return                  - None
- * @Note                    - None
- ***********************************************************/
-
-static void vDataLoggingTask(void *pvParameters){
-
-    // any initialization
-    TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 500; // task frequency in ms
-
-    // Initialize the xLastWakeTime variable with the current time;
-    xLastWakeTime = xTaskGetTickCount();
-
-    while(true)
-    {
-        // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
-        // for timing:
-        gioSetBit(hetPORT1, 4, 1);
-
-//        MCP48FV_Set_Value(300);
-
-//        gioToggleBit(gioPORTA, 7);
-        if (TASK_PRINT) {UARTSend(PC_UART, "------------->DATA LOGGING TO DASHBOARD\r\n");}
-//            UARTSend(scilinREG, xTaskGetTickCount());
-            //----> do we need to send battery voltage to dashboard?
-
-
-            // log HV voltage, current TSAL state, shutdown circuit states to CAN
-            // send to dashboard
-            // this may or may not depend on state
-
-        // for timing:
-        gioSetBit(hetPORT1, 4, 0);
-    }
-
-}
-
-/***********************************************************
- * @function                - vWatchdogTask
- *
- * @brief                   - This task will monitor all threads and pet the watchdog if everything is fine. Else it will let the watchdog reset the MCU
- *
- * @param[in]               - pvParameters
- *
- * @return                  - None
- * @Note                    - None
- ***********************************************************/
-
-static void vWatchdogTask(void *pvParameters){
-
-    // any initialization
-    TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 300; // task frequency in ms
-    // watchdog timeout is 1.6 seconds
-
-    // Initialize the xLastWakeTime variable with the current time;
-    xLastWakeTime = xTaskGetTickCount();
-
-    while(true)
-    {
-        // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
-        if (TASK_PRINT) {UARTSend(PC_UART, "------------->WATCHDOG TASK\r\n");}
-//            UARTSend(scilinREG, xTaskGetTickCount());
-
-        gioToggleBit(WATCHDOG_PORT, WATCHDOG_PIN);
-    }
-
-}
 void gioNotification(gioPORT_t *port, uint32 bit)
 {
 /*  enter user code between the USER CODE BEGIN and USER CODE END. */

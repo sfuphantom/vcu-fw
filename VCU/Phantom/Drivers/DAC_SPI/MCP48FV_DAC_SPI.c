@@ -1,5 +1,6 @@
 //DAC init
 #include <Phantom/Drivers/DAC_SPI/MCP48FV_DAC_SPI.h>
+#include "vcu_rev2.h"
 //#include "mibspi.h"
 
 #define DAC_LOWEST_VOLTAGE 0

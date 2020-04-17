@@ -8,6 +8,9 @@
 #ifndef HARDWARE_VCU_REV2_H_
 #define HARDWARE_VCU_REV2_H_
 
+#include "reg_het.h"
+#include "adc.h"
+
 
 /*********   READY TO DRIVE GPIO   ****************/
 #define READY_TO_DRIVE_PORT   gioPORTA
@@ -27,7 +30,9 @@
 #define WATCHDOG_PORT         hetPORT1
 #define WATCHDOG_PIN          2
 
-/********* RGB STATUS LEDS ONV VCU ****************/
+/***************  WATCHDOG GPIO  *********************/
+#define TASK_TIMING_PORT      hetPORT1
+/********* RGB STATUS LEDS ON VCU ****************/
 #define RGB_LED_PORT          hetRAM1
 #define BLUE_LED              pwm1
 #define GREEN_LED             pwm2
@@ -54,5 +59,38 @@
 /*********   SPI PORTS   ****************/
 #define DAC_SPI_PORT          mibspiREG1
 #define HV_SPI_PORT           mibspiREG3
+
+/*********   I2C PORTS   ****************/
+#define LV_MONITOR_I2C_PORT   i2cREG1
+
+/*------------------------------------------------------------------------------------------------------------------*/
+
+/*********************************************************************************
+ *                          GLOBAL VARIABLES I NEED TO CLEAN UP
+ *********************************************************************************/
+
+
+/*********************************************************************************
+ *                          DEBUG PRINTING DEFINES
+ *********************************************************************************/
+#define TASK_PRINT  0
+#define STATE_PRINT 0
+#define APPS_PRINT  0 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
+#define BSE_PRINT   0 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
+
+
+
+
+//xQueueHandle xq;
+
+/*********************************************************************************
+ *                          STATE ENUMERATION
+ *********************************************************************************/
+typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
+
+
+
+
+
 
 #endif /* HARDWARE_VCU_REV2_H_ */

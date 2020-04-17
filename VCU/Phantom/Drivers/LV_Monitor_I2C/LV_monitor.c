@@ -1,4 +1,5 @@
-#include <Phantom/Drivers/LV_Monitor_I2C/LV_monitor.h>
+#include "LV_monitor.h"
+#include "vcu_rev2.h"
 
 //#include "sys_common.h"
 //#include "i2c.h"
@@ -40,79 +41,79 @@ void lv_monitorInit(){
     /*****************************************/
 
     /* Configure address of Slave to talk to */
-    i2cSetSlaveAdd(i2cREG1, LV_Slave_Address);
+    i2cSetSlaveAdd(LV_MONITOR_I2C_PORT, LV_Slave_Address);
 
     /* Set direction to Transmitter */
     /* Note: Optional - It is done in Init */
-    i2cSetDirection(i2cREG1, I2C_TRANSMITTER);
+    i2cSetDirection(LV_MONITOR_I2C_PORT, I2C_TRANSMITTER);
 
     /* Configure Data count */
     /* Slave address + Word address write operation before reading */
-    i2cSetCount(i2cREG1,3);
+    i2cSetCount(LV_MONITOR_I2C_PORT,3);
 
     /* Set mode as Master */
-    i2cSetMode(i2cREG1, I2C_MASTER);
+    i2cSetMode(LV_MONITOR_I2C_PORT, I2C_MASTER);
 
     /* Set Stop after programmed Count */
-    i2cSetStop(i2cREG1);
+    i2cSetStop(LV_MONITOR_I2C_PORT);
 
     /* Transmit Start Condition */
-    i2cSetStart(i2cREG1);
+    i2cSetStart(LV_MONITOR_I2C_PORT);
 
     /* Send the Word Address */
-    i2cSendByte(i2cREG1, LV_calibration_register);
+    i2cSendByte(LV_MONITOR_I2C_PORT, LV_calibration_register);
 
-    i2cSend(i2cREG1,2,LV_Calibration);
+    i2cSend(LV_MONITOR_I2C_PORT,2,LV_Calibration);
     //i2cSend(i2cBASE_t *i2c, uint32 length, uint8 * data);
 
     /* Wait until Bus Busy is cleared */
-    while(i2cIsBusBusy(i2cREG1) == true);
+    while(i2cIsBusBusy(LV_MONITOR_I2C_PORT) == true);
 
     /* Wait until Stop is detected */
-    while(i2cIsStopDetected(i2cREG1) == 0);
+    while(i2cIsStopDetected(LV_MONITOR_I2C_PORT) == 0);
 
     /* Clear the Stop condition */
-    i2cClearSCD(i2cREG1);
+    i2cClearSCD(LV_MONITOR_I2C_PORT);
 
-    //while(i2cIsMasterReady(i2cREG1) != true);
+    //while(i2cIsMasterReady(LV_MONITOR_I2C_PORT) != true);
 }
 
 int LV_reading(uint16_t mode){
 
-    while(i2cIsMasterReady(i2cREG1) != true);
+    while(i2cIsMasterReady(LV_MONITOR_I2C_PORT) != true);
 
     uint8_t RX_Data_Master1[2]; //to hold bits
 
-    i2cSetSlaveAdd(i2cREG1, LV_Slave_Address);
+    i2cSetSlaveAdd(LV_MONITOR_I2C_PORT, LV_Slave_Address);
 
     /* Set direction to Transmitter */
     /* Note: Optional - It is done in Init */
-    i2cSetDirection(i2cREG1, I2C_TRANSMITTER);
+    i2cSetDirection(LV_MONITOR_I2C_PORT, I2C_TRANSMITTER);
 
     /* Configure Data count */
     /* Slave address + Word address write operation before reading */
-    i2cSetCount(i2cREG1,1);
+    i2cSetCount(LV_MONITOR_I2C_PORT,1);
 
     /* Set mode as Master */
-    i2cSetMode(i2cREG1, I2C_MASTER);
+    i2cSetMode(LV_MONITOR_I2C_PORT, I2C_MASTER);
 
     /* Set Stop after programmed Count */
-    i2cSetStop(i2cREG1);
+    i2cSetStop(LV_MONITOR_I2C_PORT);
 
     /* Transmit Start Condition */
-    i2cSetStart(i2cREG1);
+    i2cSetStart(LV_MONITOR_I2C_PORT);
 
     /* Send the Word Address */
-    i2cSendByte(i2cREG1, mode);
+    i2cSendByte(LV_MONITOR_I2C_PORT, mode);
 
     /* Wait until Bus Busy is cleared */
-    while(i2cIsBusBusy(i2cREG1) == true);
+    while(i2cIsBusBusy(LV_MONITOR_I2C_PORT) == true);
 
     /* Wait until Stop is detected */
-    while(i2cIsStopDetected(i2cREG1) == 0);
+    while(i2cIsStopDetected(LV_MONITOR_I2C_PORT) == 0);
 
     /* Clear the Stop condition */
-    i2cClearSCD(i2cREG1);
+    i2cClearSCD(LV_MONITOR_I2C_PORT);
 
     /*****************************************/
     //// Start receving the data From Slave
@@ -120,37 +121,37 @@ int LV_reading(uint16_t mode){
 
     /* wait until MST bit gets cleared, this takes
      * few cycles after Bus Busy is cleared */
-    while(i2cIsMasterReady(i2cREG1) != true);
+    while(i2cIsMasterReady(LV_MONITOR_I2C_PORT) != true);
 
     /* Configure address of Slave to talk to */
-    i2cSetSlaveAdd(i2cREG1, LV_Slave_Address);
+    i2cSetSlaveAdd(LV_MONITOR_I2C_PORT, LV_Slave_Address);
 
     /* Set direction to receiver */
-    i2cSetDirection(i2cREG1, I2C_RECEIVER);
+    i2cSetDirection(LV_MONITOR_I2C_PORT, I2C_RECEIVER);
 
     /* Configure Data count */
     /* Note: Optional - It is done in Init, unless user want to change */
-    i2cSetCount(i2cREG1, LV_DATA_COUNT); //only need to receive 1 value
+    i2cSetCount(LV_MONITOR_I2C_PORT, LV_DATA_COUNT); //only need to receive 1 value
 
     /* Set mode as Master */
-    i2cSetMode(i2cREG1, I2C_MASTER);
+    i2cSetMode(LV_MONITOR_I2C_PORT, I2C_MASTER);
 
     /* Set Stop after programmed Count */
-    i2cSetStop(i2cREG1);
+    i2cSetStop(LV_MONITOR_I2C_PORT);
 
     /* Transmit Start Condition */
-    i2cSetStart(i2cREG1);
+    i2cSetStart(LV_MONITOR_I2C_PORT);
 
     /* Tranmit LV_DATA_COUNT number of data in Polling mode */
-    i2cReceive(i2cREG1, LV_DATA_COUNT, RX_Data_Master1); //location of stored data
+    i2cReceive(LV_MONITOR_I2C_PORT, LV_DATA_COUNT, RX_Data_Master1); //location of stored data
     /* Wait until Bus Busy is cleared */
-    while(i2cIsBusBusy(i2cREG1) == true);
+    while(i2cIsBusBusy(LV_MONITOR_I2C_PORT) == true);
 
     /* Wait until Stop is detected */
-    while(i2cIsStopDetected(i2cREG1) == 0);
+    while(i2cIsStopDetected(LV_MONITOR_I2C_PORT) == 0);
 
     /* Clear the Stop condition */
-    i2cClearSCD(i2cREG1);
+    i2cClearSCD(LV_MONITOR_I2C_PORT);
 
 
     uint16_t MSB_data = RX_Data_Master1[0];
