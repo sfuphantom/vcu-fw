@@ -10,28 +10,24 @@
 
 /* Include Files */
 
+#include <halcogen_vcu/include/adc.h>
+#include <halcogen_vcu/include/FreeRTOS.h>
+#include <halcogen_vcu/include/FreeRTOSConfig.h>
+#include <halcogen_vcu/include/gio.h>
+#include <halcogen_vcu/include/het.h>
+#include <halcogen_vcu/include/os_queue.h>
+#include <halcogen_vcu/include/os_semphr.h>
+#include <halcogen_vcu/include/os_task.h>
+#include <halcogen_vcu/include/os_timer.h>
+#include <halcogen_vcu/include/reg_het.h>
+#include <halcogen_vcu/include/sys_common.h>
+#include <halcogen_vcu/include/system.h> // is this required?
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
-#include "sys_common.h"
-
-/* USER CODE BEGIN (1) */
-#include "system.h" // is this required?
-
 #include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-#include "os_task.h"
-#include "os_queue.h"
-#include "os_semphr.h"
-#include "os_timer.h"
-
-
 #include "Phantom_sci.h"
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 #include <stdio.h>
-#include "adc.h"
-#include "gio.h"
-#include "het.h"
-
 #include "reg_het.h"
 
 #include "task_data_logging.h"
@@ -41,6 +37,8 @@
 #include "task_watchdog.h"
 
 #include "priorities.h" // holds the task priorities
+
+#include "vcu_data.h"
 
 #include "vcu_rev2.h"   // holds the hardware defines for the VCU pinmux
 //#include "vcu_rev3.h"
@@ -89,13 +87,16 @@ void Timer_2s(TimerHandle_t xTimers);
  *                          STATE ENUMERATION
  *********************************************************************************/
 //typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
-State state;// = TRACTIVE_OFF;
+State state = TRACTIVE_OFF;
 
 
 /*********************************************************************************
  *                          GLOBAL VARIABLE DECLARATIONS
  *********************************************************************************/
 
+data VCUData;
+
+data* VCUDataPtr = &VCUData;
 
 #define BLUE_LED  pwm1
 #define GREEN_LED pwm2
@@ -149,9 +150,6 @@ uint16 FP_sensor_diff;
 
 int main(void)
 {
-    // initialize a bunch of stuff poorly
-
-
 
 /* USER CODE BEGIN (3) */
 /*********************************************************************************
@@ -172,6 +170,11 @@ int main(void)
 
     // initialize HET pins ALL to output.. may need to change this later
     gioSetDirection(hetPORT1, 0xFFFFFFFF);
+
+/*********************************************************************************
+ *                          VCU DATA STRUCTURE INITIALIZATION
+ *********************************************************************************/
+    initData(VCUDataPtr);
 
 /*********************************************************************************
  *                          PHANTOM LIBRARY INITIALIZATION

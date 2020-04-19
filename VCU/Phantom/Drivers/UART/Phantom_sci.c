@@ -1,5 +1,5 @@
 
-#include "sci.h"
+#include <halcogen_vcu/include/sci.h>
 #include "string.h"
 
 void UARTSend(sciBASE_t *sci, char data[])
