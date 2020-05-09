@@ -16,6 +16,7 @@
 
 #include "Phantom_sci.h"
 #include "LV_monitor.h"
+#include "vcu_data.h"
 #include "FreeRTOS.h"
 
 
@@ -23,10 +24,13 @@
 
 // change to better data type
 int lv_current = 0;
+// will also need one for lv_voltage; we should probably keep this in the vcu data structure?
 
 /*********************************************************************************
  *                               SYSTEM STATE FLAGS
  *********************************************************************************/
+
+extern data* VCUDataPtr;
 
 extern uint8_t RTDS;// = 0;
 extern long RTDS_RAW;// = 0;
@@ -71,7 +75,7 @@ void vSensorReadTask(void *pvParameters){
 
         if ( gioGetBit(gioPORTA, 2) == 1)
         {
-            RTDS = 0;
+            VCUDataPtr->DigitalVal.RTDS = 0;
 //            UARTSend(PC_UART, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
         }
         else

@@ -12,9 +12,13 @@
 #include <halcogen_vcu/include/os_semphr.h>
 #include <halcogen_vcu/include/os_task.h>
 #include <halcogen_vcu/include/os_timer.h>
-#include "vcu_rev2.h"
-#include "Phantom_sci.h"
 
+#include "vcu_rev2.h"
+#include "MCP48FV_DAC_SPI.h"
+#include "Phantom_sci.h"
+#include "gio.h"
+
+#include "vcu_data.h"
 
 extern State state;
 
@@ -44,7 +48,10 @@ extern uint16 FP_sensor_diff;
 extern char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
 
 
-extern uint8_t BSE_FAULT;// = 0;
+//extern uint8_t BSE_FAULT;// = 0;
+
+extern data* VCUDataPtr;
+
 extern bool THROTTLE_AVAILABLE;
 
 /***********************************************************
@@ -109,18 +116,18 @@ void vThrottleTask(void *pvParameters){
         if (BSE_sensor_sum < BSE_MIN_VALUE)
         {
             // if it's less than 0.5V, then assume shorted to GND as this is not normal range
-            BSE_FAULT = 1;
+            VCUDataPtr->DigitalVal.BSE_FAULT = 1;
 
         }
         else if (BSE_sensor_sum > BSE_MAX_VALUE) // change from magic number to a #define BSE_MAX_VALUE
         {
             // if it's greater than 4.5V, then assume shorted to 5V as this is not normal range
-            BSE_FAULT = 1;
+            VCUDataPtr->DigitalVal.BSE_FAULT = 1;
         }
         else
         {
             // should be in normal range
-            BSE_FAULT = 0;
+            VCUDataPtr->DigitalVal.BSE_FAULT = 0;
         }
 
         // moving average signal conditioning.. worth it to graph this out and find a good filter time constant

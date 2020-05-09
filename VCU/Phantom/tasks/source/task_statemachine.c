@@ -18,6 +18,8 @@
 #include "Phantom_sci.h"
 #include "FreeRTOS.h"
 
+#include "vcu_data.h" // data structure to hold VCU data
+
 uint32_t blue_duty = 100;
 uint32_t blue_flag = 0;
 
@@ -26,14 +28,15 @@ extern State state;
 /*********************************************************************************
  *                               SYSTEM STATE FLAGS
  *********************************************************************************/
-extern uint8_t TSAL;// = 0;
-extern uint8_t RTDS;// = 0;
-extern long RTDS_RAW;// = 0;
-extern uint8_t BMS;//  = 1;
-extern uint8_t IMD;//  = 1;
-extern uint8_t BSPD;// = 1;
-extern uint8_t BSE_FAULT;// = 0;
+//extern uint8_t TSAL;// = 0;
+//extern uint8_t RTDS;// = 0;
+//extern long RTDS_RAW;// = 0;
+//extern uint8_t BMS;//  = 1;
+//extern uint8_t IMD;//  = 1;
+//extern uint8_t BSPD;// = 1;
+//extern uint8_t BSE_FAULT;// = 0;
 
+extern data* VCUDataPtr;
 /***********************************************************
  * @function                - vStateMachineTask
  *
@@ -112,14 +115,15 @@ void vStateMachineTask(void *pvParameters){
 
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********");}
-            if (BMS == 1 && IMD == 1 && BSPD == 1 && TSAL == 1 && BSE_FAULT == 0)
+            if (VCUDataPtr->DigitalVal.BMS_STATUS == 1 && VCUDataPtr->DigitalVal.IMD_STATUS == 1
+                    && VCUDataPtr->DigitalVal.BSPD_STATUS == 1 && VCUDataPtr->DigitalVal.TSAL_STATUS == 1 && VCUDataPtr->DigitalVal.BSE_FAULT == 0)
             {
                 // if BMS/IMD/BSPD = 1 then the shutdown circuit is closed
                 // TSAL = 1 indicates that the AIRs have closed
                 // tractive system should now be active
                 state = TRACTIVE_ON;
             }
-            else if (BSE_FAULT == 1)
+            else if (VCUDataPtr->DigitalVal.BSE_FAULT == 1)
             {
                 state = FAULT;
             }
@@ -133,7 +137,7 @@ void vStateMachineTask(void *pvParameters){
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
 
-            if (RTDS == 1)
+            if (VCUDataPtr->DigitalVal.RTDS == 1)
             {
                 // ready to drive signal is switched
                 state = RUNNING;
@@ -149,12 +153,12 @@ void vStateMachineTask(void *pvParameters){
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
 
-            if (RTDS == 0)
+            if (VCUDataPtr->DigitalVal.RTDS == 0)
             {
                 // read to drive signal switched off
                 state = TRACTIVE_ON;
             }
-            if (BMS == 0 || IMD == 0 || BSPD == 0 || TSAL == 0)
+            if (VCUDataPtr->DigitalVal.BMS_STATUS == 0 || VCUDataPtr->DigitalVal.IMD_STATUS == 0 || VCUDataPtr->DigitalVal.BSPD_STATUS == 0 || VCUDataPtr->DigitalVal.TSAL_STATUS == 0)
             {
                 // FAULT in shutdown circuit, or AIRs have opened from TSAL
                 state = FAULT;
@@ -171,7 +175,7 @@ void vStateMachineTask(void *pvParameters){
             // uhhh turn on a fault LED here??
             // how will we reset out of this?
 
-            if (BSE_FAULT == 0)
+            if (VCUDataPtr->DigitalVal.BSE_FAULT == 0)
             {
                 state = TRACTIVE_OFF;
             }
