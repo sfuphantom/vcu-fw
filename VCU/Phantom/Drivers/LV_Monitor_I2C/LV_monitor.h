@@ -1,6 +1,6 @@
 
 //#include "sys_common.h"
-#include "i2c.h"
+#include <halcogen_vcu/include/i2c.h>
 //#include "het.h"
 //#include "gio.h"
 //#include "stdlib.h"

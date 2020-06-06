@@ -8,8 +8,8 @@
 #ifndef HARDWARE_VCU_REV2_H_
 #define HARDWARE_VCU_REV2_H_
 
-#include "reg_het.h"
-#include "adc.h"
+#include <halcogen_vcu/include/adc.h>
+#include <halcogen_vcu/include/reg_het.h>
 
 
 /*********   READY TO DRIVE GPIO   ****************/

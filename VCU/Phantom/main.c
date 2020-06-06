@@ -10,28 +10,24 @@
 
 /* Include Files */
 
+#include <halcogen_vcu/include/adc.h>
+#include <halcogen_vcu/include/FreeRTOS.h>
+#include <halcogen_vcu/include/FreeRTOSConfig.h>
+#include <halcogen_vcu/include/gio.h>
+#include <halcogen_vcu/include/het.h>
+#include <halcogen_vcu/include/os_queue.h>
+#include <halcogen_vcu/include/os_semphr.h>
+#include <halcogen_vcu/include/os_task.h>
+#include <halcogen_vcu/include/os_timer.h>
+#include <halcogen_vcu/include/reg_het.h>
+#include <halcogen_vcu/include/sys_common.h>
+#include <halcogen_vcu/include/system.h> // is this required?
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
-#include "sys_common.h"
-
-/* USER CODE BEGIN (1) */
-#include "system.h" // is this required?
-
 #include "FreeRTOS.h"
-#include "FreeRTOSConfig.h"
-#include "os_task.h"
-#include "os_queue.h"
-#include "os_semphr.h"
-#include "os_timer.h"
-
-
 #include "Phantom_sci.h"
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 #include <stdio.h>
-#include "adc.h"
-#include "gio.h"
-#include "het.h"
-
 #include "reg_het.h"
 
 #include "task_data_logging.h"
@@ -41,6 +37,8 @@
 #include "task_watchdog.h"
 
 #include "priorities.h" // holds the task priorities
+
+#include "vcu_data.h" // holds VCU data structure
 
 #include "vcu_rev2.h"   // holds the hardware defines for the VCU pinmux
 //#include "vcu_rev3.h"
@@ -89,17 +87,25 @@ void Timer_2s(TimerHandle_t xTimers);
  *                          STATE ENUMERATION
  *********************************************************************************/
 //typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
-State state;// = TRACTIVE_OFF;
+State state = TRACTIVE_OFF;
 
-
+/*********************************************************************************
+ *                          QUEUE HANDLE CREATION
+ *********************************************************************************/
+xQueueHandle VCUDataQueue;
 /*********************************************************************************
  *                          GLOBAL VARIABLE DECLARATIONS
  *********************************************************************************/
 
+/*********************************************************************************
+ *                          INITIALIZE DATA STRUCTURE...
+ *                          or can this be done and outputted in the init function.. hm
+ *********************************************************************************/
 
-#define BLUE_LED  pwm1
-#define GREEN_LED pwm2
-#define RED_LED   pwm3
+data VCUData;
+
+data* VCUDataPtr = &VCUData;
+
 
 uint8 i;
 char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
@@ -108,13 +114,15 @@ long xStatus;
 /*********************************************************************************
  *                               SYSTEM STATE FLAGS
  *********************************************************************************/
-uint8_t TSAL = 0;
-uint8_t RTDS = 0;
+//uint8_t TSAL = 0;
+//uint8_t RTDS = 0;
 long RTDS_RAW = 0;
-uint8_t BMS  = 1;
-uint8_t IMD = 1;
-uint8_t BSPD = 1;
-uint8_t BSE_FAULT = 0;
+//uint8_t BMS  = 1;
+//uint8_t IMD = 1;
+//uint8_t BSPD = 1;
+//uint8_t BSE_FAULT = 0;
+
+// ^^^^^^^^^^^^^^^ these should all be inside the data structure now
 
 /*********************************************************************************
                  ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
@@ -149,9 +157,6 @@ uint16 FP_sensor_diff;
 
 int main(void)
 {
-    // initialize a bunch of stuff poorly
-
-
 
 /* USER CODE BEGIN (3) */
 /*********************************************************************************
@@ -172,6 +177,11 @@ int main(void)
 
     // initialize HET pins ALL to output.. may need to change this later
     gioSetDirection(hetPORT1, 0xFFFFFFFF);
+
+/*********************************************************************************
+ *                          VCU DATA STRUCTURE INITIALIZATION
+ *********************************************************************************/
+    initData(VCUDataPtr); // maybe i return the data structure here?
 
 /*********************************************************************************
  *                          PHANTOM LIBRARY INITIALIZATION
@@ -266,7 +276,9 @@ int main(void)
     // create a freeRTOS queue to pass data between tasks
     // this will be useful when passing the VCU data structure in between different tasks
 
-//    xq = xQueueCreate(5, sizeof(long));
+    VCUDataQueue = xQueueCreate(5, sizeof(long)); // what does this 5 mean?
+
+    // can I already shove the VCU data structure into here? or do i need to do that within a task
 
     // need to do an "if queue != NULL"
 
@@ -329,15 +341,11 @@ int main(void)
 
     return 0;
 }
-
-
 /* USER CODE BEGIN (4) */
 
 /*********************************************************************************
  *                          freeRTOS TASK IMPLEMENTATIONS
  *********************************************************************************/
-
-
 void gioNotification(gioPORT_t *port, uint32 bit)
 {
 /*  enter user code between the USER CODE BEGIN and USER CODE END. */
@@ -348,12 +356,12 @@ void gioNotification(gioPORT_t *port, uint32 bit)
         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
         // RTDS switch
         UARTSend(PC_UART, "---------Interrupt Active\r\n");
-        if (RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
+        if (VCUDataPtr->DigitalVal.RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
         {
             if (BSE_sensor_sum < 2000)
             {
                 gioSetBit(gioPORTA, 6, 1);
-                RTDS = 1; // CHANGE STATE TO RUNNING
+                VCUDataPtr->DigitalVal.RTDS = 1; // CHANGE STATE TO RUNNING
                 UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
 
                 // ready to drive buzzer, need to start a 2 second timer here
