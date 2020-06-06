@@ -40,12 +40,12 @@ void initData(data* VCUDataPtr)
      *              DIGITAL VALUE INITIALIZATION
      ***********************************************************/
 
-    VCUDataPtr->DigitalVal.RTDS = 0;
-    VCUDataPtr->DigitalVal.BMS_STATUS = 0;
-    VCUDataPtr->DigitalVal.IMD_STATUS = 0;
-    VCUDataPtr->DigitalVal.BSPD_STATUS = 0;
+    VCUDataPtr->DigitalVal.RTDS = 1;
+    VCUDataPtr->DigitalVal.BMS_STATUS = 1;
+    VCUDataPtr->DigitalVal.IMD_STATUS = 1;
+    VCUDataPtr->DigitalVal.BSPD_STATUS = 1;
 
-    VCUDataPtr->DigitalVal.TSAL_STATUS = 0;
+    VCUDataPtr->DigitalVal.TSAL_STATUS = 1;
     VCUDataPtr->DigitalVal.BSE_FAULT = 0;
     VCUDataPtr->DigitalVal.APPS_FAULT = 0;
 
