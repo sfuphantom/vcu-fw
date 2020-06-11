@@ -10,18 +10,18 @@
 
 /* Include Files */
 
-#include <halcogen_vcu/include/adc.h>
-#include <halcogen_vcu/include/FreeRTOS.h>
-#include <halcogen_vcu/include/FreeRTOSConfig.h>
-#include <halcogen_vcu/include/gio.h>
-#include <halcogen_vcu/include/het.h>
-#include <halcogen_vcu/include/os_queue.h>
-#include <halcogen_vcu/include/os_semphr.h>
-#include <halcogen_vcu/include/os_task.h>
-#include <halcogen_vcu/include/os_timer.h>
-#include <halcogen_vcu/include/reg_het.h>
-#include <halcogen_vcu/include/sys_common.h>
-#include <halcogen_vcu/include/system.h> // is this required?
+#include "adc.h"
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "gio.h"
+#include "het.h"
+#include "os_queue.h"
+#include "os_semphr.h"
+#include "os_task.h"
+#include "os_timer.h"
+#include "reg_het.h"
+#include "sys_common.h"
+#include "system.h" // is this required?
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
 #include "FreeRTOS.h"
@@ -40,9 +40,7 @@
 
 #include "vcu_data.h" // holds VCU data structure
 
-#include "vcu_rev2.h"   // holds the hardware defines for the VCU pinmux
-//#include "vcu_rev3.h"
-//#include "launchpad.h"
+#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
 /* USER CODE END */
 

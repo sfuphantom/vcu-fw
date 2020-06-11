@@ -1,15 +1,16 @@
 /*
- * vcu.h
+ * board_hardware.h
  *
- *  Created on: Mar 16, 2020
+ *  Created on: Jun 10, 2020
  *      Author: gabriel
  */
 
-#ifndef HARDWARE_VCU_REV2_H_
-#define HARDWARE_VCU_REV2_H_
+#ifndef PHANTOM_HARDWARE_VCU_HW_BOARD_HARDWARE_H_
+#define PHANTOM_HARDWARE_VCU_HW_BOARD_HARDWARE_H_
 
-#include <halcogen_vcu/include/adc.h>
-#include <halcogen_vcu/include/reg_het.h>
+
+#include "adc.h"
+#include "reg_het.h"
 
 
 /*********   READY TO DRIVE GPIO   ****************/
@@ -90,7 +91,4 @@ typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
 
 
 
-
-
-
-#endif /* HARDWARE_VCU_REV2_H_ */
+#endif /* PHANTOM_HARDWARE_VCU_HW_BOARD_HARDWARE_H_ */

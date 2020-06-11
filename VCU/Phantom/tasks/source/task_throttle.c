@@ -5,15 +5,19 @@
  *      Author: gabriel
  */
 
-#include <halcogen_vcu/include/adc.h>
-#include <halcogen_vcu/include/FreeRTOS.h>
-#include <halcogen_vcu/include/FreeRTOSConfig.h>
-#include <halcogen_vcu/include/os_queue.h>
-#include <halcogen_vcu/include/os_semphr.h>
-#include <halcogen_vcu/include/os_task.h>
-#include <halcogen_vcu/include/os_timer.h>
+#include "adc.h"
+#include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
+#include "os_queue.h"
+#include "os_semphr.h"
+#include "os_task.h"
+#include "os_timer.h"
 
-#include "vcu_rev2.h"
+#include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
+
+
+#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
+
 #include "MCP48FV_DAC_SPI.h"
 #include "Phantom_sci.h"
 #include "gio.h"
