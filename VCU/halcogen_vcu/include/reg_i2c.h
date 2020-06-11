@@ -49,8 +49,8 @@
 #ifndef __REG_I2C_H__
 #define __REG_I2C_H__
 
-#include <halcogen_vcu/include/reg_gio.h>
-#include <halcogen_vcu/include/sys_common.h>
+#include "sys_common.h"
+#include "reg_gio.h"
 
 
 /* USER CODE BEGIN (0) */

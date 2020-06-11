@@ -48,7 +48,7 @@
 #ifndef __SYS_PMM_H__
 #define __SYS_PMM_H__
 
-#include <halcogen_vcu/include/reg_pmm.h>
+#include "reg_pmm.h"
 
 #ifdef __cplusplus
 extern "C" {

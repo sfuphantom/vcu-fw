@@ -47,7 +47,7 @@
 #ifndef __SYS_MPU_H__
 #define __SYS_MPU_H__
 
-#include <halcogen_vcu/include/sys_common.h>
+#include "sys_common.h"
 
 #ifdef __cplusplus
 extern "C" {

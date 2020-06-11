@@ -48,7 +48,7 @@
 #ifndef __SYS_PCR_H__
 #define __SYS_PCR_H__
 
-#include <halcogen_vcu/include/reg_pcr.h>
+#include "reg_pcr.h"
 
 #ifdef __cplusplus
 extern "C" {

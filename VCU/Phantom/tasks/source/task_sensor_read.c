@@ -17,6 +17,7 @@
 
 #include "Phantom_sci.h"
 #include "LV_monitor.h"
+#include "IMD.h"
 #include "vcu_data.h"
 #include "FreeRTOS.h"
 
@@ -91,6 +92,8 @@ void vSensorReadTask(void *pvParameters){
         // read HV current
 
         // IMD data (maybe this needs to be a separate interrupt?)
+        updateIMDData();
+        serialSendData();
 
         // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
 
@@ -100,7 +103,8 @@ void vSensorReadTask(void *pvParameters){
 
         // read LV voltage, current
 
-        lv_current = LV_reading(LV_current_register);
+        // this needs to be updated to not block the whole system if i2c not available
+//        lv_current = LV_reading(LV_current_register);
 
         // make sure state machine signal flags are updated
 

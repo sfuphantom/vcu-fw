@@ -49,7 +49,7 @@
 #ifndef __CAN_H__
 #define __CAN_H__
 
-#include <halcogen_vcu/include/reg_can.h>
+#include "reg_can.h"
 
 #ifdef __cplusplus
 extern "C" {

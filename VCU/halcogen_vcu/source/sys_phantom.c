@@ -42,8 +42,8 @@
 */
 
 
-#include <halcogen_vcu/include/sys_common.h>
-#include <halcogen_vcu/include/sys_vim.h>
+#include "sys_common.h"
+#include "sys_vim.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */

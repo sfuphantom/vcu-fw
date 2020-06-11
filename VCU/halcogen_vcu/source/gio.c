@@ -43,8 +43,8 @@
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
-#include <halcogen_vcu/include/gio.h>
-#include <halcogen_vcu/include/sys_vim.h>
+#include "gio.h"
+#include "sys_vim.h"
 
 /* USER CODE BEGIN (1) */
 /* USER CODE END */

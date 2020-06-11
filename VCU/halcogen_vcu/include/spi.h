@@ -43,7 +43,7 @@
 #ifndef __SPI_H__
 #define __SPI_H__
 
-#include <halcogen_vcu/include/reg_spi.h>
+#include "reg_spi.h"
 
 #ifdef __cplusplus
 extern "C" {

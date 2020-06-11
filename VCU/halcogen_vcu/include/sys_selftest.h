@@ -47,18 +47,18 @@
 #ifndef __sys_selftest_H__
 #define __sys_selftest_H__
 
-#include <halcogen_vcu/include/adc.h>
-#include <halcogen_vcu/include/can.h>
-#include <halcogen_vcu/include/esm.h>
-#include <halcogen_vcu/include/het.h>
-#include <halcogen_vcu/include/htu.h>
-#include <halcogen_vcu/include/mibspi.h>
-#include <halcogen_vcu/include/reg_efc.h>
-#include <halcogen_vcu/include/reg_pbist.h>
-#include <halcogen_vcu/include/reg_stc.h>
-#include <halcogen_vcu/include/sys_core.h>
-#include <halcogen_vcu/include/sys_vim.h>
-#include <halcogen_vcu/include/system.h>
+#include "reg_pbist.h"
+#include "reg_stc.h"
+#include "reg_efc.h"
+#include "sys_core.h"
+#include "system.h"
+#include "sys_vim.h"
+#include "adc.h"
+#include "can.h"
+#include "mibspi.h"
+#include "het.h"
+#include "htu.h"
+#include "esm.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */

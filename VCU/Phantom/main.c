@@ -24,6 +24,7 @@
 #include "system.h" // is this required?
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
+#include "IMD.h"             // Bender IR155 IMD Library written by Sumreen Rattan
 #include "FreeRTOS.h"
 #include "Phantom_sci.h"
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
@@ -174,7 +175,7 @@ int main(void)
     // maybe this can be changed in halcogen?
 
     // initialize HET pins ALL to output.. may need to change this later
-    gioSetDirection(hetPORT1, 0xFFFFFFFF);
+//    gioSetDirection(hetPORT1, 0xFFFFFFFF);
 
 /*********************************************************************************
  *                          VCU DATA STRUCTURE INITIALIZATION
@@ -189,7 +190,10 @@ int main(void)
 //    MCP48FV_Set_Value(400);//500 =5.00V, 250= 2.5V
 
     // LV monitor library
-    lv_monitorInit();
+//    lv_monitorInit();
+
+    // IMD Library
+    initializeIMD();
 /*********************************************************************************
  *                          freeRTOS SOFTWARE TIMER SETUP
  *********************************************************************************/

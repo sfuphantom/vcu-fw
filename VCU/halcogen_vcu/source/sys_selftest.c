@@ -45,9 +45,9 @@
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
-#include <halcogen_vcu/include/sys_core.h>
-#include <halcogen_vcu/include/sys_pmu.h>
-#include <halcogen_vcu/include/sys_selftest.h>
+#include "sys_selftest.h"
+#include "sys_core.h"
+#include "sys_pmu.h"
 
 /** @fn void selftestFailNotification(uint32 flag)
 *   @brief Self test fail service routine
