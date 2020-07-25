@@ -1,6 +1,8 @@
 eclipse.preferences.version=1
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/DAC_SPI/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/DAC_SPI/subdir_vars.mk=UTF-8
+encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/EEPROM/subdir_rules.mk=UTF-8
+encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/EEPROM/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/LV_Monitor_I2C/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/LV_Monitor_I2C/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/UART/subdir_rules.mk=UTF-8
