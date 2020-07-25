@@ -1,7 +1,7 @@
 /** @file system.h
 *   @brief System Driver Header File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *   
 *   This file contains:
 *   - Definitions
@@ -11,7 +11,7 @@
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com 
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com 
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -48,9 +48,9 @@
 #ifndef __SYS_SYSTEM_H__
 #define __SYS_SYSTEM_H__
 
-#include <halcogen_vcu/include/reg_flash.h>
-#include <halcogen_vcu/include/reg_system.h>
-#include <halcogen_vcu/include/reg_tcram.h>
+#include "reg_system.h"
+#include "reg_flash.h"
+#include "reg_tcram.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -476,12 +476,12 @@ void tcmflashGetConfigValue(tcmflash_config_reg_t *config_reg, config_value_type
 /* System Interface Functions */
 void setupPLL(void);
 void trimLPO(void);
+void customTrimLPO(void);
 void setupFlash(void);
 void periphInit(void);
 void mapClocks(void);
 void systemInit(void);
 void systemPowerDown(uint32 mode);
-
 
 /*Configuration registers
 * index 0: Even RAM

@@ -1,7 +1,7 @@
 /** @file can.h
 *   @brief CAN Driver Header File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *   
 *   This file contains:
 *   - Definitions
@@ -12,7 +12,7 @@
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -49,7 +49,7 @@
 #ifndef __CAN_H__
 #define __CAN_H__
 
-#include <halcogen_vcu/include/reg_can.h>
+#include "reg_can.h"
 
 #ifdef __cplusplus
 extern "C" {

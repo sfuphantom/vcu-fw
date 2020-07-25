@@ -2,7 +2,7 @@
 /* sys_link.cmd                                                               */
 /*                                                                            */
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -80,6 +80,9 @@ SECTIONS
     .data    : {} > RAM
     .sysmem  : {} > RAM
     
+    FEE_TEXT_SECTION : {} > FLASH0 
+    FEE_CONST_SECTION : {} > FLASH0
+    FEE_DATA_SECTION : {} > RAM
 
 /* USER CODE BEGIN (4) */
 /* USER CODE END */

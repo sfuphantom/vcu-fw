@@ -1,7 +1,7 @@
 /** @file notification.c 
 *   @brief User Notification Definition File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *
 *   This file  defines  empty  notification  routines to avoid
 *   linker errors, Driver expects user to define the notification. 
@@ -12,7 +12,7 @@
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com 
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com 
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -48,15 +48,15 @@
 
 /* Include Files */
 
-#include <halcogen_vcu/include/adc.h>
-#include <halcogen_vcu/include/esm.h>
-#include <halcogen_vcu/include/gio.h>
-#include <halcogen_vcu/include/het.h>
-#include <halcogen_vcu/include/i2c.h>
-#include <halcogen_vcu/include/mibspi.h>
-#include <halcogen_vcu/include/sci.h>
-#include <halcogen_vcu/include/sys_dma.h>
-#include <halcogen_vcu/include/sys_selftest.h>
+#include "esm.h"
+#include "sys_selftest.h"
+#include "adc.h"
+#include "gio.h"
+#include "mibspi.h"
+#include "sci.h"
+#include "het.h"
+#include "i2c.h"
+#include "sys_dma.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */

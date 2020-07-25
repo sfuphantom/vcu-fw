@@ -7,7 +7,7 @@
  */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -47,9 +47,9 @@
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
-#include <halcogen_vcu/include/hw_mdio.h>
-#include <halcogen_vcu/include/sys_common.h>
-#include <halcogen_vcu/include/system.h>
+#include "sys_common.h"
+#include "system.h"
+#include "hw_mdio.h"
 
 #ifdef __cplusplus
 extern "C" {

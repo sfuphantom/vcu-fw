@@ -18,7 +18,7 @@
  *********************************************************************************************************************/
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -60,7 +60,7 @@
 #define TI_FEE_DEVICEHEADER_H
  
 /* Uncomment the appropriate include file depending on the device you are using */
-#include <halcogen_vcu/include/Device_TMS570LS12.h>
+#include "Device_TMS570LS12.h"
 
 /* End of file */
 #endif

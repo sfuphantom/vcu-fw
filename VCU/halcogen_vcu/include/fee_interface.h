@@ -40,10 +40,12 @@
  *                                                                    FEE_FLASH_CRC_ENABLE is renamed to 
  *                                                                    FEE_FLASH_CHECKSUM_ENABLE. 
  *                                                                    New macro FEE_USEPARTIALERASEDSECTOR added.
+ * 01.23.05		  05Dec2017     Prathap Srinivasan   HERCULES_SW-5082 Update version history for AUTOSAR FEE
+ *                                                                    (This corresponds to TI FEE 1.19.04.)
  *********************************************************************************************************************/
    
 /*
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -80,7 +82,7 @@
 #define FEE_INTERFACE_H
 
 
-#include <halcogen_vcu/include/ti_fee_cfg.h>
+#include "ti_fee_cfg.h"
 
 #if(TI_FEE_DRIVER == 0U) /* Include following macros only in Autosar Context */
 #include "fee_cfg.h"
