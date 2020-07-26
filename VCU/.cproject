@@ -165,7 +165,7 @@
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/DAC_SPI}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/LV_Monitor_I2C}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/EEPROM}"/>
-									<listOptionValue builtIn="false" value="${TI_PRODUCTS_DIR}/Hercules/F021 Flash API/02.01.01/include"/>
+									<listOptionValue builtIn="false" value="/Applications/ti/Hercules/F021 Flash API/02.01.01/include"/>
 								</option>
 								<inputType id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compiler.inputType__C_SRCS.1425184646" name="C Sources" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compiler.inputType__C_SRCS"/>
 								<inputType id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compiler.inputType__CPP_SRCS.65789399" name="C++ Sources" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compiler.inputType__CPP_SRCS"/>

@@ -59,6 +59,12 @@ void eepromBlockingMain(){
 *
 * NOTES :  None
 *
+*
+*         Not relevant here, but needs to go in the documentation of API.
+*           FEE will work for any block size of 1 to 0xFFFE. Please be careful that every block has a block overhead of 24 bytes. and there is also a sector header of 32 bytes.
+*           When configuring blocks, make sure size of all the blocks+block header+sector header is not more than the size of the configured sector.
+*
+*
 */
 
 void eeprom_Init(){
@@ -77,80 +83,92 @@ void eeprom_Init(){
 * DESCRIPTION :     Function used for recovering from severe errors
 *
 * INPUTS : @param1:  one of the following:
-*                       Error_Nil=0U                           ->                  No ERROR
-                        Error_TwoActiveVS=1U                   ->                  There are two active Virtual sectors. This error will not happen with modified design.
-                        Error_TwoCopyVS=2U                     ->                  There are two copy Virtual sectors. This error will not happen with modified design.
-                        Error_SetupStateMachine=3U             ->                  Either HCLK or EWAIT are not configured correctly or there is OTP error.
-                        Error_CopyButNoActiveVS=4U             ->                  There is a copy Virtual sector but no Active sector or ready for erase sector.
-                        Error_NoActiveVS=5U                    ->                  FEE was not able to find/create an active Virtual Sector.
-                        Error_BlockInvalid=6U                  ->                  Invalid Block passed as input.
-                        Error_NullDataPtr=7U                   ->                  Null Data ptr passed as input.
-                        Error_NoFreeVS=8U                      ->                  No more Free Virtual Sector present to write data. This error will not happen with modified design.
-                        Error_InvalidVirtualSectorParameter=9U ->                  This is deprecated.
-                        Error_ExceedSectorOnBank=10U,          ->
-                        Error_EraseVS=11U,                     ->                  Blank check failed after erase.
-                        Error_BlockOffsetGtBlockSize=12U,      ->                  Block Offset is not valid.
-                        Error_LengthParam=13U,                 ->                  Length Parameter is not valid.
-                        Error_FeeUninit=14U,                   ->                  FEE if not initialized.
-                        Error_Suspend=15U,                     ->                  This is deprecated.
-                        Error_InvalidBlockIndex=16U,           ->                  Block index is invalid.
-                        Error_NoErase=17U,                     ->                  This is deprecated.
-                        Error_CurrentAddress=18U,              ->                  Address of block is not valid.
-                        Error_Exceed_No_Of_DataSets=19U        ->                  Data sets not configured correctly.
+*
 *
 *
 *
 * RETURN : E_OK/E_NOT_OK -> Fee Recovered/Didn't recover from Error
 *
 *
-* NOTES :
+* NOTES : There is only one Virtual Sector in the copy state in the case that an error of type Error_CopyButNoActiveVS occurs.
+*         Determination of copy sector in case of Error_CopyButNoActiveVS => copy_sector = (TI_Fee_u32ActCpyVS & 0x0000000F).
+*
+*         ++ The only errors to worry about.
+*                        Error_CopyButNoActiveVS=4U             ->                  There is a copy Virtual sector but no Active sector or ready for erase sector.
+*                                                                                   This is not an error. In INIT, copy virtual sector is marked as Active.
+*
+*                        Error_NoActiveVS=5U                    ->                  FEE was not able to find/create an active Virtual Sector.
+*                                                                                  INIT will try to create Active VS.
+*                                                                                    This error cannot be ignored because FEE will be in UNINIT state and hence upper layers will always see FEE in uninitialized state.
+*
+*
+*
+*                         Error_BlockInvalid=6U                  ->                  Invalid Block passed as input.
+*
+*
+*                        Error_EraseVS=11U,                     ->                  Blank check failed after erase.
+*                                                                                    This error can happen when FEE tries to erase a virtual sector and perform a blank check, after copying all the blocks.
+*                                                                                    FEE tries to erase the VS again in the error recovery API.
+*                                                                                    If it is not able to erase, then virtual sector is locked out permanently.
+*                                                                                    No further jobs will be accepted.
+*
+*
+*                        Error_SetupStateMachine=3U             ->                  Either HCLK or EWAIT are not configured correctly or there is OTP error.
+*                                                                                    This error happens when RWAIT/EWAIT are not configured correctly to match the frequency at which Flash API is operating.
+*                                                                                    This error is easily detectable since none of the tests would pass unless this error is resolved.
+*
+*                        For Error_SetupStateMachine and Error_NoActiveVS, VS information is not required.
+*                        For Error_EraseVS, we can provide the VS to erase to upper layers via a global variable.
+*          -- The only errors to worry about.
+*
+*          ++ Errors not to worry about
+*                       Error_Nil=0U                           ->                  No ERROR - no error means doesn't need recovery
+*                        Error_TwoActiveVS=1U                   ->                  There are two active Virtual sectors. This error will not happen with modified design. - So don't need recovery.
+*                        Error_TwoCopyVS=2U                     ->                  There are two copy Virtual sectors. This error will not happen with modified design. - So don't need  recovery
+*                        Error_NoFreeVS=8U                      ->                  No more Free Virtual Sector present to write data. This error will not happen with modified design. - so don't need recovery.
+*                        Error_InvalidVirtualSectorParameter=9U ->                  This is deprecated. - so don't need to worry about this.
+*                        Error_NoErase=17U,                     ->                  This is deprecated. - so don't need to worry about this.
+*                        Error_Suspend=15U,                     ->                  This is deprecated. - so don't need to worry about this.
+*         -- Errors not to worry about
+*
+*         ++ Errors that are not Severe, Not sure if we need to handle
+*                         Error_NullDataPtr=7U                   ->                  Null Data ptr passed as input.
+*                         Error_ExceedSectorOnBank=10U,          ->
+*                         Error_BlockOffsetGtBlockSize=12U,      ->                  Block Offset is not valid.
+*                         Error_LengthParam=13U,                 ->                  Length Parameter is not valid.
+*                         Error_FeeUninit=14U,                   ->                  FEE if not initialized.
+*                         Error_InvalidBlockIndex=16U,           ->                  Block index is invalid.
+*                         Error_CurrentAddress=18U,              ->                  Address of block is not valid.
+*                         Error_Exceed_No_Of_DataSets=19U        ->                  Data sets not configured correctly.
+*       -- Errors that are not Severe, Not sure if we need to handle
+*
 *
 */
 Std_ReturnType eeprom_ErrorHandling(Fee_ErrorCodeType errorCode){
 
     Std_ReturnType errorRecoveryResult = E_NOT_OK;
-    if (errorCode == Error_Nil){
+    if(errorCode == Error_CopyButNoActiveVS){
 
-    }else if(errorCode == Error_TwoActiveVS){
+        //TI_Fee_u32ActCpyVS -> provides info on which VS is marked as COPY.
+        // The second argument of TI_Fee_ErrorRecovery FEE module API should be the Virtual Sector to set as Active for the Copy operation.
 
-    }else if(errorCode == Error_TwoCopyVS){
+        uint8 copySector = TI_Fee_u32ActCpyVS & 0x0000000F;
+        TI_Fee_ErrorRecovery(errorCode, copySector);
+        errorRecoveryResult = E_OK;
 
-    }else if(errorCode == Error_SetupStateMachine){
-
-    }else if(errorCode == Error_CopyButNoActiveVS){
 
     }else if(errorCode == Error_NoActiveVS){
+        // The second Argument is not used in this Error, so you can set it to anything.
+        TI_Fee_ErrorRecovery(errorCode, 0);
+        errorRecoveryResult = E_OK;
 
-    }else if(errorCode == Error_BlockInvalid){
-
-    }else if(errorCode == Error_NullDataPtr){
-
-    }else if(errorCode == Error_NoFreeVS){
-
-    }else if(errorCode == Error_InvalidVirtualSectorParameter){
-
-    }else if(errorCode == Error_ExceedSectorOnBank){
 
     }else if(errorCode == Error_EraseVS){
-
-    }else if(errorCode == Error_BlockOffsetGtBlockSize){
-
-    }else if(errorCode == Error_LengthParam){
-
-    }else if(errorCode == Error_FeeUninit){
-
-    }else if(errorCode == Error_Suspend){
-
-    }else if(errorCode == Error_InvalidBlockIndex){
-
-    }else if(errorCode == Error_NoErase){
-
-    }else if(errorCode == Error_CurrentAddress){
-
-    }else if(errorCode == Error_Exceed_No_Of_DataSets){
+        uint8 failedEraseSector = TI_Fee_u8ErrEraseVS & 0x0000000F;
+        TI_Fee_ErrorRecovery(errorCode, failedEraseSector);
+        errorRecoveryResult = E_OK;
 
     }
-
     return errorRecoveryResult;
 }
 
@@ -297,6 +315,14 @@ uint8_t eeprom_Read(uint16_t eepromNumber, uint16_t dataBlock, uint16_t starting
 
                     jobScheduled = E_NOT_OK;
 
+                }else if(TI_Fee_GetJobResult(eepromNumber) == BLOCK_INCONSISTENT){
+                    jobScheduled = E_NOT_OK;
+
+                }else if(TI_Fee_GetJobResult(eepromNumber) == JOB_CANCELLED){
+                    jobScheduled = E_NOT_OK;
+
+                }else if(TI_Fee_GetJobResult(eepromNumber) == JOB_PENDING){
+                    jobScheduled = E_OK;
                 }
 
             }else if(jobScheduled == E_NOT_OK){
@@ -335,7 +361,9 @@ uint8_t eeprom_Erase(uint16_t dataBlock){
        jobScheduled = E_OK;
    }else if(jobScheduled == E_NOT_OK){
        // Job Not Accepted by the TI Fee Module. Do Something
+
        jobScheduled = E_NOT_OK;
+
    }
    return ((uint8_t)(jobScheduled));
 }
