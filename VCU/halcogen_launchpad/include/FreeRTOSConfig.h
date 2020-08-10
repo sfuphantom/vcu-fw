@@ -124,7 +124,7 @@
 #define configMAX_CO_ROUTINE_PRIORITIES ( 2 )
 
 /* Mutexes */
-#define configUSE_MUTEXES               0
+#define configUSE_MUTEXES               1
 #define configUSE_RECURSIVE_MUTEXES     0
 
 /* Semaphores */
@@ -133,8 +133,8 @@
 /* Timers */
 #define configUSE_TIMERS                1
 #define configTIMER_TASK_PRIORITY		( 0 )
-#define configTIMER_QUEUE_LENGTH		0
-#define configTIMER_TASK_STACK_DEPTH	( 0 )
+#define configTIMER_QUEUE_LENGTH		2
+#define configTIMER_TASK_STACK_DEPTH	( 128 )
 
 /* USER CODE BEGIN (3) */
 /* USER CODE END */
