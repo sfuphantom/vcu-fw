@@ -71,11 +71,11 @@ void initData(data* VCUDataPtr)
      ***********************************************************/
 
     VCUDataPtr->DigitalVal.RTDS = 1;
-    VCUDataPtr->DigitalVal.BMS_STATUS = 1;
-    VCUDataPtr->DigitalVal.IMD_STATUS = 1;
-    VCUDataPtr->DigitalVal.BSPD_STATUS = 1;
+    VCUDataPtr->DigitalVal.BMS_FAULT = 1;
+    VCUDataPtr->DigitalVal.IMD_FAULT = 1;
+    VCUDataPtr->DigitalVal.BSPD_FAULT = 1;
 
-    VCUDataPtr->DigitalVal.TSAL_STATUS = 1;
+    VCUDataPtr->DigitalVal.TSAL_FAULT = 1;
     VCUDataPtr->DigitalVal.BSE_FAULT = 0;
     VCUDataPtr->DigitalVal.APPS_FAULT = 0;
 

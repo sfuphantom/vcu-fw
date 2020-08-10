@@ -274,7 +274,7 @@ int main(void)
     // create a freeRTOS queue to pass data between tasks
     // this will be useful when passing the VCU data structure in between different tasks
 
-    VCUDataQueue = xQueueCreate(5, sizeof(long)); // what does this 5 mean?
+    VCUDataQueue = xQueueCreate(5, sizeof(VCUData)); // what does this 5 mean? - Answer: 5 block queue, with each block having the size of an VCU Data Structure.
 
     // can I already shove the VCU data structure into here? or do i need to do that within a task
 
@@ -415,16 +415,16 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
                                     uint32_t *pulIdleTaskStackSize )
 {
 /* If the buffers to be provided to the Idle task are declared inside this
-function then they must be declared static – otherwise they will be allocated on
+function then they must be declared static ï¿½ otherwise they will be allocated on
 the stack and so not exists after this function exits. */
 static StaticTask_t xIdleTaskTCB;
 static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
 
-    /* Pass out a pointer to the StaticTask_t structure in which the Idle task’s
+    /* Pass out a pointer to the StaticTask_t structure in which the Idle taskï¿½s
     state will be stored. */
     *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
 
-    /* Pass out the array that will be used as the Idle task’s stack. */
+    /* Pass out the array that will be used as the Idle taskï¿½s stack. */
     *ppxIdleTaskStackBuffer = uxIdleTaskStack;
 
     /* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
@@ -432,7 +432,7 @@ static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
     configMINIMAL_STACK_SIZE is specified in words, not bytes. */
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
-/*———————————————————–*/
+/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 
 /* configSUPPORT_STATIC_ALLOCATION and configUSE_TIMERS are both set to 1, so the
 application must provide an implementation of vApplicationGetTimerTaskMemory()
@@ -442,16 +442,16 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,
                                      uint32_t *pulTimerTaskStackSize )
 {
 /* If the buffers to be provided to the Timer task are declared inside this
-function then they must be declared static – otherwise they will be allocated on
+function then they must be declared static ï¿½ otherwise they will be allocated on
 the stack and so not exists after this function exits. */
 static StaticTask_t xTimerTaskTCB;
 static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 
     /* Pass out a pointer to the StaticTask_t structure in which the Timer
-    task’s state will be stored. */
+    taskï¿½s state will be stored. */
     *ppxTimerTaskTCBBuffer = &xTimerTaskTCB;
 
-    /* Pass out the array that will be used as the Timer task’s stack. */
+    /* Pass out the array that will be used as the Timer taskï¿½s stack. */
     *ppxTimerTaskStackBuffer = uxTimerTaskStack;
 
     /* Pass out the size of the array pointed to by *ppxTimerTaskStackBuffer.

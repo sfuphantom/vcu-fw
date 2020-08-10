@@ -117,8 +117,8 @@ void vStateMachineTask(void *pvParameters){
 
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********");}
-            if (VCUDataPtr->DigitalVal.BMS_STATUS == 1 && VCUDataPtr->DigitalVal.IMD_STATUS == 1
-                    && VCUDataPtr->DigitalVal.BSPD_STATUS == 1 && VCUDataPtr->DigitalVal.TSAL_STATUS == 1 && VCUDataPtr->DigitalVal.BSE_FAULT == 0)
+            if (VCUDataPtr->DigitalVal.BMS_FAULT == 1 && VCUDataPtr->DigitalVal.IMD_FAULT == 1
+                    && VCUDataPtr->DigitalVal.BSPD_FAULT == 1 && VCUDataPtr->DigitalVal.TSAL_FAULT == 1 && VCUDataPtr->DigitalVal.BSE_FAULT == 0)
             {
                 // if BMS/IMD/BSPD = 1 then the shutdown circuit is closed
                 // TSAL = 1 indicates that the AIRs have closed
@@ -160,7 +160,7 @@ void vStateMachineTask(void *pvParameters){
                 // read to drive signal switched off
                 state = TRACTIVE_ON;
             }
-            if (VCUDataPtr->DigitalVal.BMS_STATUS == 0 || VCUDataPtr->DigitalVal.IMD_STATUS == 0 || VCUDataPtr->DigitalVal.BSPD_STATUS == 0 || VCUDataPtr->DigitalVal.TSAL_STATUS == 0)
+            if (VCUDataPtr->DigitalVal.BMS_FAULT == 0 || VCUDataPtr->DigitalVal.IMD_FAULT == 0 || VCUDataPtr->DigitalVal.BSPD_FAULT == 0 || VCUDataPtr->DigitalVal.TSAL_FAULT == 0)
             {
                 // FAULT in shutdown circuit, or AIRs have opened from TSAL
                 state = FAULT;
