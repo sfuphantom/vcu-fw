@@ -35,6 +35,7 @@
 #include "task_statemachine.h"
 #include "task_throttle.h"
 #include "task_watchdog.h"
+#include "task_eeprom.h"
 
 #include "priorities.h" // holds the task priorities
 
@@ -103,9 +104,12 @@ xQueueHandle VCUDataQueue;
  *********************************************************************************/
 
 data VCUData;
-
 data* VCUDataPtr = &VCUData;
 
+TaskHandle_t eepromHandler = NULL;
+SemaphoreHandle_t vcuKey;
+void *pVCUDataStructure = &VCUData;  // Need to define this in main as (void *)pVCUDataStructure = &VCUData
+uint8_t powerFailureFlag;  // Need to define this main.c
 
 uint8 i;
 char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
@@ -191,7 +195,11 @@ void main(void)
 //    MCP48FV_Set_Value(400);//500 =5.00V, 250= 2.5V
 
     // LV monitor library
-    lv_monitorInit();
+    //lv_monitorInit();
+
+    // Eeprom Initialization
+    eepromBlocking_Init();
+    vcuKey = xSemaphoreCreateMutex();
 /*********************************************************************************
  *                          freeRTOS SOFTWARE TIMER SETUP
  *********************************************************************************/
@@ -276,14 +284,14 @@ void main(void)
     // create a freeRTOS queue to pass data between tasks
     // this will be useful when passing the VCU data structure in between different tasks
 
-    VCUDataQueue = xQueueCreate(5, sizeof(VCUData)); // what does this 5 mean? - Answer: 5 block queue, with each block having the size of an VCU Data Structure.
+    //VCUDataQueue = xQueueCreate(5, sizeof(VCUData)); // what does this 5 mean? - Answer: 5 block queue, with each block having the size of an VCU Data Structure.
 
     // can I already shove the VCU data structure into here? or do i need to do that within a task
 
     // need to do an "if queue != NULL"
 
     // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
-    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
+    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  150, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
@@ -292,7 +300,7 @@ void main(void)
     }
 
 
-    if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  240, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
+    if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  150, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
@@ -301,7 +309,7 @@ void main(void)
     }
 
 
-    if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  240, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
+    if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  150, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
@@ -310,7 +318,7 @@ void main(void)
     }
 
 
-    if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  240, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
+    if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  150, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
@@ -318,12 +326,20 @@ void main(void)
         while(1);
     }
 
-    if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  240, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
+    if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  150, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
         sciSend(PC_UART,23,(unsigned char*)"WatchdogTask Creation Failed.\r\n");
         while(1);
+    }
+
+
+    if (xTaskCreate(vEeprom, (const char*)"EepromTask",  150, NULL,  tskIDLE_PRIORITY+2, &eepromHandler) != pdTRUE)
+    {
+            uint8 message[]="EEPROM task Creation Failed.\r\n";
+            sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
+            while(1);
     }
 
     // all tasks have been created successfully
