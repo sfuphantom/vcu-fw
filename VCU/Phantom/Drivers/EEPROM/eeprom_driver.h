@@ -34,7 +34,7 @@
 #define DATA_BLOCK_2    2U
 #define DATA_BLOCK_3    3U
 #define DATA_BLOCK_4    4U
-
+#define DATA_BLOCK_5    5U   //Data Block 5 configure to store VCU Data Structure
 
 
 /*
@@ -43,6 +43,11 @@
 #define ASYNC    0U
 #define SYNC     1U
 
+
+/*
+ *  Read Data Block from Start
+ */
+#define NO_OFFSET 0U
 /*
  *  Format Keys
  *
@@ -56,19 +61,37 @@
 
 #define UNKNOWN_BLOCK_LENGTH    0xFFFFU
 
+
+/*
+ *  Pragma and Define for switching between User mode and Supervisor Mode.
+ *
+ *  Need to be in Supervisor Mode to write to Fee Bank.  -> Inside main function you're already in Supervisor mode, inside a task you're in user mode.
+ *
+ *  User can do a SVC call to switch to user or privileged mode.
+ */
+
+#define USER_MODE   0x10U
+#define SYSTEM_MODE 0x1FU
+#pragma SWI_ALIAS(swiSwitchToMode, 1)
+
+extern void swiSwitchToMode ( uint32 mode ); // Mode possibilities:  Mode = 0x10 for usermode, and 0x1F for system mode.
+
 /*
  *  Supported APIs
  */
 
-void eeprom_Init();
+void eepromBlocking_Init();
+void eepromNonBlocking_Init();
 void eepromBlockingMain();
+void eepromNonBlockingMain();
 uint8_t eeprom_Write(uint16_t eepromNumber, uint16_t dataBlock, uint8_t *pDataBuffer, uint8_t sync_or_async);
 uint8_t eeprom_Read(uint16_t eepromNumber, uint16_t dataBlock, uint16_t startingAddress, uint8_t *pRecieveBuffer, uint16_t dataBlockLength, uint8_t sync_or_async);
 uint8_t eeprom_Erase(uint16_t dataBlock);
 uint8_t eeprom_Format(uint16_t eepromNumber, uint32_t formatCode);
 uint8_t eeprom_InvalidateBlock(uint16_t eepromNumber, uint32_t dataBlock);
 TI_FeeModuleStatusType eeprom_Status(uint16_t eepromNumber);
-
+TI_FeeJobResultType eeprom_lastJobStatus(uint16_t eepromNumber);
+Std_ReturnType eeprom_ErrorHandling(Fee_ErrorCodeType errorCode);
 
 
 #endif /* PHANTOM_DRIVERS_EEPROM_EEPROM_DRIVER_H_ */

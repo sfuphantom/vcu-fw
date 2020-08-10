@@ -47,10 +47,30 @@ void eepromBlockingMain(){
 
 }
 
+
 /*******************************************************************
-* NAME :            eeprom_Init
+* NAME :            eepromNonBlockingMain
 *
-* DESCRIPTION :     Initializes Flash EEPROM Emulation. Creates Virtual Sectors & Adds Data Blocks.
+* DESCRIPTION :     TI_Fee_MainFunction called using this function to execute last asynchronous schedule job.
+*
+* INPUTS : None
+*
+* RETURN : None
+*
+*
+* NOTES :  This is the Non-Blocking Implementation of TI_Fee_MainFunction, using FreeRTOS Task Delay to finish last asynchronous job.
+*
+*/
+void eepromNonBlockingMain(){
+
+    swiSwitchToMode(SYSTEM_MODE);
+    TI_Fee_MainFunction();
+    swiSwitchToMode(USER_MODE);
+}
+/*******************************************************************
+* NAME :            eepromBlocking_Init
+*
+* DESCRIPTION :     Initializes Flash EEPROM Emulation. Creates Virtual Sectors & Adds Data Blocks. This initialization utilizes software delay to initialize eeprom module - i.e. eepromBlockingMain()
 *
 * INPUTS : None
 *
@@ -67,7 +87,7 @@ void eepromBlockingMain(){
 *
 */
 
-void eeprom_Init(){
+void eepromBlocking_Init(){
 
     // Call TI Fee x  API to initialize Fee
     TI_Fee_Init();
@@ -77,6 +97,31 @@ void eeprom_Init(){
 
 }
 
+/*******************************************************************
+* NAME :            eepromNonBlocking_Init
+*
+* DESCRIPTION :     Initializes Flash EEPROM Emulation. Creates Virtual Sectors & Adds Data Blocks. This initialization utilizes software delay to initialize eeprom module - i.e. eepromNonBlockingMain()
+*
+* INPUTS : None
+*
+* RETURN : None
+*
+*
+* NOTES :  None
+*
+*
+*         Not relevant here, but needs to go in the documentation of API.
+*           FEE will work for any block size of 1 to 0xFFFE. Please be careful that every block has a block overhead of 24 bytes. and there is also a sector header of 32 bytes.
+*           When configuring blocks, make sure size of all the blocks+block header+sector header is not more than the size of the configured sector.
+*
+*
+*/
+void eepromNonBlocking_Init(){
+
+    // Call TI Fee x  API to initialize Fee
+       TI_Fee_Init();
+
+}
 /*******************************************************************
 * NAME :            eeprom_errorHandling
 *
@@ -401,21 +446,18 @@ uint8_t eeprom_Format(uint16_t eepromNumber, uint32_t formatCode){
         // Don't need to check if FEE initialized.
         formatResult = TI_Fee_Format(formatCode);
 
-        if(formatResult == true ){
+        if(formatResult == E_OK ){
+                // According to ti_fee_format.c -> a return of "true" means there was an error...
                //Format successful - Do nothing -> Can add some flag, if need be
+                jobScheduled = E_OK;
 
-        }else{
-                // Format Job failed - Determine error
-            if(TI_Fee_GetJobResult((uint8)eepromNumber) == JOB_OK){
-                           // If format failed, then this block won't enter, will remove  later, it is redundant.
-
-            }else if(TI_Fee_GetJobResult((uint8)eepromNumber) == JOB_FAILED){
-
+        }else if(formatResult == E_NOT_OK ){
+                    // Format Failed, Check what was the error.
                 // Error Recovery
                 Fee_ErrorCodeType errorCode = TI_FeeErrorCode((uint8)eepromNumber);
                 jobScheduled = eeprom_ErrorHandling(errorCode);
-           }
         }
+
 
     }else if(formatCode== FORMAT_CONFIGURED_SECTORS_ONLY){
 
@@ -425,26 +467,19 @@ uint8_t eeprom_Format(uint16_t eepromNumber, uint32_t formatCode){
 
                // Now we can call TI Format with key
             formatResult = TI_Fee_Format(formatCode);
-            if(formatResult == true ){
+            if(formatResult == E_OK ){
                            //Format successful - Do nothing -> Can add some flag, if need be
+                    jobScheduled = E_OK;
 
-            }else{
-                    // Format Job failed - Determine error
-                if(TI_Fee_GetJobResult((uint8)eepromNumber) == JOB_OK){
-                               // If format failed, then this block won't enter, will remove  later, it is redundant.
-
-                }else if(TI_Fee_GetJobResult((uint8)eepromNumber) == JOB_FAILED){
+            }else if(formatResult == E_NOT_OK){  // Format Failed, Check what was the error.
 
                     // Error Recovery
                     Fee_ErrorCodeType errorCode = TI_FeeErrorCode((uint8)eepromNumber);
                     jobScheduled = eeprom_ErrorHandling(errorCode);
-               }
             }
+         }
 
-        }
-
-    }
-
+  }
     return (uint8_t)(jobScheduled);
 }
 
@@ -511,7 +546,29 @@ uint8_t eeprom_InvalidateBlock(uint16_t eepromNumber, uint32_t dataBlock){
 
 }
 
+/*******************************************************************
+* NAME :            eeprom_lastJobStatus
+*
+* DESCRIPTION :     Used to get the status of last job
+*
+* INPUTS :          @param1 Data_Block_X
+*                   @param2 EEP0/EEP1
+*
+*
+* RETURN : One of the following:
+*                   JOB_OK,
+*                   JOB_FAILED,
+*                   JOB_PENDING,
+*                   JOB_CANCELLED,
+*                   BLOCK_INCONSISTENT,
+*                   BLOCK_INVALID
+*
+*
+* NOTES : None
+*
+*/
 
+TI_FeeJobResultType eeprom_lastJobStatus(uint16_t eepromNumber){
 
-
-
+    return (TI_Fee_GetJobResult((uint8)eepromNumber));
+}
