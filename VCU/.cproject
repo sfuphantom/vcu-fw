@@ -193,7 +193,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="Phantom/hardware/vcu_hw|halcogen_launchpad/source/sys_main.c|halcogen_vcu|halcogen_vcu/source/sys_main.c|halcogen_vcu/source/sys_link.cmd|sys_linker_freeRTOS.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="main3.c|Phantom/hardware/vcu_hw|halcogen_launchpad/source/sys_main.c|halcogen_vcu|halcogen_vcu/source/sys_main.c|halcogen_vcu/source/sys_link.cmd|sys_linker_freeRTOS.cmd" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
