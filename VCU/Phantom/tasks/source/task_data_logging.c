@@ -47,7 +47,7 @@ void vDataLoggingTask(void *pvParameters){
     while(true)
     {
         // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        //vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
         // for timing:
         gioSetBit(TASK_TIMING_PORT, 4, 1);
@@ -66,6 +66,8 @@ void vDataLoggingTask(void *pvParameters){
 
         // for timing:
         gioSetBit(TASK_TIMING_PORT, 4, 0);
+
+        vTaskDelayUntil(&xLastWakeTime, xFrequency);
     }
 
 }
