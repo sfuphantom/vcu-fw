@@ -18,6 +18,9 @@
 #include "eeprom_driver.h"
 #include "vcu_data.h"
 #include "F021.h"
+#include "board_hardware.h"
+#include "Phantom_sci.h"
+
 
 extern TaskHandle_t eepromHandler;
 extern SemaphoreHandle_t vcuKey;
