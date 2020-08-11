@@ -106,10 +106,28 @@ xQueueHandle VCUDataQueue;
 data VCUData;
 data* VCUDataPtr = &VCUData;
 
+/* ++ Added by jjkhan */
 TaskHandle_t eepromHandler = NULL;
 SemaphoreHandle_t vcuKey;
-void *pVCUDataStructure = &VCUData;  // Need to define this in main as (void *)pVCUDataStructure = &VCUData
-uint8_t powerFailureFlag;  // Need to define this main.c
+void *pVCUDataStructure = &VCUData;
+uint8_t powerFailureFlag = 0x00;  // this is the powerFailureFlag to be stored in Data Block 1 of eeprom for bootup stage.
+
+/*
+ *  For EEPROM Demo: - VCUData initialized from eeprom data.
+ *      Format EEPROM bank 7 first -> Change Debug Configurations under Flash Settings.
+ *      Set powerFailureFlag = 0xFF -> this value is used for indicating last shutdown was not graceful.
+ *      Run program -> what will happen: Data block 1 will have 0xFF, Data block 5 will have the VCUData stored.
+ *      Stop Debug
+ *      Change Debug Configurations under Flash Settings, do not format EEPROM Bank 7, this will allow previous state to remain.
+ *      Change vcu_Data.c to default values.
+ *      Enter debug mode.
+ *      Add VCUData to watch expression
+ *      Run Program.
+ *      Stop and look at contents of VCUData and check if they match contents of EEPROM bank 7.
+ *
+ */
+
+/* -- Added by jjkhan */
 
 uint8 i;
 char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
@@ -203,6 +221,7 @@ void main(void)
 /*********************************************************************************
  *                          freeRTOS SOFTWARE TIMER SETUP
  *********************************************************************************/
+
     xTimers[0] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
              kernel. */
@@ -299,7 +318,7 @@ void main(void)
         while(1);
     }
 
-
+    /*
     if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  150, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
@@ -316,7 +335,7 @@ void main(void)
         sciSend(PC_UART,23,(unsigned char*)"SensorReadTask Creation Failed.\r\n");
         while(1);
     }
-
+    */
 
     if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  150, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
     {
@@ -334,13 +353,15 @@ void main(void)
         while(1);
     }
 
+    /* ++ Added by jjkhan */
 
-    if (xTaskCreate(vEeprom, (const char*)"EepromTask",  150, NULL,  tskIDLE_PRIORITY+2, &eepromHandler) != pdTRUE)
+    if (xTaskCreate(vEeprom, (const char*)"EepromTask",  150, NULL,  tskIDLE_PRIORITY, &eepromHandler) != pdTRUE)
     {
             uint8 message[]="EEPROM task Creation Failed.\r\n";
             sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
             while(1);
     }
+    /* -- Added by jjkhan */
 
     // all tasks have been created successfully
     UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
