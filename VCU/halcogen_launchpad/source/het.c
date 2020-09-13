@@ -1021,7 +1021,7 @@ static const hetINSTRUCTION_t het1PROGRAM[58U] =
         /* Control */
         (0x00020007U | (uint32)((uint32)1U << 22U) | (uint32)((uint32)30U << 8U) | (uint32)((uint32)3U << 3U)),
         /* Data */
-        80000128U,
+        15200128U,
         /* Reserved */
         0x00000000U
     },
@@ -1038,7 +1038,7 @@ static const hetINSTRUCTION_t het1PROGRAM[58U] =
         /* Control */
         (0x0006E007U),
         /* Data */
-        159999872U,
+        15999872U,
         /* Reserved */
         0x00000000U
     },
@@ -1112,7 +1112,7 @@ void hetInit(void)
 
     /** - Set HET pins direction */
     hetREG1->DIR = (uint32) 0x00000000U
-                 | (uint32) 0x00000000U
+                 | (uint32) 0x40000000U
                  | (uint32) 0x00000000U
                  | (uint32) 0x00000000U
                  | (uint32) 0x00000000U

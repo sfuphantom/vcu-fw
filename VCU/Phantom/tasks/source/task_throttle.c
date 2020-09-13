@@ -103,9 +103,9 @@ void vThrottleTask(void *pvParameters){
         adcStartConversion(adcREG1, adcGROUP1);
         while(!adcIsConversionComplete(adcREG1, adcGROUP1));
         adcGetData(adcREG1, 1U, FP_data_ptr);
-        BSE_sensor_sum = (unsigned int)FP_data[0].value;
-        FP_sensor_1_sum = (unsigned int)FP_data[1].value;
-        FP_sensor_2_sum = (unsigned int)FP_data[2].value;
+        BSE_sensor_sum = (unsigned int)FP_data[0].value; // ADC pin 19?
+        FP_sensor_1_sum = (unsigned int)FP_data[1].value; // ADC pin 20?
+        FP_sensor_2_sum = (unsigned int)FP_data[2].value; // ADC pin 21?
 
 
 

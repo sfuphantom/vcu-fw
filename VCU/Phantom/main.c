@@ -166,12 +166,12 @@ int main(void)
     gioInit();
     adcInit();
     hetInit();
-    pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER); // stop the ready to drive buzzer PWM from starting automatically
-
-    // turn off RGB LEDs
-    pwmStart(RGB_LED_PORT, BLUE_LED); // blue
-    pwmStart(RGB_LED_PORT, GREEN_LED); // green
-    pwmStart(RGB_LED_PORT, RED_LED); // red
+//    pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER); // stop the ready to drive buzzer PWM from starting automatically
+//
+//    // turn off RGB LEDs
+//    pwmStart(RGB_LED_PORT, BLUE_LED); // blue
+//    pwmStart(RGB_LED_PORT, GREEN_LED); // green
+//    pwmStart(RGB_LED_PORT, RED_LED); // red
     // maybe this can be changed in halcogen?
 
     // initialize HET pins ALL to output.. may need to change this later
@@ -284,6 +284,7 @@ int main(void)
 
     // need to do an "if queue != NULL"
 
+
     // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
     if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
     {
@@ -328,6 +329,7 @@ int main(void)
         while(1);
     }
 
+
     // all tasks have been created successfully
     UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
     // will need our own hardware defines file to do this for all the ports and pins we use..
@@ -367,7 +369,7 @@ void gioNotification(gioPORT_t *port, uint32 bit)
                 UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
 
                 // ready to drive buzzer, need to start a 2 second timer here
-                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+//                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
 
                 // reset the 2 second timer to let the buzzer ring for 2 seconds
                 if (xTimerResetFromISR(xTimers[1], xHigherPriorityTaskWoken) != pdPASS)// after 2s the timer will allow the interrupt to toggle the signal again
@@ -401,7 +403,7 @@ void gioNotification(gioPORT_t *port, uint32 bit)
  /* Timer callback when it expires for the ready to drive sound */
  void Timer_2s(TimerHandle_t xTimers)
  {
-     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+//     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
      THROTTLE_AVAILABLE = true;
  }
 
@@ -463,5 +465,4 @@ static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
     configTIMER_TASK_STACK_DEPTH is specified in words, not bytes. */
     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
-
 /* USER CODE END */

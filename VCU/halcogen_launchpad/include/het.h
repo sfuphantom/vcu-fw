@@ -333,7 +333,7 @@ typedef struct het_config_reg
 
 /* Configuration registers initial value for HET1*/
 #define HET1_DIR_CONFIGVALUE     ((uint32)0x00000000U \
-                                | (uint32)0x00000000U \
+                                | (uint32)0x40000000U \
                                 | (uint32)0x00000000U \
                                 | (uint32)0x00000000U \
                                 | (uint32)0x00000000U \
