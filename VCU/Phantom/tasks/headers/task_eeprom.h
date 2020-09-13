@@ -24,10 +24,9 @@
 
 extern TaskHandle_t eepromHandler;
 extern SemaphoreHandle_t vcuKey;
-extern SemaphoreHandle_t powerfailureFlagKey;
 extern data VCUData;
 extern void *pVCUDataStructure;   // Need to define this in main as (void *)pVCUDataStructure = &VCUData
-extern uint8_t powerFailureFlag;  // Need to define this main.c
+
 
 void vEeprom(void *p);
 
