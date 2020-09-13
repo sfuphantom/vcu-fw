@@ -70,6 +70,8 @@ void initData(data* VCUDataPtr)
      *              DIGITAL VALUE INITIALIZATION
      ***********************************************************/
 
+    VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
+
     VCUDataPtr->DigitalVal.RTDS = 1;
     VCUDataPtr->DigitalVal.BMS_FAULT = 1;
     VCUDataPtr->DigitalVal.IMD_FAULT = 1;
@@ -78,8 +80,8 @@ void initData(data* VCUDataPtr)
     VCUDataPtr->DigitalVal.TSAL_FAULT = 1;
     VCUDataPtr->DigitalVal.BSE_FAULT = 0;
     VCUDataPtr->DigitalVal.APPS_FAULT = 0;
+    VCUDataPtr->DigitalVal.POWER_FAILURE_FLAG = 0;  // Added by jjkhan to keep track of last VCU State -> Possible values = '00' or 'FF'. 'FF' -> Last shutdown was not graceful
 
-    VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
 }
 
 
