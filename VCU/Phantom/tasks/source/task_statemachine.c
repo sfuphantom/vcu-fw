@@ -19,7 +19,10 @@
 #include "priorities.h"
 #include "Phantom_sci.h"
 #include "FreeRTOS.h"
+#include "os_projdefs.h"
 
+// Needed the swiSwitchMode defined in here, will moved swiSwitchMode to board_hardware.h
+#include "eeprom_driver.h"
 #include "vcu_data.h" // data structure to hold VCU data
 
 uint32_t blue_duty = 100;
@@ -27,6 +30,14 @@ uint32_t blue_flag = 0;
 
 extern State state;
 
+/* ++ Added by jjkhan - All declarations should be in header file. - move the following declarations to task_statemachine.h */
+/*extern TaskHandle_t eepromHandler;
+extern uint8_t powerFailureFlag;
+extern SemaphoreHandle_t powerfailureFlagKey; */
+
+extern SemaphoreHandle_t vcuKey;
+
+/*  Added by jjkhan */
 /*********************************************************************************
  *                               SYSTEM STATE FLAGS
  *********************************************************************************/
@@ -55,10 +66,20 @@ void vStateMachineTask(void *pvParameters){
 //    int nchars;
 
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 100; // task frequency in ms
+    //const TickType_t xFrequency = 100; // task frequency in ms
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
+
+    /*
+     * ++ Added by jjkhan for Notification result.
+     *
+     * Notification value is 32-bits wide. We're using Bit 0 to send notification to task_eeprom to update Data Block 1.
+     * Data block 1 will store a flag used for deciding load VCUData with default or eeprom.
+     *
+     * */
+
+    /* -- Added by jjkhan for Notification result. */
 
     while(true)
     {
@@ -116,19 +137,33 @@ void vStateMachineTask(void *pvParameters){
             }
 
 
-            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********\r\n");}
+
+            // A '1' indicates Healthy, i.e. no fault. A '0' indicates there is a fault in the particular sub-system. I didn't set this up, will change it later. -Added by jjkhan
             if (VCUDataPtr->DigitalVal.BMS_FAULT == 1 && VCUDataPtr->DigitalVal.IMD_FAULT == 1
-                    && VCUDataPtr->DigitalVal.BSPD_FAULT == 1 && VCUDataPtr->DigitalVal.TSAL_FAULT == 1 && VCUDataPtr->DigitalVal.BSE_FAULT == 0)
+                    && VCUDataPtr->DigitalVal.BSPD_FAULT == 1 && VCUDataPtr->DigitalVal.TSAL_FAULT == 1 && VCUDataPtr->DigitalVal.BSE_FAULT == 0)  // Initially, check if all sub-systems are healthy and no BSE fault. '0' for BSE means healthy. Again, I didn't set this up, will change it to make it more intuitive. - jjkhan
             {
                 // if BMS/IMD/BSPD = 1 then the shutdown circuit is closed
                 // TSAL = 1 indicates that the AIRs have closed
                 // tractive system should now be active
                 state = TRACTIVE_ON;
+                //++ Added by jjkhan
+                if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(200))){ // Wait for 10 milliseconds if the key not available, come back later
+                    VCUDataPtr->DigitalVal.POWER_FAILURE_FLAG = 0;  // Update powerFailureFlag
+                    xSemaphoreGive(vcuKey);
+                }
+                //-- Added by jjkhan
+
             }
             else if (VCUDataPtr->DigitalVal.BSE_FAULT == 1)
             {
                 state = FAULT;
+
             }
+            //++ Added by jjkhan
+            //xTaskNotify(&eepromHandler, (1<<0), eSetBits/*eSetValueWithoutOverwrite*/);  // Notify eeprom task to keep updating Data block 1
+
+            //-- Added by jjkhan
         }
         else if (state == TRACTIVE_ON)
         {
@@ -137,12 +172,19 @@ void vStateMachineTask(void *pvParameters){
             pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue
 
 
-            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********\r\n");}
 
             if (VCUDataPtr->DigitalVal.RTDS == 1)
             {
                 // ready to drive signal is switched
                 state = RUNNING;
+
+                //++ Added by jjkhan
+                if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(200))){ // Wait for 10 milliseconds if the key not available, come back later
+                    VCUDataPtr->DigitalVal.POWER_FAILURE_FLAG = 0;  // Update powerFailureFlag
+                    xSemaphoreGive(vcuKey);
+                }
+                //-- Added by jjkhan
             }
 
             // Mechanism to switch back to tractive off from this state? or into error state?
@@ -153,11 +195,11 @@ void vStateMachineTask(void *pvParameters){
             pwmSetDuty(RGB_LED_PORT, RED_LED, 100U); // red LED
             pwmSetDuty(RGB_LED_PORT, GREEN_LED, 50U); // green LED
 
-            if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********\r\n");}
 
             if (VCUDataPtr->DigitalVal.RTDS == 0)
             {
-                // read to drive signal switched off
+                // read to drive signal switched off -> Update state_machine to  TRACTIVE_ON state first
                 state = TRACTIVE_ON;
             }
             if (VCUDataPtr->DigitalVal.BMS_FAULT == 0 || VCUDataPtr->DigitalVal.IMD_FAULT == 0 || VCUDataPtr->DigitalVal.BSPD_FAULT == 0 || VCUDataPtr->DigitalVal.TSAL_FAULT == 0)
@@ -169,17 +211,26 @@ void vStateMachineTask(void *pvParameters){
         }
         else if (state == FAULT)
         {
+
             pwmSetDuty(RGB_LED_PORT, BLUE_LED, 100U); // blue LED
             pwmSetDuty(RGB_LED_PORT, RED_LED, 50U); // red LED
             pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED
 
-            if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********\r\n");}
             // uhhh turn on a fault LED here??
             // how will we reset out of this?
+
+            //++ Added by jjkhan
+               if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(200))){ // Wait for 10 milliseconds if the key not available, come back later
+                   VCUDataPtr->DigitalVal.POWER_FAILURE_FLAG = 0xFF;  // Update powerFailureFlag
+                   xSemaphoreGive(vcuKey);
+               }
+            //-- Added by jjkhan
 
             if (VCUDataPtr->DigitalVal.BSE_FAULT == 0)
             {
                 state = TRACTIVE_OFF;
+
             }
         }
 
@@ -189,7 +240,7 @@ void vStateMachineTask(void *pvParameters){
         gioSetBit(hetPORT1, 9, 0);
 
         /* Added by jjkhan */
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100)); // A delay of 0.1 seconds -  based on line 66 statement
         /* Added by jjkhan */
 
     }

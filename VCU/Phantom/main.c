@@ -43,7 +43,6 @@
 
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
-#include "eeprom_driver.h"
 
 /* USER CODE END */
 
@@ -108,24 +107,35 @@ data* VCUDataPtr = &VCUData;
 
 /* ++ Added by jjkhan */
 TaskHandle_t eepromHandler = NULL;
+TaskHandle_t stateMachineHandler = NULL;
 SemaphoreHandle_t vcuKey;
+SemaphoreHandle_t powerfailureFlagKey;
 void *pVCUDataStructure = &VCUData;
-uint8_t powerFailureFlag = 0x00;  // this is the powerFailureFlag to be stored in Data Block 1 of eeprom for bootup stage.
 
-/*
- *  For EEPROM Demo: - VCUData initialized from eeprom data.
- *      Format EEPROM bank 7 first -> Change Debug Configurations under Flash Settings.
- *      Set powerFailureFlag = 0xFF -> this value is used for indicating last shutdown was not graceful.
- *      Run program -> what will happen: Data block 1 will have 0xFF, Data block 5 will have the VCUData stored.
- *      Stop Debug
- *      Change Debug Configurations under Flash Settings, do not format EEPROM Bank 7, this will allow previous state to remain.
- *      Change vcu_Data.c to default values.
- *      Enter debug mode.
- *      Add VCUData to watch expression
- *      Run Program.
- *      Stop and look at contents of VCUData and check if they match contents of EEPROM bank 7.
- *
- */
+//++ For testing Purposes - simulating vehicle state change and testing eeprom task.
+TaskHandle_t testingEepromHandler = NULL;
+
+void testEeprom(void *p){
+    TickType_t mylastTickCount;
+    mylastTickCount = xTaskGetTickCount();
+    while(1){
+        if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(100))){
+            VCUDataPtr->DigitalVal.TSAL_FAULT ^= (1<<0);       // Toggle Bit-0
+            xSemaphoreGive(vcuKey);
+        }
+        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(1000));  // Every 1s you toggle the shutdown signal - to check if eeprom is updated or not.
+
+        if(VCUDataPtr->DigitalVal.TSAL_FAULT==0){  // TSAL_FAULT
+            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(100))){
+                VCUDataPtr->DigitalVal.BSE_FAULT = 1;  // Send BSE fault
+                xSemaphoreGive(vcuKey);
+            }
+        }
+        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(10000));  // Every 1s you toggle the shutdown signal - to check if eeprom is updated or not.
+    }
+}
+
+//-- For testing Purposes - simulating vehicle state change and testing eeprom task.
 
 /* -- Added by jjkhan */
 
@@ -203,7 +213,7 @@ void main(void)
 /*********************************************************************************
  *                          VCU DATA STRUCTURE INITIALIZATION
  *********************************************************************************/
-    initData(VCUDataPtr); // maybe i return the data structure here?
+    //initData(VCUDataPtr); // maybe i return the data structure here?
 
 /*********************************************************************************
  *                          PHANTOM LIBRARY INITIALIZATION
@@ -228,7 +238,7 @@ void main(void)
              "RTDS_Timer",
              /* The timer period in ticks, must be
              greater than 0. */
-             pdMS_TO_TICKS(10),
+             pdMS_TO_TICKS(300),
              /* The timers will auto-reload themselves
              when they expire. */
              pdFALSE,
@@ -310,7 +320,7 @@ void main(void)
     // need to do an "if queue != NULL"
 
     // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
-    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  150, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
+    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  200, NULL,  tskIDLE_PRIORITY+2/*STATE_MACHINE_TASK_PRIORITY*/, stateMachineHandler) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
@@ -337,15 +347,17 @@ void main(void)
     }
     */
 
-    if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  150, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
+    /*
+    if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  200, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
         sciSend(PC_UART,23,(unsigned char*)"DataLoggingTask Creation Failed.\r\n");
         while(1);
     }
+    */
 
-    if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  150, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
+    if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  200, NULL, tskIDLE_PRIORITY/*WATCHDOG_TASK_PRIORITY*/, NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
@@ -353,11 +365,20 @@ void main(void)
         while(1);
     }
 
+
     /* ++ Added by jjkhan */
 
-    if (xTaskCreate(vEeprom, (const char*)"EepromTask",  150, NULL,  tskIDLE_PRIORITY, &eepromHandler) != pdTRUE)
+    if (xTaskCreate(vEeprom, (const char*)"EepromTask",  200, NULL,  tskIDLE_PRIORITY, &eepromHandler) != pdTRUE)
     {
             uint8 message[]="EEPROM task Creation Failed.\r\n";
+            sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
+            while(1);
+    }
+
+
+    if (xTaskCreate(testEeprom, (const char*)"testEeprom",  200, NULL,  tskIDLE_PRIORITY+1, &testingEepromHandler) != pdTRUE)
+    {
+            uint8 message[]="Test task Creation Failed.\r\n";
             sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
             while(1);
     }
@@ -404,7 +425,7 @@ void gioNotification(gioPORT_t *port, uint32 bit)
                 pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
 
                 // reset the 2 second timer to let the buzzer ring for 2 seconds
-                if (xTimerResetFromISR(xTimers[1], xHigherPriorityTaskWoken) != pdPASS)// after 2s the timer will allow the interrupt to toggle the signal again
+                if (xTimerResetFromISR(xTimers[1], &xHigherPriorityTaskWoken) != pdPASS)// after 2s the timer will allow the interrupt to toggle the signal again
                 {
                     // timer reset failed
                     UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
@@ -418,7 +439,7 @@ void gioNotification(gioPORT_t *port, uint32 bit)
 //        }
 
         INTERRUPT_AVAILABLE = false;
-        if (xTimerResetFromISR(xTimers[0], xHigherPriorityTaskWoken) != pdPASS)// after 300ms the timer will allow the interrupt to toggle the signal again
+        if (xTimerResetFromISR(xTimers[0], &xHigherPriorityTaskWoken) != pdPASS)// after 300ms the timer will allow the interrupt to toggle the signal again
         {
             // timer reset failed
             UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
