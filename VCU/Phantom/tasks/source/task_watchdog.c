@@ -32,7 +32,7 @@ void vWatchdogTask(void *pvParameters){
 
     // any initialization
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 300; // task frequency in ms
+    // const TickType_t xFrequency = 300; // task frequency in ms
     // watchdog timeout is 1.6 seconds
 
     // Initialize the xLastWakeTime variable with the current time;
