@@ -100,7 +100,7 @@ void vSensorReadTask(void *pvParameters){
 
         // read LV voltage, current
 
-        lv_current = LV_reading(LV_current_register);
+//        lv_current = LV_reading(LV_current_register);
 
         // make sure state machine signal flags are updated
 

@@ -146,7 +146,7 @@ TaskHandle_t testingEepromHandler = NULL;
  *              of VCU at power on.
  *
  *      The testEEprom is using the TSAL_FAULT for entering the FAULT state, but you could use any from BMS, IMD, BSPD, TSAL. It toggles the
- *          fault line every second. This lets you visualize that eeprom bank7 is getting updated periodically as VCU data structure value(s) are getting updated. -> Go to Memory window and open 0xF0200000
+ *          fault line every second. This lets you visualize that eeprom bank7 is getting updated periodically as VCU data structure value(s) are getting updated. -> Go to Memory window and open 0xF020 0000
  *      There is no implementation to get out FAULT state unless the BSE fault line is set, i.e. BSE signals a fault -> needs implementation.
  *      For now, after 10-seconds I introduce BSE fault, which will move VCU out of FAULT state and into TRACTIVE_SYSTEM_OFF -> basically a reset.
  *      Once you've set BSE fault, you can check the VCU data structure contents and then reset the board. On power-on, you should note that based on the value stored in
@@ -388,7 +388,7 @@ void main(void)
         sciSend(PC_UART,23,(unsigned char*)"ThrottleTask Creation Failed.\r\n");
         while(1);
     }
-
+*/
     if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  150, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
@@ -397,7 +397,7 @@ void main(void)
         while(1);
     }
 
-*/
+
     if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  150, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
