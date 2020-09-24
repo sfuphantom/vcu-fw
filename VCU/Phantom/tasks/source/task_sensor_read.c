@@ -19,12 +19,13 @@
 #include "LV_monitor.h"
 #include "vcu_data.h"
 #include "FreeRTOS.h"
-
+#include "Current_transducer.h"
 
 #define TASK_PRINT  0
 
 // change to better data type
 int lv_current = 0;
+float sensor_current = 0.0;     // sensor measures the high current path between battery and inverter
 // will also need one for lv_voltage; we should probably keep this in the vcu data structure?
 
 /*********************************************************************************
@@ -89,6 +90,9 @@ void vSensorReadTask(void *pvParameters){
         // read high voltage
 
         // read HV current
+
+        // read  high current path between battery and inverter
+        sensor_current = voltage_to_current(sensor_voltage);
 
         // IMD data (maybe this needs to be a separate interrupt?)
 
