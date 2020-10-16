@@ -18,7 +18,7 @@
  *********************************************************************************************************************/
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -103,8 +103,8 @@
 #define _PLATFORM_TYPES_H_
 #endif
 #include "F021.h"
-#include <halcogen_vcu/include/hal_stdtypes.h>
-#include <halcogen_vcu/include/Device_types.h>
+#include "hal_stdtypes.h"
+#include "Device_types.h"
 
 #endif /* DEVICE_TMS570LS12x_H */
 

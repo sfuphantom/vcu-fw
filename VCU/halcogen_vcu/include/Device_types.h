@@ -18,7 +18,7 @@
  *********************************************************************************************************************/
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -60,7 +60,7 @@
 #ifndef DEVICE_TYPES_H
 #define DEVICE_TYPES_H
 
-#include <halcogen_vcu/include/hal_stdtypes.h>
+#include "hal_stdtypes.h"
 
 /* Enum to describe the type of error handling on the device */
 typedef enum
