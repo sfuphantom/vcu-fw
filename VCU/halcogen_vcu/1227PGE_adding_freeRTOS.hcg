@@ -245,7 +245,9 @@
       <HDRCAN>
         <NAME>can.h</NAME>
       </HDRCAN>
-      <SRCCAN/>
+      <SRCCAN>
+        <NAME>can.c</NAME>
+      </SRCCAN>
       <HDRADC_R>
         <NAME>reg_adc.h</NAME>
       </HDRADC_R>
@@ -402,6 +404,18 @@
       <SRC14FEE/>
       <SRC15FEE/>
       <SRC16FEE/>
+      <SSWFHDRERRATA>
+        <NAME>errata_SSWF021_45.h</NAME>
+        <PATH>include\errata_SSWF021_45.h</PATH>
+      </SSWFHDRERRATA>
+      <SSWFHDREGERRATA>
+        <NAME>errata_SSWF021_45_defs.h</NAME>
+        <PATH>include\errata_SSWF021_45_defs.h</PATH>
+      </SSWFHDREGERRATA>
+      <SSWFSRCERRATA>
+        <NAME>errata_SSWF021_45.c</NAME>
+        <PATH>source\errata_SSWF021_45.c</PATH>
+      </SSWFSRCERRATA>
     </FILENAMES>
   </SYSTEM>
   <PINMUX>
@@ -504,7 +518,7 @@
         <PATH>include\can.h</PATH>
       </HDRCAN>
       <SRCCAN>
-        <PATH/>
+        <PATH>source\can.c</PATH>
       </SRCCAN>
     </FILENAMES>
   </CAN>

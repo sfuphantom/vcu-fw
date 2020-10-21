@@ -29,6 +29,7 @@
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 #include <stdio.h>
 #include "reg_het.h"
+#include "phantom_can.h"
 
 #include "task_data_logging.h"
 #include "task_sensor_read.h"
@@ -165,6 +166,7 @@ int main(void)
     gioInit();
     adcInit();
     hetInit();
+    canInit();
     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER); // stop the ready to drive buzzer PWM from starting automatically
 
     // turn off RGB LEDs
@@ -190,6 +192,23 @@ int main(void)
 
     // LV monitor library
     lv_monitorInit();
+
+
+// CAN Testing Area
+
+
+
+    CANSend();
+
+    while(1);
+
+
+
+
+
+
+
+
 /*********************************************************************************
  *                          freeRTOS SOFTWARE TIMER SETUP
  *********************************************************************************/
