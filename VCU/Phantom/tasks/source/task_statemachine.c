@@ -117,18 +117,22 @@ void vStateMachineTask(void *pvParameters){
 
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********");}
-            if (VCUDataPtr->DigitalVal.BMS_STATUS == 1 && VCUDataPtr->DigitalVal.IMD_STATUS == 1
-                    && VCUDataPtr->DigitalVal.BSPD_STATUS == 1 && VCUDataPtr->DigitalVal.TSAL_STATUS == 1 && VCUDataPtr->DigitalVal.BSE_FAULT == 0)
+
+             // Check if TSAL is on and no faults detected in the subsystems (BSPD, IMD, BSE, BMS)
+            if (VCUDataPtr->DigitalVal.TSAL_ON == 1 && VCUDataPtr->DigitalVal.BMS_FAULT == 0 && VCUDataPtr->DigitalVal.IMD_FAULT == 0
+                    && VCUDataPtr->DigitalVal.BSPD_FAULT == 0 &&  VCUDataPtr->DigitalVal.BSE_FAULT == 0)
             {
-                // if BMS/IMD/BSPD = 1 then the shutdown circuit is closed
-                // TSAL = 1 indicates that the AIRs have closed
-                // tractive system should now be active
                 state = TRACTIVE_ON;
             }
-            else if (VCUDataPtr->DigitalVal.BSE_FAULT == 1)
+
+            /*
+             *   The following check seems redundant: Based on the state_machine flow chart in google drive.
+             */
+
+            /*else if (VCUDataPtr->DigitalVal.BSE_FAULTY == 1)
             {
                 state = FAULT;
-            }
+            }*/
         }
         else if (state == TRACTIVE_ON)
         {
@@ -139,13 +143,19 @@ void vStateMachineTask(void *pvParameters){
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
 
-            if (VCUDataPtr->DigitalVal.RTDS == 1)
+            if (VCUDataPtr->DigitalVal.RTDS == 1 && VCUDataPtr->DigitalVal.BMS_FAULT == 0 && VCUDataPtr->DigitalVal.IMD_FAULT == 0
+                    && VCUDataPtr->DigitalVal.BSPD_FAULT == 0 &&  VCUDataPtr->DigitalVal.BSE_FAULT == 0  )
             {
-                // ready to drive signal is switched
+                // ready to drive signal is switched on and none of the subsystems reported any faults.
                 state = RUNNING;
+
+            }else if(VCUDataPtr->DigitalVal.BMS_FAULT == 1 || VCUDataPtr->DigitalVal.IMD_FAULT == 1
+                    || VCUDataPtr->DigitalVal.BSPD_FAULT == 1 ||  VCUDataPtr->DigitalVal.BSE_FAULT == 1 ){
+                state = FAULT;
+            }else{
+                state = TRACTIVE_OFF;
             }
 
-            // Mechanism to switch back to tractive off from this state? or into error state?
         }
         else if (state == RUNNING)
         {
@@ -155,12 +165,13 @@ void vStateMachineTask(void *pvParameters){
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
 
-            if (VCUDataPtr->DigitalVal.RTDS == 0)
+            if (VCUDataPtr->DigitalVal.RTDS == 0 && VCUDataPtr->DigitalVal.BMS_FAULT == 0 && VCUDataPtr->DigitalVal.IMD_FAULT == 0
+                    && VCUDataPtr->DigitalVal.BSPD_FAULT == 0 &&  VCUDataPtr->DigitalVal.BSE_FAULT == 0 )
             {
-                // read to drive signal switched off
+                // read to drive signal switched off + no errors detected
                 state = TRACTIVE_ON;
-            }
-            if (VCUDataPtr->DigitalVal.BMS_STATUS == 0 || VCUDataPtr->DigitalVal.IMD_STATUS == 0 || VCUDataPtr->DigitalVal.BSPD_STATUS == 0 || VCUDataPtr->DigitalVal.TSAL_STATUS == 0)
+            }else if (VCUDataPtr->DigitalVal.BMS_FAULT == 1 || VCUDataPtr->DigitalVal.IMD_FAULT == 1
+                    || VCUDataPtr->DigitalVal.BSPD_FAULT == 1 ||  VCUDataPtr->DigitalVal.BSE_FAULT == 1 )
             {
                 // FAULT in shutdown circuit, or AIRs have opened from TSAL
                 state = FAULT;
@@ -177,8 +188,15 @@ void vStateMachineTask(void *pvParameters){
             // uhhh turn on a fault LED here??
             // how will we reset out of this?
 
-            if (VCUDataPtr->DigitalVal.BSE_FAULT == 0)
+               /*
+                *  If the fault was handled + the RTDS not set and the AIRs open, then you can change state to tractive off -> which is the starting state,
+                *  else you will be in fault state  -> this is according to the state machine flow chart.
+                */
+            if (VCUDataPtr->DigitalVal.RTDS == 0 && VCUDataPtr->DigitalVal.TSAL_ON==1 && VCUDataPtr->DigitalVal.BMS_FAULT == 0 && VCUDataPtr->DigitalVal.IMD_FAULT == 0
+                    && VCUDataPtr->DigitalVal.BSPD_FAULT == 0 &&  VCUDataPtr->DigitalVal.BSE_FAULT == 0  )
             {
+                state = TRACTIVE_ON;
+            }else if(VCUDataPtr->DigitalVal.BSE_FAULT == 0 ){
                 state = TRACTIVE_OFF;
             }
         }

@@ -33,16 +33,27 @@ typedef struct analogOutputs
     analogData throttle_percentage;
 } analogOutputs;
 
+/*
+ *   Added by jjkhan:
+ *                  XXX_FAULT = 1 -> System is not healthy/fault detected.
+ *                  XXX_FAULT = 0 -> System is healthy/No fault.
+ *
+ *                  TSAL_ON = 1 -> Tractive System Active Light is on  (AIRs closed)
+ *                  TSAL_ON = 0 -> Tractive System Active Light is off.(AIRs open)
+ *
+ *                  RTDS = 1 -> Ready To Drive is Set
+ *                  RTDS = 0 -> Ready To Driver is not Set
+ */
+
 typedef struct digitalValues
 {
-    uint8_t RTDS;               // if 1, ready to drive is set, if 0 then not ready to drive
-    uint8_t BMS_STATUS;         // if 1, then BMS is healthy, if 0 then BMS fault
-    uint8_t IMD_STATUS;         // if 1, then IMD is healthy, if 0 then IMD fault
-    uint8_t BSPD_STATUS;        // if 1, then BSPD is healthy, if 0 then BSPD fault
-
-    uint8_t TSAL_STATUS;        // if 1, then TSAL is on and AIRs are closed, if 0 then TSAL is off and AIRs should be open
-    uint8_t BSE_FAULT;          // if 0, then BSE is healthy, if 1 then BSE fault
-    uint8_t APPS_FAULT;         // if 0, then APPS is healthy, if 1 then APPS fault
+    uint8_t TSAL_ON;
+    uint8_t RTDS;
+    uint8_t BMS_FAULT;
+    uint8_t IMD_FAULT;
+    uint8_t BSPD_FAULT;
+    uint8_t BSE_FAULT;
+    uint8_t APPS_FAULT;
 
     // many other faults..
 } digitalValues;
