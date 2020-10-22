@@ -13,6 +13,7 @@
 void CANSend();
 void sendVoltageArray();
 void sendFloat(float val);
+void delayms(int ms);
 
 struct Queue* queue;
 struct Queue* createQueue(unsigned capacity);

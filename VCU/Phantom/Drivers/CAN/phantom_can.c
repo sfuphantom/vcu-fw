@@ -76,15 +76,20 @@ void sendVoltageArray() // need to package it so that it sends 4 values in 1 mes
                           1, 2, 3, 4, 5, 6, 7, 8, 9, 5,
                           1, 2, 3, 4, 5, 6, 7, 8, 9, 5,
                           1, 2, 3, 4, 5, 6, 7, 8, 9, 5};
-    int i, clk;
+    int i;
     for (i = 0; i < 40; i++)
     {
         sendFloat(voltArr[i]);
-        for (clk = 0; clk < 5000000; clk++); // Min 5000 or else breaks it
+        delayms(100);
+//        for (clk = 0; clk < 5000000; clk++); // Min 5000 or else breaks it\
+        // VCU code skips over the time delay
     }
+}
 
-
-
+void delayms(int ms) {
+      volatile unsigned int delayval;
+      delayval = ms * 8400;   // 8400 are about 1ms
+      while(delayval--);
 }
 
 void sendFloat(float val)
@@ -100,7 +105,7 @@ void sendFloat(float val)
     int j = 0;
     for (j = 0; j < D_COUNT; j++)
     {
-        canTransmit(canREG1, canMESSAGE_BOX2, tx_ptr2); // technically it wants 8 bit but it works
+        canTransmit(canREG1, canMESSAGE_BOX8, tx_ptr2); // technically it wants 8 bit but it works
         tx_ptr2 += 16; /* next chunk ...*/
     }
 }

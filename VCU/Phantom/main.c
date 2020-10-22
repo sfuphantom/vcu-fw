@@ -193,13 +193,12 @@ int main(void)
     // LV monitor library
     lv_monitorInit();
 
-
+// ---------------------------
 // CAN Testing Area
+// ---------------------------
 
-
-
-    CANSend();
-
+//    CANSend();
+    sendVoltageArray();
     while(1);
 
 
