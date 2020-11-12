@@ -22,7 +22,7 @@ float IpLow;
 float IpHigh;
 bool flag ;
 
-flag = false;
+
 float voltage_to_current(const float voltage);
 
 #endif /* PHANTOM_DRIVERS_CURRENT_TRANSDUCER_CURRENT_TRANSDUCER_H_ */
