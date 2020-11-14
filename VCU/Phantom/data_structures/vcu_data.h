@@ -40,9 +40,14 @@ typedef struct digitalValues
     uint8_t IMD_STATUS;         // if 1, then IMD is healthy, if 0 then IMD fault
     uint8_t BSPD_STATUS;        // if 1, then BSPD is healthy, if 0 then BSPD fault
 
-    uint8_t TSAL_STATUS;        // if 1, then TSAL is on and AIRs are closed, if 0 then TSAL is off and AIRs should be open
-    uint8_t BSE_FAULT;          // if 0, then BSE is healthy, if 1 then BSE fault
-    uint8_t APPS_FAULT;         // if 0, then APPS is healthy, if 1 then APPS fault
+    uint8_t TSAL_STATUS;                        // if 1, then TSAL is on and AIRs are closed, if 0 then TSAL is off and AIRs should be open
+    uint8_t BSE_FAULT;                          // if 0, then BSE is healthy, if 1 then BSE fault
+    uint8_t BSE_SEVERE_RANGE_FAULT;             // if 0, then BSE is healthy, if 1 then BSE fault - jaypacamarra
+    uint8_t BSE_APPS_MINOR_SIMULTANEOUS_FAULT;  // if 0, then brake&accelerator NOT pressed together, if 1 then brake&accelerator pressed together - jaypacamarra
+    uint8_t APPS_SEVERE_10DIFF_FAULT;           // if 0, then APPS is healthy, if 1 then APPS fault - jaypacamarra
+    uint8_t APPS1_SEVERE_RANGE_FAULT;           // if 0, then APPS is healthy, if 1 then APPS fault - jaypacamarra
+    uint8_t APPS2_SEVERE_RANGE_FAULT;           // if 0, then APPS is healthy, if 1 then APPS fault - jaypacamarra
+    uint8_t APPS_FAULT;                         // if 0, then APPS is healthy, if 1 then APPS fault
 
     // many other faults..
 } digitalValues;

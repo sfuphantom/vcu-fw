@@ -46,7 +46,12 @@ void initData(data* VCUDataPtr)
     VCUDataPtr->DigitalVal.BSPD_STATUS = 1;
 
     VCUDataPtr->DigitalVal.TSAL_STATUS = 1;
+    VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
     VCUDataPtr->DigitalVal.BSE_FAULT = 0;
+    VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
+    VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0;
+    VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
+    VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
     VCUDataPtr->DigitalVal.APPS_FAULT = 0;
 
     VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
