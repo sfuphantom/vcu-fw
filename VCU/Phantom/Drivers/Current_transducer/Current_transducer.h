@@ -27,7 +27,7 @@ double sensor_voltage = 0.0;  // sensor voltage range 0 to 5V
 double output_current = 0.0;
 
 // methods
-double voltage_to_current();
+double read_HVsensor();
 bool isHVcurrent_inRange(); // Fault check method
 
 #endif /* PHANTOM_DRIVERS_CURRENT_TRANSDUCER_CURRENT_TRANSDUCER_H_ */

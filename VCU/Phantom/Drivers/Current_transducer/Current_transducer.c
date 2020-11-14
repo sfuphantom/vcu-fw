@@ -10,7 +10,7 @@
 #include "adc.h"
 #include "stdlib.h"
 
-double voltage_to_current()
+double read_HVsensor()
 {
     adcData_t adc_data;   // ADC data structure
     adcData_t *adc_data_ptr = &adc_data;  // ADC data pointer
