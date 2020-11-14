@@ -87,12 +87,23 @@ void vSensorReadTask(void *pvParameters){
 
         if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
 //        UARTSend(scilinREG, xTaskGetTickCount());
-        // read high voltage
 
-        // read HV current
+        //get HVcurrent sensor readings -rafguevara14
+        double HVcurrent = read_HVsensor();
 
-        // read  high current path between battery and inverter
-        sensor_current = voltage_to_current(sensor_voltage);
+        //store voltage and current values into analogInputs struct
+        analogInputs.currentHV_A = HVcurrent;
+        //need voltage readings
+
+        //OUT OF RANGE ERROR
+        digitalValues.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
+
+        //APPS PROPORTIONALITY ERROR
+
+            //call Jay’s function for Torque Plausibility Check and update HVflags
+
+            //update HV flags accordingly
+
 
         // IMD data (maybe this needs to be a separate interrupt?)
 
