@@ -20,9 +20,14 @@ typedef int bool;
 // global variables for Ip(lower limit) and Ip(upper limit)
 float IpLow;
 float IpHigh;
-bool flag ;
+bool flag ; // fault check for exceeding current level
+unsigned int max_voltage = 5;
+unsigned int adc_resolution = 4096;
+double sensor_voltage = 0.0;  // sensor voltage range 0 to 5V
+double output_current = 0.0;
 
-
-float voltage_to_current(const float voltage);
+// methods
+double voltage_to_current();
+bool isHVcurrent_inRange(); // Fault check method
 
 #endif /* PHANTOM_DRIVERS_CURRENT_TRANSDUCER_CURRENT_TRANSDUCER_H_ */

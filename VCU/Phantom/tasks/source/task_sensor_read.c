@@ -27,10 +27,6 @@
 int lv_current = 0;
 double sensor_current = 0.0;     // sensor measures the high current path between battery and inverter
 
-adcData_t adc_data;   // ADC data structure
-adcData_t *adc_data_ptr = &adc_data;  // ADC data pointer
-unsigned int NumberOfChars1, value; // declare variables
-double sensor_voltage;
 
 
 // will also need one for lv_voltage; we should probably keep this in the vcu data structure?
@@ -99,17 +95,9 @@ void vSensorReadTask(void *pvParameters){
         // read HV current
 
 
-       sciInit();   // Initialize the SCI(UART)module
-       adcInit();   // Initialize the ADC module
-
-        adcStartConversion(adcREG1, 1U);  // Start ADC conversion
-        while(!adcIsConversionComplete(adcREG1, 1U)); //Wait for ADC conversion
-        adcGetData(adcREG1, 1U, adc_data_ptr); //Store conversion into ADC pointer
-        value = (unsigned int)adc_data_ptr->value;
-        sensor_voltage = ((value/4096)*3.3);
 
         // read  high current path between battery and inverter
-        sensor_current = voltage_to_current(sensor_voltage);
+        sensor_current = voltage_to_current();
 
         // IMD data (maybe this needs to be a separate interrupt?)
 
