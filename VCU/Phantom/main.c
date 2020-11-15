@@ -31,13 +31,12 @@
 #include <stdio.h>
 #include "reg_het.h"
 
-#include "task_data_logging.h"
-#include "task_sensor_read.h"
-#include "task_statemachine.h"
-#include "task_throttle.h"
-#include "task_watchdog.h"
-
-#include "priorities.h" // holds the task priorities
+//#include "task_data_logging.h"
+//#include "task_sensor_read.h"
+//#include "task_statemachine.h"
+//#include "task_throttle.h"
+//#include "task_watchdog.h"
+#include "phantom_freertos.h"  // contains functions for freertos startup, timer setup, and task creation
 
 #include "vcu_data.h" // holds VCU data structure
 
@@ -55,46 +54,18 @@
 
 /* USER CODE BEGIN (2) */
 
-/*********************************************************************************
- *                          TASK HEADER DECLARATIONS
- *********************************************************************************/
-//static void vStateMachineTask(void *);  // This task will evaluate the state machine and decide whether or not to change states
-//static void vSensorReadTask(void *);    // This task will read all the sensors in the vehicle (except for the APPS which requires more critical response)
-//static void vThrottleTask(void *);      // This task reads the APPS, performs signal plausibility, and controls the inverter through a DAC
-//static void vDataLoggingTask(void *);   // This task will send any important data over CAN to the dashboard for logging onto the SD card
-//static void vWatchdogTask(void *);      // This task will monitor all the threads and make sure they are all running, if not (code hangs/freezes or task doesn't get run)
-                                        // it will fail to pet the watchdog and the watchdog timer will reset the MCU
 
-// task handle creation??? shouldn't they need to be passed into the xTaskCreate function?
-
-/*********************************************************************************
- *                          SOFTWARE TIMER INITIALIZATION
- *********************************************************************************/
-#define NUMBER_OF_TIMERS   2
+bool INTERRUPT_AVAILABLE;
+bool THROTTLE_AVAILABLE;
 
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
-
-/* This timer is used to debounce the interrupts for the RTDS and SDC signals */
-bool INTERRUPT_AVAILABLE = true;
-bool THROTTLE_AVAILABLE = false; // used to only enable throttle after the buzzer has gone for 2 seconds
-
-void Timer_300ms(TimerHandle_t xTimers);
-void Timer_2s(TimerHandle_t xTimers);
 
 /*********************************************************************************
  *                          STATE ENUMERATION
  *********************************************************************************/
 //typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
 State state = TRACTIVE_OFF;
-
-/*********************************************************************************
- *                          QUEUE HANDLE CREATION
- *********************************************************************************/
-xQueueHandle VCUDataQueue;
-/*********************************************************************************
- *                          GLOBAL VARIABLE DECLARATIONS
- *********************************************************************************/
 
 /*********************************************************************************
  *                          INITIALIZE DATA STRUCTURE...
@@ -147,7 +118,6 @@ uint16 FP_sensor_2_percentage;
 uint16 FP_sensor_diff;
 
 
-
 // change to better data type
 //int lv_current = 0;
 
@@ -166,6 +136,8 @@ int main(void)
     gioInit();
     adcInit();
     hetInit();
+
+
 //    pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER); // stop the ready to drive buzzer PWM from starting automatically
 //
 //    // turn off RGB LEDs
@@ -177,164 +149,20 @@ int main(void)
     // initialize HET pins ALL to output.. may need to change this later
 //    gioSetDirection(hetPORT1, 0xFFFFFFFF);
 
-/*********************************************************************************
- *                          VCU DATA STRUCTURE INITIALIZATION
- *********************************************************************************/
+
     initData(VCUDataPtr); // maybe i return the data structure here?
 
-/*********************************************************************************
- *                          PHANTOM LIBRARY INITIALIZATION
- *********************************************************************************/
     //using MCP48FV Library
     MCP48FV_Init();
 //    MCP48FV_Set_Value(400);//500 =5.00V, 250= 2.5V
 
-    // LV monitor library
-//    lv_monitorInit();
 
-    // IMD Library
-    initializeIMD();
-/*********************************************************************************
- *                          freeRTOS SOFTWARE TIMER SETUP
- *********************************************************************************/
-    xTimers[0] = xTimerCreate
-            ( /* Just a text name, not used by the RTOS
-             kernel. */
-             "RTDS_Timer",
-             /* The timer period in ticks, must be
-             greater than 0. */
-             pdMS_TO_TICKS(10),
-             /* The timers will auto-reload themselves
-             when they expire. */
-             pdFALSE,
-             /* The ID is used to store a count of the
-             number of times the timer has expired, which
-             is initialised to 0. */
-             ( void * ) 0,
-             /* Callback function for when the timer expires*/
-             Timer_300ms
-           );
-
-    xTimers[1] = xTimerCreate
-            ( /* Just a text name, not used by the RTOS
-             kernel. */
-             "RTDS_Timer",
-             /* The timer period in ticks, must be
-             greater than 0. */
-             pdMS_TO_TICKS(2000),
-             /* The timers will auto-reload themselves
-             when they expire. */
-             pdFALSE,
-             /* The ID is used to store a count of the
-             number of times the timer has expired, which
-             is initialised to 0. */
-             ( void * ) 0,
-             /* Callback function for when the timer expires*/
-             Timer_2s
-           );
+//    lv_monitorInit();   // LV monitor library
 
 
-    // with more timers being added it's more worth it to do a for loop for initializing each one here at the start
+    initializeIMD();     // IMD Library
 
-    if( xTimers[0] == NULL )
-    {
-         /* The timer was not created. */
-        UARTSend(PC_UART, "The timer was not created.\r\n");
-    }
-    else
-    {
-         /* Start the timer.  No block time is specified, and
-         even if one was it would be ignored because the RTOS
-         scheduler has not yet been started. */
-         if( xTimerStart( xTimers[0], 0 ) != pdPASS )
-         {
-             /* The timer could not be set into the Active
-             state. */
-             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
-         }
-    }
-
-    if( xTimers[1] == NULL )
-    {
-         /* The timer was not created. */
-        UARTSend(PC_UART, "The timer was not created.\r\n");
-    }
-    else
-    {
-         /* Start the timer.  No block time is specified, and
-         even if one was it would be ignored because the RTOS
-         scheduler has not yet been started. */
-         if( xTimerStart( xTimers[1], 0 ) != pdPASS )
-         {
-             /* The timer could not be set into the Active
-             state. */
-             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
-         }
-    }
-/*********************************************************************************
- *                          freeRTOS TASK & QUEUE CREATION
- *********************************************************************************/
-
-    // create a freeRTOS queue to pass data between tasks
-    // this will be useful when passing the VCU data structure in between different tasks
-
-    VCUDataQueue = xQueueCreate(5, sizeof(long)); // what does this 5 mean?
-
-    // can I already shove the VCU data structure into here? or do i need to do that within a task
-
-    // need to do an "if queue != NULL"
-
-
-    // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
-    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"StateMachineTask Creation Failed.\r\n");
-        while(1);
-    }
-
-
-    if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  240, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"ThrottleTask Creation Failed.\r\n");
-        while(1);
-    }
-
-
-    if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  240, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"SensorReadTask Creation Failed.\r\n");
-        while(1);
-    }
-
-
-    if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  240, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"DataLoggingTask Creation Failed.\r\n");
-        while(1);
-    }
-
-    if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  240, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"WatchdogTask Creation Failed.\r\n");
-        while(1);
-    }
-
-
-    // all tasks have been created successfully
-    UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
-    // will need our own hardware defines file to do this for all the ports and pins we use..
-    // will need to be different based on the launchpad or VCU being used. This can be changed via build configurations
-    // so one build has all the right files/linker included, right debugger, right MCU
+    phantom_freeRTOSInit();
 
     // start freeRTOS task scheduler
     vTaskStartScheduler();
@@ -348,7 +176,7 @@ int main(void)
 /* USER CODE BEGIN (4) */
 
 /*********************************************************************************
- *                          freeRTOS TASK IMPLEMENTATIONS
+ *                          READY TO DRIVE SIGNAL INTERRUPT
  *********************************************************************************/
 void gioNotification(gioPORT_t *port, uint32 bit)
 {
@@ -394,16 +222,4 @@ void gioNotification(gioPORT_t *port, uint32 bit)
     }
 }
 
-/* Timer callback when it expires */
- void Timer_300ms(TimerHandle_t xTimers)
- {
-     INTERRUPT_AVAILABLE = true;
- }
-
- /* Timer callback when it expires for the ready to drive sound */
- void Timer_2s(TimerHandle_t xTimers)
- {
-//     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
-     THROTTLE_AVAILABLE = true;
- }
 /* USER CODE END */

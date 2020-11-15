@@ -239,6 +239,7 @@
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/DAC_SPI}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/LV_Monitor_I2C}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/IMD}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/RTOS}"/>
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.PREINCLUDE.1259365304" name="Specify a preinclude file (--preinclude)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.PREINCLUDE" valueType="includeFiles"/>
 								<inputType id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compiler.inputType__C_SRCS.197849188" name="C Sources" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compiler.inputType__C_SRCS"/>
