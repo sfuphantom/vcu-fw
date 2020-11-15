@@ -88,12 +88,9 @@ void vSensorReadTask(void *pvParameters){
         if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
 //        UARTSend(scilinREG, xTaskGetTickCount());
 
-        //get HVcurrent sensor readings -rafguevara14
-        double HVcurrent = read_HVsensor();
-
-        //store voltage and current values into analogInputs struct
-        analogInputs.currentHV_A = HVcurrent;
-        //need voltage readings
+        //get and store voltage and current values into analogInputs struct -rafguevara14
+        analogInputs.voltageHV_V = getHVsensorVoltage();
+        analogInputs.currentHV_A = getHVsensorCurrent();
 
         //OUT OF RANGE ERROR
         digitalValues.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
@@ -103,7 +100,6 @@ void vSensorReadTask(void *pvParameters){
             //call Jay’s function for Torque Plausibility Check and update HVflags
 
             //update HV flags accordingly
-
 
         // IMD data (maybe this needs to be a separate interrupt?)
 
