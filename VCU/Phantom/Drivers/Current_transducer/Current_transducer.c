@@ -10,7 +10,7 @@
 #include "adc.h"
 #include "stdlib.h"
 
-double read_HVsensor()
+double getHVsensorVoltage()
 {
     adcData_t adc_data;   // ADC data structure
     adcData_t *adc_data_ptr = &adc_data;  // ADC data pointer
@@ -26,8 +26,13 @@ double read_HVsensor()
     value = (unsigned int)adc_data_ptr->value;
     sensor_voltage = ((value/adc_resolution)*max_voltage);
 
-   // if(voltage < Uref){     // negative current
-   // if(voltage > Uref){     // positive current
+    return sensor_voltage;
+}
+
+double getHVsensorCurrent()
+{
+    // if(voltage < Uref){     // negative current
+    // if(voltage > Uref){     // positive current
     output_current  = (sensor_voltage - Uref)*I_PN/1.25 ;
 
     return output_current;
