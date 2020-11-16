@@ -189,7 +189,7 @@ int main(void)
 //    MCP48FV_Set_Value(400);//500 =5.00V, 250= 2.5V
 
     // LV monitor library
-    lv_monitorInit();
+    //lv_monitorInit(); commented this - jaypacamarra
 /*********************************************************************************
  *                          freeRTOS SOFTWARE TIMER SETUP
  *********************************************************************************/

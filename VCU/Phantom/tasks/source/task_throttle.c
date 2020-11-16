@@ -12,6 +12,7 @@
 #include "os_semphr.h"
 #include "os_task.h"
 #include "os_timer.h"
+#include "task_throttle.h" //jaypacamarra
 
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 
@@ -102,37 +103,71 @@ void vThrottleTask(void *pvParameters){
 
         adcStartConversion(adcREG1, adcGROUP1);
         while(!adcIsConversionComplete(adcREG1, adcGROUP1));
-        adcGetData(adcREG1, 1U, FP_data_ptr);
+        adcGetData(adcREG1, adcGROUP1, FP_data_ptr);
         BSE_sensor_sum = (unsigned int)FP_data[0].value;
         FP_sensor_1_sum = (unsigned int)FP_data[1].value;
         FP_sensor_2_sum = (unsigned int)FP_data[2].value;
 
 
+        // check for short to GND/5V on APPS sensor 1
+        if (FP_sensor_1_sum < APPS1_MIN_VALUE)
+        {
+            // if it's less than 1.5V, then assume shorted to GND as this is not normal range
+            VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
+        }
+        else if(FP_sensor_1_sum > APPS1_MAX_VALUE)
+        {
+            // if it's greater than 4.4V, then assume shorted to 5V as this is not normal range
+            VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
+        }
+        else
+        {
+            // should be in normal range
+            VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
+        }
 
 
-        // check for short to GND/5V on sensor 1
-        // thresholds
 
-        // check for short to GND/3V3 on sensor 2
-        // thresholds
+        // check for short to GND/3V3 on APPS sensor 2
+        if (FP_sensor_2_sum < APPS2_MIN_VALUE)
+        {
+            // if it's less than 0.5V, then assume shorted to GND as this is not normal range
+            VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
+        }
+        else if(FP_sensor_2_sum > APPS2_MAX_VALUE)
+        {
+            // if it's greater than 1.5V, then assume shorted to 5V as this is not normal range
+            VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
+        }
+        else
+        {
+            // should be in normal range
+            VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
+        }
+
+
+
 
         // check for short to GND/5V on BSE
         if (BSE_sensor_sum < BSE_MIN_VALUE)
         {
             // if it's less than 0.5V, then assume shorted to GND as this is not normal range
-            VCUDataPtr->DigitalVal.BSE_FAULT = 1;
+            VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
 
         }
         else if (BSE_sensor_sum > BSE_MAX_VALUE) // change from magic number to a #define BSE_MAX_VALUE
         {
             // if it's greater than 4.5V, then assume shorted to 5V as this is not normal range
-            VCUDataPtr->DigitalVal.BSE_FAULT = 1;
+            VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
         }
         else
         {
             // should be in normal range
-            VCUDataPtr->DigitalVal.BSE_FAULT = 0;
+            VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
         }
+
+
+
 
         // moving average signal conditioning.. worth it to graph this out and find a good filter time constant
 //        FP_sensor_1_avg = FP_sensor_1_sum/10;
