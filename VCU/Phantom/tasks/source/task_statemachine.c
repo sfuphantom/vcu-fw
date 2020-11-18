@@ -512,7 +512,7 @@ void vStateMachineTask(void *pvParameters){
 
                 /*
                  *  Initially change the state, now as we go through the process of checking every source of Fault, at the end if we find no fault (i.e. no MINOR_FAULT - because SEVERE_FAULT will yeild this task), then we can check if:
-                                1) TSAL is on AND 2) RTDS is still set -> if 1) and 2) are true then we go back to TRACTIVE_ON, else go to TRACTIVE_OFF.
+                                1) TSAL is on (should be- but just to be sure) AND 2) RTDS is still set -> if 1) and 2) are true then we go back to RUNNING, else go to TRACTIVE_ON if TSAL__ON and RTDS = 0, else TRACTIVE_OFF.
                  */
                 state = TRACTIVE_ON;
                 uint32_t faultNumber = faultLocation();
@@ -587,14 +587,10 @@ void vStateMachineTask(void *pvParameters){
                      * Pedal position not corresponding to the amount of current drawn from battery
                      */
 
-                    if(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){
+                     if(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){
+                         state = MINOR_FAULT; // previous fault checks have a MINOR_FAULT, can't ignore it
+                     }
 
-                        if(isRTDS() && (state!=MINOR_FAULT)){ // Check if RTDS is set and previous fault checks didn't give MINOR_FAULT
-                            state = TRACTIVE_ON;
-                        }else{
-                            state = MINOR_FAULT; // previous fault checks have a MINOR_FAULT, can't ignore it
-                        }
-                    }
 
                 }
                  // Check CAN Faults
@@ -613,30 +609,19 @@ void vStateMachineTask(void *pvParameters){
 
            // Checked for all Faults above and now if no MINOR_FAULTS were found, then we can move back to TRACTIVE_ON if RTDS is on and TSAL is ON, else we go to TRACTIVE_OFF; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
 
-            if(state==TRACTIVE_ON){
+            if(state!=MINOR_FAULT){
+                if(isRTDS() && isTSAL_ON()){  // RTDS =1 and HV present
+                    state = RUNNING;
+                }else if(!isRTDS() && isTSAL_ON()){ // RTDS = 0 but HV present
+                    state = TRACTIVE_ON;
+                }else{  // RTDS = 0 and HV not present
+                    state = TRACTIVE_OFF;
+                }
 
+            }else{ // We could check if RTDS is still ON here despite being in MINOR_FAULT??
+                state = MINOR_FAULT;
             }
 
-
-
-
-
-
-            // uhhh turn on a fault LED here??
-            // how will we reset out of this?
-
-               /*
-                *  If the fault was handled + the RTDS not set and the AIRs open, then you can change state to tractive off -> which is the starting state,
-                *  else you will be in fault state  -> this is according to the state machine flow chart.
-
-            if (VCUDataPtr->DigitalVal.RTDS == 0 && VCUDataPtr->DigitalVal.TSAL_ON==1 && VCUDataPtr->DigitalVal.BMS_FAULT == 0 && VCUDataPtr->DigitalVal.IMD_FAULT == 0
-                    && VCUDataPtr->DigitalVal.BSPD_FAULT == 0 &&  VCUDataPtr->DigitalVal.BSE_FAULT == 0  )
-            {
-                state = TRACTIVE_ON;
-            }else if(VCUDataPtr->DigitalVal.BSE_FAULT == 0 ){
-                state = TRACTIVE_OFF;
-            }
-            */
         }else if(state==SEVERE_FAULT){
 
             if(anyFaults()){
