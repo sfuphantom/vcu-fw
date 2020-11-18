@@ -83,7 +83,7 @@ typedef struct digitalValues
     /* CAN Error Messages. */
 
     uint8_t CAN_ERROR_TYPE1; // Severe Error reported by CAN
-    uint8_t CAN_ERRO_TYPE2;  // Minor Errot Reported by CAN
+    uint8_t CAN_ERROR_TYPE2;  // Minor Errot Reported by CAN
 
     /* LV Current Sensor & Voltage Sensor- Faults */
     uint8_t LV_CURRENT_OUT_OF_RANGE;
@@ -93,6 +93,7 @@ typedef struct digitalValues
     uint8_t IMD_LOW_ISO_FAULT;
     uint8_t IMD_SHORT_CIRCUIT_FAULT;
     uint8_t IMD_DEVICE_ERR_FAULT;
+    uint8_t IMD_BAD_INFO_FAULT;
     uint8_t IMD_UNDEF_ERR;
     uint8_t IMD_GARBAGE_DATA_FAULT;
 
