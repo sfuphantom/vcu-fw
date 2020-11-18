@@ -470,12 +470,7 @@ void vStateMachineTask(void *pvParameters){
                             */
 
                            if(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){
-
-                               if(isRTDS() && (state!=MINOR_FAULT)){ // Check if RTDS is set and previous fault checks didn't give MINOR_FAULT
-                                   state = TRACTIVE_ON;
-                               }else{
                                    state = MINOR_FAULT; // previous fault checks have a MINOR_FAULT, can't ignore it
-                               }
                            }
 
                        }
@@ -495,9 +490,9 @@ void vStateMachineTask(void *pvParameters){
 
             // Checked for all Faults above and now its either: 1) there were MINOR_FAULTS detected or  2) RTDS was flipped to off; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
 
-            if(!isRTDS() && state==MINOR_FAULT){
+            if(isRTDS() && state==MINOR_FAULT){
                 state = MINOR_FAULT;
-            }else{
+            }else if(!isRTDS()){
                 state=TRACTIVE_ON; // Ready To Drive Is Not Set and there were no MINOR_FAULTS, go back to TRACTIVE_ON
             }
 
@@ -512,10 +507,116 @@ void vStateMachineTask(void *pvParameters){
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********");}
 
-            // Check if the possible MINOR faults have cleared.
+            // Check if faults have been cleared -> Could run the same fault checking scenario above.
             if(anyFaults()){
 
+                /*
+                 *  Initially change the state, now as we go through the process of checking every source of Fault, at the end if we find no fault (i.e. no MINOR_FAULT - because SEVERE_FAULT will yeild this task), then we can check if:
+                                1) TSAL is on AND 2) RTDS is still set -> if 1) and 2) are true then we go back to TRACTIVE_ON, else go to TRACTIVE_OFF.
+                 */
+                state = TRACTIVE_ON;
+                uint32_t faultNumber = faultLocation();
+
+                /* ++ Will move all of this inside function faultLocation, after unit-testing -> Each state can call this function, parameters - "State faultLocation(currentState,timer1_started, timer1, timer2_started, timer2)" */
+                // Check SDC Faults
+                if(faultNumber && (1<<SDC_FAULT)){ // Shutdown Circuit Fault - its Severe so don't need to check other faults
+                    state = SEVERE_FAULT;
+                    taskYIELD();
+                }
+                // Check BSE APPS Fauls
+                if(faultNumber && (1<<BSE_APPS_FAULT)){ // Eithr BSE or APPS Fault
+                    if(!VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){ // if the fault isn't the Minor Fault, then set SEVERE_FAULT and yield, don't need to check for minor
+                        state = SEVERE_FAULT;
+                        taskYIELD();
+                    }else if(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){
+                        state = MINOR_FAULT; // Minor Fault, so we should still look at the
+                    }
+                }
+
+                // Check HV and LV Sensing
+                if(faultNumber && (1<<HV_LV_FAULT) ){ // Either LV or HV Sensing fault
+
+                    /*
+                     * HV Current out of Safe Range:
+                     *      1. Need a timer to go on and this timer will be stopped when this fault is handled.
+                     *      2. If Timer was started last time and fault is still HV Current out of safe range -> SEVERE_FAULT
+                     *      3. If Fault is HV Current out of safe range, then start timer and and state = MINOR_FAULT
+                     */
+                    if(VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE && (timer1_started)){
+                        if(timer1_value>set_threshold){ // timer1_value>set_threshold, switch to SEVERE_FAULT
+                            state = SEVERE_FAULT;
+                            timer1_started = 0;  //  should reset timer here?
+                            taskYIELD(); // This is a severe Fault, don't need to check the others, yieldTask,
+                        }else{
+                            state = MINOR_FAULT;
+                        }
+                    }else if(VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE){ // First incident of HV current being out of range
+                         timer1_started = 1; // Start timer
+                         state = MINOR_FAULT;
+                    }
+
+                    /* HV Voltage out of Safe Range:
+                     *      1. Need a timer to go on and this timer will be stopped when this fault is handled.
+                     *      2. If Timer was started last time and fault is still HV Voltage out of safe range -> SEVERE_FAULT
+                     *      3. If Fault is HV Voltage out of safe range, then start timer and and state = MINOR_FAULT
+                     */
+
+                    if(VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT && (timer2_started)){
+                        if(timer2_value>set_threshold){ // if timer2_value>set_threshold, switch to SEVERE_FAULT
+                            state = SEVERE_FAULT;
+                            timer2_started = 0; //should reset timer here?
+                            taskYIELD(); // This is a severe Fault, don't need to check the others, yieldTask
+                        }else{
+                            state = MINOR_FAULT;
+                        }
+                    }else if(VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT){
+                         timer2_started = 1; // Start timer
+                         state = MINOR_FAULT;
+                    }
+
+
+                    /*
+                     * LV Voltage or Current Out of Range
+                     */
+
+                    if(VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE || VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE){
+                        state = MINOR_FAULT;   // Give a warning
+                    }
+
+                    /*
+                     * Pedal position not corresponding to the amount of current drawn from battery
+                     */
+
+                    if(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){
+
+                        if(isRTDS() && (state!=MINOR_FAULT)){ // Check if RTDS is set and previous fault checks didn't give MINOR_FAULT
+                            state = TRACTIVE_ON;
+                        }else{
+                            state = MINOR_FAULT; // previous fault checks have a MINOR_FAULT, can't ignore it
+                        }
+                    }
+
+                }
+                 // Check CAN Faults
+                if(faultNumber && (1<<CAN_FAULT)){ // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
+
+                    if(VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1){ // Severe Fault message from CAN, so don't need to check other faults, change state and yield task
+                        state = SEVERE_FAULT;
+                        taskYIELD();
+                    }else{
+                        state = MINOR_FAULT; // Minor fault, we should still look at the
+                    }
+
+                }
+           }
+           /* -- Will move all of this inside function faultLocation, after unit-testing. "State faultLocation(currentState,timer1_started, timer1, timer2_started, timer2)"  */
+
+           // Checked for all Faults above and now if no MINOR_FAULTS were found, then we can move back to TRACTIVE_ON if RTDS is on and TSAL is ON, else we go to TRACTIVE_OFF; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
+
+            if(state==TRACTIVE_ON){
+
             }
+
 
 
 
@@ -536,6 +637,13 @@ void vStateMachineTask(void *pvParameters){
                 state = TRACTIVE_OFF;
             }
             */
+        }else if(state==SEVERE_FAULT){
+
+            if(anyFaults()){
+                taskYIELD(); // Severe Faults haven't been cleared.
+            }else{
+                state = TRACTIVE_OFF; // All faults cleared. Move to starting state
+            }
         }
 
         if (STATE_PRINT) {UARTSend(PC_UART, "\r\n");}
