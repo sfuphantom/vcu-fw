@@ -201,6 +201,7 @@ void vStateMachineTask(void *pvParameters){
     volatile uint8_t timer1_value;
     volatile uint8_t timer2_started = 0;
     volatile uint8_t timer2_value;
+    volatile uint8_t set_threshold;
     /* -- Added to simulate Timer for HV Current and Voltage Fault, will implement proper timer later - jjkhan */
 
     while(true)
@@ -399,7 +400,7 @@ void vStateMachineTask(void *pvParameters){
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
 
-            while(isRTDS() && !anyFaults()){ state = RUNNING; taskYIELD()}  // Ready To Drive is Set and there are no Faults, state doesn't change, yieldTask to skip all steps below
+            while(isRTDS() && !anyFaults()){ state = RUNNING; taskYIELD();}  // Ready To Drive is Set and there are no Faults, state doesn't change, yieldTask to skip all steps below
 
             // Find fault in the system
             if(anyFaults()){
@@ -500,21 +501,33 @@ void vStateMachineTask(void *pvParameters){
                 state=TRACTIVE_ON; // Ready To Drive Is Not Set and there were no MINOR_FAULTS, go back to TRACTIVE_ON
             }
 
-        }else if (state == FAULT){
+        }else if (state == MINOR_FAULT){
 
 
-            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 100U); // blue LED
-            pwmSetDuty(RGB_LED_PORT, RED_LED, 50U); // red LED
-            pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED
+                                              /* ++  OLD CODE: Commented out by jjkhan
+                                              pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U);
+                                              pwmSetDuty(RGB_LED_PORT, RED_LED, 100U);
+                                              pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue
+                                              --  OLD CODE: Commented out by jjkhan  */
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********");}
+
+            // Check if the possible MINOR faults have cleared.
+            if(anyFaults()){
+
+            }
+
+
+
+
+
             // uhhh turn on a fault LED here??
             // how will we reset out of this?
 
                /*
                 *  If the fault was handled + the RTDS not set and the AIRs open, then you can change state to tractive off -> which is the starting state,
                 *  else you will be in fault state  -> this is according to the state machine flow chart.
-                */
+
             if (VCUDataPtr->DigitalVal.RTDS == 0 && VCUDataPtr->DigitalVal.TSAL_ON==1 && VCUDataPtr->DigitalVal.BMS_FAULT == 0 && VCUDataPtr->DigitalVal.IMD_FAULT == 0
                     && VCUDataPtr->DigitalVal.BSPD_FAULT == 0 &&  VCUDataPtr->DigitalVal.BSE_FAULT == 0  )
             {
@@ -522,6 +535,7 @@ void vStateMachineTask(void *pvParameters){
             }else if(VCUDataPtr->DigitalVal.BSE_FAULT == 0 ){
                 state = TRACTIVE_OFF;
             }
+            */
         }
 
         if (STATE_PRINT) {UARTSend(PC_UART, "\r\n");}
