@@ -133,8 +133,8 @@
 /* Timers */
 #define configUSE_TIMERS                1
 #define configTIMER_TASK_PRIORITY		( 0 )
-#define configTIMER_QUEUE_LENGTH		0
-#define configTIMER_TASK_STACK_DEPTH	( 0 )
+#define configTIMER_QUEUE_LENGTH		4
+#define configTIMER_TASK_STACK_DEPTH	( 256 )
 
 /* USER CODE BEGIN (3) */
 /* USER CODE END */

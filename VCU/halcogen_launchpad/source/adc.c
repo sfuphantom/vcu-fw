@@ -1,7 +1,7 @@
 /** @file adc.c 
 *   @brief ADC Driver Source File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *
 *   This file contains:
 *   - API Functions
@@ -11,7 +11,7 @@
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -232,9 +232,9 @@ static const uint32 s_adcSelect[2U][3U] =
     0x00000000U |
     0x00000000U |
     0x00000000U,
-    0x00000000U |
-    0x00000000U |
-    0x00000000U |
+    0x00000001U |
+    0x00000002U |
+    0x00000004U |
     0x00000000U |
     0x00000000U |
     0x00000000U |

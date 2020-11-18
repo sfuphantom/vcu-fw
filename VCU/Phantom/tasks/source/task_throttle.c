@@ -22,6 +22,7 @@
 #include "MCP48FV_DAC_SPI.h"
 #include "Phantom_sci.h"
 #include "gio.h"
+#include "sys_common.h"
 
 #include "vcu_data.h"
 
@@ -72,11 +73,10 @@ extern bool THROTTLE_AVAILABLE;
 void vThrottleTask(void *pvParameters){
 
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 10; // task frequency in ms
+    const TickType_t xFrequency = 10;   // task frequency in ms
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
-
 
     while(true)
     {
@@ -87,7 +87,9 @@ void vThrottleTask(void *pvParameters){
         gioSetBit(hetPORT1, 5, 1);
 
         // read APPS signals
-        if (TASK_PRINT) {UARTSend(PC_UART, "THROTTLE CONTROL\r\n");}
+        if (TASK_PRINT) {
+            UARTSend(PC_UART, "THROTTLE CONTROL\r\n");
+        }
 //        UARTSend(scilinREG, xTaskGetTickCount());
 
         // how was this i from 0 to 10 selected?
@@ -108,22 +110,27 @@ void vThrottleTask(void *pvParameters){
         FP_sensor_1_sum = (unsigned int)FP_data[1].value;
         FP_sensor_2_sum = (unsigned int)FP_data[2].value;
 
-
         // check for short to GND/5V on APPS sensor 1
         if (FP_sensor_1_sum < APPS1_MIN_VALUE)
         {
             // if it's less than 1.5V, then assume shorted to GND as this is not normal range
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
+            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
         }
         else if(FP_sensor_1_sum > APPS1_MAX_VALUE)
         {
             // if it's greater than 4.4V, then assume shorted to 5V as this is not normal range
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
+            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
         }
         else
         {
             // should be in normal range
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
+            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
+            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
         }
 
 
