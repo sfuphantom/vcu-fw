@@ -143,7 +143,7 @@ uint16 FP_sensor_1_max = 4095; // 12-bit ADC
 uint16 FP_sensor_2_max = 4095; // 12-bit ADC
 uint16 FP_sensor_1_percentage;
 uint16 FP_sensor_2_percentage;
-uint16 FP_sensor_diff;
+float FP_sensor_diff;
 
 
 

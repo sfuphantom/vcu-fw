@@ -33,6 +33,7 @@ extern State state;
  *********************************************************************************/
 extern adcData_t FP_data[3];
 extern adcData_t *FP_data_ptr;// = &FP_data[0];
+extern unsigned int lightSensor; // debugging - jaypacamarra
 extern unsigned int FP_sensor_1_sum;// = 0;
 extern unsigned int FP_sensor_1_avg;
 extern unsigned int FP_sensor_2_sum;// = 0;
@@ -49,7 +50,7 @@ extern uint16 FP_sensor_1_max;// = 4095; // 12-bit ADC
 extern uint16 FP_sensor_2_max;// = 4095; // 12-bit ADC
 extern uint16 FP_sensor_1_percentage;
 extern uint16 FP_sensor_2_percentage;
-extern uint16 FP_sensor_diff;
+extern float FP_sensor_diff;
 
 extern char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
 
@@ -115,22 +116,22 @@ void vThrottleTask(void *pvParameters){
         {
             // if it's less than 1.5V, then assume shorted to GND as this is not normal range
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
-            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
         }
         else if(FP_sensor_1_sum > APPS1_MAX_VALUE)
         {
             // if it's greater than 4.4V, then assume shorted to 5V as this is not normal range
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
-            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
         }
         else
         {
             // should be in normal range
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
-            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
-            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
         }
 
 
@@ -140,16 +141,22 @@ void vThrottleTask(void *pvParameters){
         {
             // if it's less than 0.5V, then assume shorted to GND as this is not normal range
             VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
+//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
         }
         else if(FP_sensor_2_sum > APPS2_MAX_VALUE)
         {
             // if it's greater than 1.5V, then assume shorted to 5V as this is not normal range
             VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
+//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
         }
         else
         {
             // should be in normal range
             VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
+//            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
         }
 
 
@@ -160,17 +167,23 @@ void vThrottleTask(void *pvParameters){
         {
             // if it's less than 0.5V, then assume shorted to GND as this is not normal range
             VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
+//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
 
         }
         else if (BSE_sensor_sum > BSE_MAX_VALUE) // change from magic number to a #define BSE_MAX_VALUE
         {
             // if it's greater than 4.5V, then assume shorted to 5V as this is not normal range
             VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
+//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
         }
         else
         {
             // should be in normal range
             VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
+//            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
+//            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
         }
 
 
@@ -229,10 +242,24 @@ void vThrottleTask(void *pvParameters){
 //        xStatus = xQueueSendToBack(xq, &FP_sensor_2_avg, 0);
 
 
+        // Calculate FP_sensor_diff, NEED TO TEST-jaypacamarra
+        FP_sensor_diff = abs( FP_sensor_1_sum - FP_sensor_2_sum );
+        FP_sensor_diff = FP_sensor_diff / ((FP_sensor_1_sum + FP_sensor_2_sum) / 2);
+
         // 10% APPS redundancy check
         if(FP_sensor_diff > 0.10)
         {
             UARTSend(PC_UART, "SENSOR DIFFERENCE FAULT\r\n");
+            VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1;
+            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+
+        }
+        else
+        {
+            VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0; // Added this else statement so we have a way to set APPS 10% fault to 0 - jaypacamarra
+            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
+            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
         }
 
         // need to do APPS plausibility check with BSE
