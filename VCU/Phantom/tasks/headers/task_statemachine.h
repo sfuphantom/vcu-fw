@@ -31,11 +31,6 @@
 
 
 
-/*
- *  SDC Fault types
- */
-#define
-
 void vStateMachineTask(void *);
 
 
