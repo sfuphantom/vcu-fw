@@ -89,11 +89,11 @@ void vSensorReadTask(void *pvParameters){
 //        UARTSend(scilinREG, xTaskGetTickCount());
 
         //get and store voltage and current values into analogInputs struct -rafguevara14
-        analogInputs.voltageHV_V = getHVsensorVoltage();
-        analogInputs.currentHV_A = getHVsensorCurrent();
+        VCUDataPtr->analogInputs.voltageHV_V.value = getHVsensorVoltage();
+        VCUDataPtr->analogInputs.currentHV_A.value = getHVsensorCurrent();
 
         //OUT OF RANGE ERROR
-        digitalValues.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
+        VCUDataPtr->digitalValues.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
 
         //APPS PROPORTIONALITY ERROR
 
