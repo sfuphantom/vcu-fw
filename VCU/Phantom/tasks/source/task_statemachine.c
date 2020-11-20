@@ -43,47 +43,6 @@ extern data* VCUDataPtr;
 
 /* ++ Added by jjkhan */
 
-/***********************************************************
- * @function                - anyERRORS
- *
- * @brief                   - This task is a helper function for vStateMachineTask, its used to check if there are any faults, regardless if severe or minor
- *
- * @param[in]               - void
- *
- * @return                  - 1 or 0
- * @Note                    -  A '1' indicates there fault(s), a '0' indicates no fault
- *
- ***********************************************************/
-
-static int anyFaults(void){
-
-    if(VCUDataPtr->DigitalVal.IMD_FAULT
-                   ||VCUDataPtr->DigitalVal.BMS_GPIO_FAULT
-                   || VCUDataPtr->DigitalVal.BSPD_FAULT
-                   || VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT
-                   || VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT
-                   || VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT
-                   || VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT
-                   || VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT
-                   || VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE
-                   || VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR
-                   || VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT
-                   || VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE
-                   || VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE
-                   || VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1
-                   || VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2
-                   || VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT
-                   || VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT
-                   || VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT
-                   || VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT
-                   || VCUDataPtr->DigitalVal.IMD_UNDEF_ERR
-                   || VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT
-                   || VCUDataPtr->DigitalVal.TSAL_WELDED_AIRS_FAULT){
-        return FAULT;
-    }
-    return NOFAULT;
-
-}
 
 
 static int checkSDC(void){
@@ -181,9 +140,29 @@ static uint32_t faultLocation(void){
     }
     return systemFaultIndicator;
 
-
-
 }
+
+
+
+/***********************************************************
+ * @function                - anyERRORS
+ *
+ * @brief                   - This task is a helper function for vStateMachineTask, its used to check if there are any faults, regardless if severe or minor
+ *
+ * @param[in]               - void
+ *
+ * @return                  - 1 or 0
+ * @Note                    -  A '1' indicates fault(s), a '0' indicates no fault
+ *
+ ***********************************************************/
+
+static int anyFaults(void){
+    if(checkSDC() || checkCAN() || checkIMD() || checkBSE_APPS()  || CheckHVLVSensor()){
+        return FAULT;
+    }
+    return NOFAULT;
+}
+
 static void stateLEDs(uint32_t blueLEDDutyCylce, uint32_t greenLEDDutyCycle, uint32_t redLEDDutyCycle){
      /* Write the PWM code here. */
 
