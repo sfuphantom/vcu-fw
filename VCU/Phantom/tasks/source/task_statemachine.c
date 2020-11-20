@@ -241,6 +241,7 @@ void vStateMachineTask(void *pvParameters){
 
            /* -- New Code: Added by jjkhan */
 
+
             /* ++  Old code: Commented out by jjkhan
              *
 //          pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue LED
@@ -272,7 +273,7 @@ void vStateMachineTask(void *pvParameters){
                 blue_duty-= 5;
             }
 
-            */
+            /* --  Old code: Commented out by jjkhan */
 
 
         }else if (state == TRACTIVE_ON){
@@ -411,7 +412,7 @@ void vStateMachineTask(void *pvParameters){
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
 
-            while(isRTDS() && !anyFaults()){ state = RUNNING; taskYIELD();}  // Ready To Drive is Set and there are no Faults, state doesn't change, yieldTask to skip all steps below
+            if(isRTDS() && !anyFaults()){ state = RUNNING; taskYIELD();}  // Ready To Drive is Set and there are no Faults, state doesn't change, yieldTask to skip all steps below
 
             // Find fault in the system
             if(anyFaults()){
