@@ -58,7 +58,7 @@ typedef struct digitalValues
     uint8_t TSAL_ON;
     uint8_t RTDS;
     uint8_t BMS_GPIO_FAULT; // Changed BMS_FAULT to BMS_GPIO_FAULT - jjkhan
-    //uint8_t IMD_FAULT; -> No more IMD, there are a bunch of IMD faults to check for  - jjkhan
+    uint8_t IMD_FAULT; // IMD Fault Added back - jjkhan
     uint8_t BSPD_FAULT;
     // uint8_t BSE_FAULT;  -> No more BSE, there is BSE_SEVERE_RANGE_FAULT
     // uint8_t APPS_FAULT; -> No more APPS, there is APPS1 and APPS2 check  - jjkhan
