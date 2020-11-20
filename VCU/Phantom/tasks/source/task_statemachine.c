@@ -163,11 +163,13 @@ static int anyFaults(void){
     return NOFAULT;
 }
 
-static void stateLEDs(uint32_t blueLEDDutyCylce, uint32_t greenLEDDutyCycle, uint32_t redLEDDutyCycle){
-     /* Write the PWM code here. */
+
+/*static void stateLEDs(uint32_t blueLEDDutyCylce, uint32_t greenLEDDutyCycle, uint32_t redLEDDutyCycle){
+     /* Write the PWM code here.
 
 
-}
+}*/
+
 
 /* -- Added by jjkhan */
 

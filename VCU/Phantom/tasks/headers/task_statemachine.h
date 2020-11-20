@@ -14,8 +14,6 @@
 
 /*
  *  Possible Fault Locations - Bit Number
- *      Can have 32 faults
- *
  *
  */
 #define SDC_FAULT              1U
@@ -31,8 +29,19 @@
 #define ON          SET
 
 
-
 void vStateMachineTask(void *);
+
+/* Task Helper Functions. */
+
+static int checkSDC(void);
+static int checkIMD(void);
+static int checkBSE_APPS(void);
+static int CheckHVLVSensor(void);
+static int checkCAN(void);
+static int isRTDS(void);
+static int isTSAL_ON(void);
+static uint32_t faultLocation(void);
+static int anyFaults(void);
 
 
 #endif /* PHANTOM_TASKS_TASK_STATEMACHINE_H_ */
