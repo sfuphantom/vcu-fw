@@ -57,7 +57,8 @@ extern data* VCUDataPtr;
 
 static int anyFaults(void){
 
-    if(VCUDataPtr->DigitalVal.BMS_GPIO_FAULT
+    if(VCUDataPtr->DigitalVal.IMD_FAULT
+                   ||VCUDataPtr->DigitalVal.BMS_GPIO_FAULT
                    || VCUDataPtr->DigitalVal.BSPD_FAULT
                    || VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT
                    || VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT
@@ -84,20 +85,29 @@ static int anyFaults(void){
 
 }
 
-static int checkSDC(void){
-        if( VCUDataPtr->DigitalVal.BSPD_FAULT
-                      || VCUDataPtr->DigitalVal.BMS_GPIO_FAULT
-                      || VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT
-                      || VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT
-                      || VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT
-                      || VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT
-                      || VCUDataPtr->DigitalVal.IMD_UNDEF_ERR
-                      || VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT){
 
+static int checkSDC(void){
+        if( VCUDataPtr->DigitalVal.IMD_FAULT
+                || VCUDataPtr->DigitalVal.BSPD_FAULT
+                || VCUDataPtr->DigitalVal.BMS_GPIO_FAULT
+                      ){
             return FAULT;
         }
             return NOFAULT;
 
+}
+
+static int checkIMD(void){
+    if(VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT
+            || VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT
+            || VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT
+            || VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT
+            || VCUDataPtr->DigitalVal.IMD_UNDEF_ERR
+            || VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT
+            ){
+        return FAULT;
+    }
+    return NOFAULT;
 }
 
 static int checkBSE_APPS(void){
@@ -147,18 +157,27 @@ static int isTSAL_ON(void){
 static uint32_t faultLocation(void){
 
     int systemFaultIndicator = 0;
+
+    // Check if fault in Shutdown Circuit
     if(checkSDC()){
         systemFaultIndicator |= 1 << SDC_FAULT;
     }
-
+    // Check if fault in APPS
     if(checkBSE_APPS()){
         systemFaultIndicator |= 1 << BSE_APPS_FAULT;
     }
+    // Check if fault in HV or LV
     if(CheckHVLVSensor()){
         systemFaultIndicator |= 1 << HV_LV_FAULT;
     }
+    // Check if fault from CAN
     if(checkCAN()){
         systemFaultIndicator |= 1 << CAN_FAULT;
+    }
+
+    // Check if fault from IMD
+    if(checkIMD()){
+        systemFaultIndicator |= 1 << IMD_SYSTEM_FAULT;
     }
     return systemFaultIndicator;
 
@@ -294,6 +313,14 @@ void vStateMachineTask(void *pvParameters){
                     state = SEVERE_FAULT;
                     taskYIELD();
                 }
+
+                // IMD Fault Checks
+                if(faultNumber && (1<<IMD_SYSTEM_FAULT)){
+                       state = SEVERE_FAULT; // All IMD faults in the documentation are Severe, so yieldTask() , don't need to check for other faults
+                       taskYIELD();
+                 }
+
+
                 // Check BSE APPS Fauls
                 if(faultNumber && (1<<BSE_APPS_FAULT)){ // Eithr BSE or APPS Fault
                     if(!VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){ // if the fault isn't the Minor Fault, then set SEVERE_FAULT and yield, don't need to check for minor
@@ -380,6 +407,9 @@ void vStateMachineTask(void *pvParameters){
                     }
 
                 }
+
+
+
            }
            /* -- Will move all of this inside function faultLocation, after unit-testing. "State faultLocation(currentState,timer1_started, timer1, timer2_started, timer2)"  */
 
@@ -413,6 +443,13 @@ void vStateMachineTask(void *pvParameters){
                            state = SEVERE_FAULT;
                            taskYIELD();
                        }
+
+                       // IMD Fault Checks
+                       if(faultNumber && (1<<IMD_SYSTEM_FAULT)){
+                              state = SEVERE_FAULT; // All IMD faults in the documentation are Severe, so yieldTask() , don't need to check for other faults
+                              taskYIELD();
+                        }
+
                        // Check BSE APPS Fauls
                        if(faultNumber && (1<<BSE_APPS_FAULT)){ // Eithr BSE or APPS Fault
                            if(!VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){ // if the fault isn't this Minor Fault, then set SEVERE_FAULT and yield, don't need to check for other faults below because SEVERE_FAULT Detected
