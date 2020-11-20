@@ -7,6 +7,19 @@
 
 
 #include "phantom_freertos.h"
+#include "gio.h"
+
+unsigned int BSE_sensor_sum  = 0;    // needs to be stored in VCU data structure and referenced from there
+
+bool INTERRUPT_AVAILABLE;
+bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has gone for 2 seconds
+
+/* array to hold handles to the created timers*/
+TimerHandle_t xTimers[NUMBER_OF_TIMERS];
+
+xQueueHandle VCUDataQueue;
+
+extern data* VCUDataPtr;
 
 void phantom_freeRTOSInit(void)
 {
@@ -171,4 +184,51 @@ void phantom_freeRTOStaskInit(void)
  {
 //     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
      THROTTLE_AVAILABLE = true;
+ }
+
+ /*********************************************************************************
+  *               READY TO DRIVE SIGNAL INTERRUPT (SHOULD PROBABLY FIND A BETTER PLACE TO PUT THIS)
+  *********************************************************************************/
+ void gioNotification(gioPORT_t *port, uint32 bit)
+ {
+ /*  enter user code between the USER CODE BEGIN and USER CODE END. */
+ /* USER CODE BEGIN (19) */
+ //    UARTSend(PC_UART, "---------Interrupt Request-------\r\n");
+     if (port == gioPORTA && bit == 2 && INTERRUPT_AVAILABLE)
+     {
+         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+         // RTDS switch
+         UARTSend(PC_UART, "---------Interrupt Active\r\n");
+         if (VCUDataPtr->DigitalVal.RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
+         {
+             if (BSE_sensor_sum < 2000)
+             {
+                 gioSetBit(gioPORTA, 6, 1);
+                 VCUDataPtr->DigitalVal.RTDS = 1; // CHANGE STATE TO RUNNING
+                 UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
+
+                 // ready to drive buzzer, need to start a 2 second timer here
+ //                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+
+                 // reset the 2 second timer to let the buzzer ring for 2 seconds
+                 if (xTimerResetFromISR(xTimers[1], xHigherPriorityTaskWoken) != pdPASS)// after 2s the timer will allow the interrupt to toggle the signal again
+                 {
+                     // timer reset failed
+                     UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+                 }
+             }
+         }
+ //        else
+ //        {
+ //            UARTSend(PC_UART, "---------RTDS set to 0 in interrupt\r\n");
+ //            RTDS = 0;
+ //        }
+
+         INTERRUPT_AVAILABLE = false;
+         if (xTimerResetFromISR(xTimers[0], xHigherPriorityTaskWoken) != pdPASS)// after 300ms the timer will allow the interrupt to toggle the signal again
+         {
+             // timer reset failed
+             UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+         }
+     }
  }

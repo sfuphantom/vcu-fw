@@ -14,7 +14,7 @@
 #include "os_queue.h"
 #include "os_semphr.h"
 #include "os_timer.h"
-//#include "sys_main.h"
+
 
 #include "Phantom_sci.h"
 
@@ -28,17 +28,14 @@
 
 #include "priorities.h" // holds the task priorities
 
+#include "vcu_data.h"
+
+
 #define NUMBER_OF_TIMERS   2
 
-/* array to hold handles to the created timers*/
-extern TimerHandle_t xTimers[NUMBER_OF_TIMERS];
 
-xQueueHandle VCUDataQueue;
 
 /* This timer is used to debounce the interrupts for the RTDS and SDC signals */
-extern bool INTERRUPT_AVAILABLE;
-extern bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has gone for 2 seconds
-
 void Timer_300ms(TimerHandle_t xTimers);
 void Timer_2s(TimerHandle_t xTimers);
 

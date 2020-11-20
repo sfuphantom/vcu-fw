@@ -35,7 +35,7 @@ int lv_current = 0;
 extern data* VCUDataPtr;
 
 extern uint8_t RTDS;// = 0;
-extern long RTDS_RAW;// = 0;
+long RTDS_RAW;      // = 0;
 /***********************************************************
  * @function                - vSensorReadTask
  *
@@ -54,9 +54,6 @@ void vSensorReadTask(void *pvParameters){
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
-
-    int nchars;
-    char stbuf[64];
 
     while(true)
     {
