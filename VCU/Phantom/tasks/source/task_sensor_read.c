@@ -88,7 +88,8 @@ void vSensorReadTask(void *pvParameters){
         if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
 //        UARTSend(scilinREG, xTaskGetTickCount());
 
-        //get and store voltage and current values into analogInputs struct -rafguevara14
+        //HVcurrent data -rafguevara14
+        //get and store voltage and current values into analogInputs struct
         VCUDataPtr->analogInputs.voltageHV_V.value = getHVsensorVoltage();
         VCUDataPtr->analogInputs.currentHV_A.value = getHVsensorCurrent();
 
@@ -102,6 +103,22 @@ void vSensorReadTask(void *pvParameters){
             //update HV flags accordingly
 
         // IMD data (maybe this needs to be a separate interrupt?)
+        updateIMDData();
+
+        IMDData_t dataIMD = getIMDData();
+
+        //determine state of all flags -rafguevara14
+        VCUDataPtr->digitalValues.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure);
+
+        VCUDataPtr->digitalValues.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
+
+        VCUDataPtr->digitalValues.IMD_DEVICE_ERR_FAULT =  (dataIMD.IMDState == Device_Error);
+
+        VCUDataPtr->digitalValues.IMD_BAD_INFO_FAULT =  (dataIMD.IMDState == Bad_Info);
+
+        VCUDataPtr->digitalValues.IMD_UNDEF_ERR =  (dataIMD.IMDState == Undefined_fault);
+
+        VCUDataPtr->digitalValues.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
 
         // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
 
