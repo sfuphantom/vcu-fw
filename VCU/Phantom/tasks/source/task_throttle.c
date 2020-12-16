@@ -16,6 +16,7 @@
 
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 
+// Test comment - Delete me 
 
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
