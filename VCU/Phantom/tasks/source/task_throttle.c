@@ -160,6 +160,7 @@ void vThrottleTask(void *pvParameters){
 //        if (APPS_PRINT) {UARTSend(scilinREG, "\r\n");}
 
         // brake light (flickers if pedal is around 2000 and is noisily jumping above and below!)
+        /* commented out by jjkhan - bc build issues.
         if (BSE_sensor_sum < BRAKING_THRESHOLD)
         {
             gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
@@ -223,6 +224,9 @@ void vThrottleTask(void *pvParameters){
 
         // for timing:
         gioSetBit(hetPORT1, 5, 0);
+
+        */
+
 
     }
 }

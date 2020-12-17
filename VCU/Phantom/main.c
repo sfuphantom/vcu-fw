@@ -336,7 +336,6 @@ int main(void)
     while(1);
 /* USER CODE END */
 
-    return 0;
 }
 /* USER CODE BEGIN (4) */
 
