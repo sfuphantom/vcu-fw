@@ -327,7 +327,7 @@ void vStateMachineTask(void *pvParameters){
     while(true)
     {
         // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
         // for timing:
         gioSetBit(hetPORT1, 9, 1);
@@ -340,12 +340,12 @@ void vStateMachineTask(void *pvParameters){
         if (state == TRACTIVE_OFF){
             /* ++ New Code: Added by jjkhan */
 
+
            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********");}
 
-           // Note: taskYIELD() gives up CPU time to a Ready Task of equal priority.
-           if(isRTDS() || anyFaults()){ state = SEVERE_FAULT; taskYIELD(); }  // RTDS should be off when state is TRACTIVE_OFF && you all errors should be taken care before you proceed.
-           if(!isTSAL_ON()){ state = TRACTIVE_OFF; taskYIELD(); }  // This will prevent from executing all the steps below - suspend task here?
-           state = TRACTIVE_ON; // No faults and TSAL is on,
+           if(isRTDS() || anyFaults()){ state = SEVERE_FAULT; }  // RTDS should be off when state is TRACTIVE_OFF && you all errors should be taken care before you proceed.
+           if(isTSAL_ON() && !anyFaults()){ state = TRACTIVE_ON; } //No faults and TSAL is on
+
 
            /* -- New Code: Added by jjkhan */
         }else if (state == TRACTIVE_ON){
@@ -353,7 +353,7 @@ void vStateMachineTask(void *pvParameters){
             if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
 
             /* ++ New Code - Added by jjkhan */
-            if(!isTSAL_ON()){ state = SEVERE_FAULT; taskYIELD();} // TSAL light is OFF - shouldn't happen, but if it does, handle it.
+            if(!isTSAL_ON()){ state = SEVERE_FAULT;} // TSAL light is OFF - shouldn't happen, but if it does, handle it.
             if(anyFaults()){
                uint32_t faultNumber = faultLocation();
                state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value, timer_threshold);
@@ -370,7 +370,9 @@ void vStateMachineTask(void *pvParameters){
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
 
-            if(isRTDS() && !anyFaults()){ state = RUNNING; taskYIELD();}  // Ready To Drive is Set and there are no Faults, state doesn't change, yieldTask to skip all steps below
+
+            /* ++ New Code - Added by jjkhan */
+            if(isRTDS() && !anyFaults()){ state = RUNNING;}  // Ready To Drive is Set and there are no Faults, state doesn't change, yieldTask to skip all steps below
 
             // Find fault in the system
             if(anyFaults()){
@@ -385,9 +387,14 @@ void vStateMachineTask(void *pvParameters){
                 state=TRACTIVE_ON; // Ready To Drive Is Not Set and there were no MINOR_FAULTS, go back to TRACTIVE_ON
             }
 
+
+            /* -- New Code - Added by jjkhan */
         }else if (state == MINOR_FAULT){
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********MINOR_FAULT********");}
+
+
+            /* ++ New Code - Added by jjkhan */
 
             // Check if faults have been cleared -> Could run the same fault checking scenario above.
             if(anyFaults()){
@@ -410,20 +417,24 @@ void vStateMachineTask(void *pvParameters){
                 state = MINOR_FAULT;
             }
 
+            /* -- New Code - Added by jjkhan */
         }else if(state==SEVERE_FAULT){
 
+            /* ++ New Code - Added by jjkhan */
             if (STATE_PRINT) {UARTSend(PC_UART, "********SEVERE_FAULT********");}
 
             if(anyFaults()){
-                taskYIELD(); // Severe Faults haven't been cleared.
             }else{
                 state = TRACTIVE_OFF; // All faults cleared. Move to starting state
             }
+
+            /* -- New Code - Added by jjkhan */
         }
 
         if (STATE_PRINT) {UARTSend(PC_UART, "\r\n");}
 
         // for timing:
         gioSetBit(hetPORT1, 9, 0);
+
     }
 }
