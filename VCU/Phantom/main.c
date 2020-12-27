@@ -103,6 +103,13 @@ xQueueHandle VCUDataQueue;
 data VCUData;
 data* VCUDataPtr = &VCUData;
 
+// ++ New Code  - Added by jjkhan
+SemaphoreHandle_t vcuKey;        // Mutex to protect VCU data structure
+SemaphoreHandle_t powerfailureFlagKey;
+
+// -- New Code - Added by jjkhan
+
+
 uint8 i;
 char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
 long xStatus;
@@ -179,6 +186,9 @@ int main(void)
  *********************************************************************************/
     initData(VCUDataPtr); // maybe i return the data structure here?
 
+    // ++ New Code - Added by jjkhan
+    vcuKey = xSemaphoreCreateMutex(); // VCU Key Intialization
+    // -- New Code - Added by jjkhan
 /*********************************************************************************
  *                          PHANTOM LIBRARY INITIALIZATION
  *********************************************************************************/
