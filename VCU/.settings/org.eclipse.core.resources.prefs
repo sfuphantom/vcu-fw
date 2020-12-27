@@ -5,6 +5,8 @@ encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/LV_Monitor_I2C/subdir_rules
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/LV_Monitor_I2C/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/UART/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/UART/subdir_vars.mk=UTF-8
+encoding//BuildConfig_Launchpad-1224/Phantom/TestCode/source/subdir_rules.mk=UTF-8
+encoding//BuildConfig_Launchpad-1224/Phantom/TestCode/source/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/data_structures/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/data_structures/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/subdir_rules.mk=UTF-8
