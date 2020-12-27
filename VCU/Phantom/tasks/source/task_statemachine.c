@@ -176,7 +176,7 @@ static int anyFaults(void){
     return NOFAULT;
 }
 
-static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, uint8_t* timer1, uint8_t* timer2_started, uint8_t* timer2, uint8_t timer_threshold){
+static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TickType_t* timer1, uint8_t* timer2_started, TickType_t* timer2, TickType_t timer_threshold){
 
     static State state;
 
@@ -231,6 +231,7 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
            }
        }else if(VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT){
             *timer2_started = 1; // Start timer
+            *timer2 = xTaskGetTickCount();
             state = MINOR_FAULT;
        }
 
@@ -279,6 +280,7 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
 
                 }else{ // First time HV current out of safe range, start timer
                     *timer1_started =1;
+                    *timer1 = xTaskGetTickCount();
                     state = MINOR_FAULT;
                 }
             }
@@ -316,12 +318,27 @@ void vStateMachineTask(void *pvParameters){
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
 
+
+
     /* ++ Added to simulate Timer for HV Current and Voltage Fault, will implement proper timer later - jjkhan */
+
+
+    // ++ For HV Current
     uint8_t timer1_started = 0;
-    uint8_t timer1_value;
+    TickType_t timer1_value;
+    // -- For HV Current
+
+
+    // ++ For HV Voltage
     uint8_t timer2_started = 0;
-    uint8_t timer2_value;
-    uint8_t timer_threshold;
+    TickType_t timer2_value;
+    // -- For HV Voltage
+
+
+    // Timer Threshold
+    TickType_t timer_threshold = pdMS_TO_TICKS(5); // 5 milliseconds - just a random value  for now.
+
+
     /* -- Added to simulate Timer for HV Current and Voltage Fault, will implement proper timer later - jjkhan */
 
     while(true)

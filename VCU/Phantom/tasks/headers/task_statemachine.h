@@ -54,7 +54,7 @@ static int isRTDS(void);
 static int isTSAL_ON(void);
 static uint32_t faultLocation(void);
 static int anyFaults(void);
-static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, uint8_t* timer1, uint8_t* timer2_started, uint8_t* timer2, uint8_t timer_threshold);
+static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TickType_t* timer1, uint8_t* timer2_started, TickType_t* timer2, TickType_t timer_threshold);
 
 
 #endif /* PHANTOM_TASKS_TASK_STATEMACHINE_H_ */
