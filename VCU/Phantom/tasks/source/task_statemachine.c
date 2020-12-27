@@ -337,8 +337,7 @@ void vStateMachineTask(void *pvParameters){
 /*********************** STATE MACHINE EVALUATION ***********************************/
 
 
-        if (state == TRACTIVE_OFF)
-        {
+        if (state == TRACTIVE_OFF){
             /* ++ New Code: Added by jjkhan */
 
            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********");}
@@ -350,6 +349,8 @@ void vStateMachineTask(void *pvParameters){
 
            /* -- New Code: Added by jjkhan */
         }else if (state == TRACTIVE_ON){
+
+            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
 
             /* ++ New Code - Added by jjkhan */
             if(!isTSAL_ON()){ state = SEVERE_FAULT; taskYIELD();} // TSAL light is OFF - shouldn't happen, but if it does, handle it.
@@ -386,7 +387,7 @@ void vStateMachineTask(void *pvParameters){
 
         }else if (state == MINOR_FAULT){
 
-            if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "********MINOR_FAULT********");}
 
             // Check if faults have been cleared -> Could run the same fault checking scenario above.
             if(anyFaults()){
@@ -410,6 +411,8 @@ void vStateMachineTask(void *pvParameters){
             }
 
         }else if(state==SEVERE_FAULT){
+
+            if (STATE_PRINT) {UARTSend(PC_UART, "********SEVERE_FAULT********");}
 
             if(anyFaults()){
                 taskYIELD(); // Severe Faults haven't been cleared.
