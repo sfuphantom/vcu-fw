@@ -1,2 +1,5 @@
 /.metadata/
-VCU/tags
+tags
+tags.lock
+/VCU/tags
+/VCU/tags.lock

@@ -16,8 +16,6 @@
 
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 
-// Test comment - Delete me 
-
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
 #include "MCP48FV_DAC_SPI.h"
@@ -80,6 +78,7 @@ void vThrottleTask(void *pvParameters){
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
 
+    // hello bitch
     while(true)
     {
         // Wait for the next cycle
@@ -244,7 +243,8 @@ void vThrottleTask(void *pvParameters){
 
 
         // Calculate FP_sensor_diff, NEED TO TEST-jaypacamarra
-        FP_sensor_diff = abs( FP_sensor_1_sum - FP_sensor_2_sum );
+        // May need to be modified, wasn't sure about the conversion to float
+        FP_sensor_diff = abs( (float) FP_sensor_1_sum - FP_sensor_2_sum );
         FP_sensor_diff = FP_sensor_diff / ((FP_sensor_1_sum + FP_sensor_2_sum) / 2);
 
         // 10% APPS redundancy check
@@ -263,8 +263,18 @@ void vThrottleTask(void *pvParameters){
             gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
         }
 
-        // need to do APPS plausibility check with BSE
+        // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25% 
+        // Need to change condition and formula for this if statement
+        // if( BSE_SENSOR_SUM > BSE_MIN_VALUE && [foo var here!!!] >= 1.25 * APPS1_MIN_VALUE ){
+            // Set state to fault
 
+            // Disable tractive system
+
+            // Motor stops
+
+        }
+
+        // What is this?
         if (state == RUNNING && THROTTLE_AVAILABLE)
         {
             // send DAC to inverter
