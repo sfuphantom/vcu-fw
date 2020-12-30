@@ -109,6 +109,59 @@ SemaphoreHandle_t powerfailureFlagKey;
 
 // -- New Code - Added by jjkhan
 
+//++ For Testing State machine Task - Added by jjkhan
+
+TaskHandle_t testingStateMachineTask = NULL;  // Task Handler for state machine Task.
+
+
+void stateMachineTaskTest(void* parameters){
+
+    TickType_t LastTickCount;
+    LastTickCount = xTaskGetTickCount();
+
+    while(1){
+
+        if(state == TRACTIVE_OFF){
+
+            UARTSend(PC_UART, "Current state is TRACTIVE_OFF. \r\n");
+            vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(20));
+
+
+            if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(20))){ // take VCU key to change VCU Data Structure and see how the state machine task responds
+
+                VCUDataPtr->DigitalVal.RTDS = 1; // this should change the state of the VCU to Severe Fault and keep it there.
+                xSemaphoreGive(vcuKey);
+            }
+
+        }else if(state == TRACTIVE_ON){
+            UARTSend(PC_UART, "Current state is TRACTIVE_ON. \r\n");
+
+        }else if(state == RUNNING){
+            UARTSend(PC_UART, "Current state is RUNNING. \r\n");
+
+        }else if(state == MINOR_FAULT){
+            UARTSend(PC_UART, "Current state is MINOR_FAULT. \r\n");
+
+        }else if(state == SEVERE_FAULT){
+            UARTSend(PC_UART, "Current state is SEVERE_FAULT. \r\n");
+
+            if(VCUDataPtr->DigitalVal.RTDS){ // Check if RTD is set
+
+            }
+
+        }else{
+            UARTSend(PC_UART, "Current state unknown. \r\n");
+        }
+
+        vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));
+
+
+    }
+}
+
+//-- For Testing State machine Task - Added by jjkhan
+
+
 
 uint8 i;
 char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
@@ -238,6 +291,46 @@ int main(void)
              Timer_2s
            );
 
+    // ++ New Code by jjkhan - Timers for HV Current and Voltage Flags
+
+    xTimers[2] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+             kernel. */
+             "HV_Current_OutOfRange_T",
+             /* The timer period in ticks, must be
+             greater than 0. */
+             pdMS_TO_TICKS(20),
+             /* The timers will auto-reload themselves
+             when they expire. */
+             pdFALSE,
+             /* The ID is used to store a count of the
+             number of times the timer has expired, which
+             is initialised to 0. */
+             ( void * ) 0,
+             /* Callback function for when the timer expires*/
+             HV_CurrentRange_Check
+           );
+
+    xTimers[3] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+             kernel. */
+             "HV_Voltage_OutOfRange_T",
+             /* The timer period in ticks, must be
+             greater than 0. */
+             pdMS_TO_TICKS(20),
+             /* The timers will auto-reload themselves
+             when they expire. */
+             pdFALSE,
+             /* The ID is used to store a count of the
+             number of times the timer has expired, which
+             is initialised to 0. */
+             ( void * ) 0,
+             /* Callback function for when the timer expires*/
+             HV_VoltageRange_Check
+           );
+
+    // -- New code by jjkhan - Timeres for HV Current and Voltage Flags
+
 
     // with more timers being added it's more worth it to do a for loop for initializing each one here at the start
 
@@ -276,6 +369,21 @@ int main(void)
              UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
          }
     }
+
+
+
+    // ++ New Code added by jjkhan - Check if Timer Created
+    if( xTimers[2] == NULL )
+    {
+         /* The timer was not created. */
+        UARTSend(PC_UART, "HV Current Fault timer was not created.\r\n");
+    }
+
+    if( xTimers[3] == NULL )
+    {
+         /* The timer was not created. */
+        UARTSend(PC_UART, "HV Voltage Fault timer was not created.\r\n");
+    }
 /*********************************************************************************
  *                          freeRTOS TASK & QUEUE CREATION
  *********************************************************************************/
@@ -298,7 +406,7 @@ int main(void)
         while(1);
     }
 
-
+/*  ++ Commented out by jjkhan - nothing happening in the task  - memory wasted.
     if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  240, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
@@ -306,7 +414,6 @@ int main(void)
         sciSend(PC_UART,23,(unsigned char*)"ThrottleTask Creation Failed.\r\n");
         while(1);
     }
-
 
     if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  240, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
     {
@@ -332,6 +439,18 @@ int main(void)
         sciSend(PC_UART,23,(unsigned char*)"WatchdogTask Creation Failed.\r\n");
         while(1);
     }
+
+    //-- Commented out by jjkhan - nothing happening in the task  - memory wasted.
+
+    */
+
+
+    // ++ Added by jjkhan - State machine Test Task
+    if(xTaskCreate(stateMachineTaskTest, (const char*)"State Machine Task Test", 240, NULL, tskIDLE_PRIORITY+2, &testingStateMachineTask)!= pdTRUE){
+        sciSend(PC_UART,23,(unsigned char*)"TestTask Creation Failed.\r\n");
+        while(1);
+    }
+    // -- Added by jjkhan - State machine Test Task
 
     // all tasks have been created successfully
     UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
@@ -408,6 +527,20 @@ void gioNotification(gioPORT_t *port, uint32 bit)
      pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
      THROTTLE_AVAILABLE = true;
  }
+
+
+
+ // ++ Added by jjkhan - Timer Callbacks for HV Current and Voltage Fault Timers
+
+ void HV_CurrentRange_Check(TimerHandle_t xTimers){
+
+ }
+
+ void HV_VoltageRange_Check(TimerHandle_t xTimers){
+
+ }
+
+ // -- Added by jjkhan - Timer Callbacks for HV Current and Voltage Fault Timers
 
 void vApplicationMallocFailedHook( void )
 {
