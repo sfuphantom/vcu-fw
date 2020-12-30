@@ -360,8 +360,8 @@ void vStateMachineTask(void *pvParameters){
 
            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********");}
 
-           if(isRTDS() || anyFaults()){ state = SEVERE_FAULT; }  // RTDS should be off when state is TRACTIVE_OFF && you all errors should be taken care before you proceed.
-           if(isTSAL_ON() && !anyFaults()){ state = TRACTIVE_ON; } //No faults and TSAL is on
+           if(isRTDS() || anyFaults()){ state = SEVERE_FAULT;}  // RTDS should be off when state is TRACTIVE_OFF && you all errors should be taken care before you proceed.
+           if(isTSAL_ON() && !anyFaults() && !isRTDS()){ state = TRACTIVE_ON; } //No faults AND TSAL is on AND RTDS not set
 
 
            /* -- New Code: Added by jjkhan */
@@ -440,8 +440,7 @@ void vStateMachineTask(void *pvParameters){
             /* ++ New Code - Added by jjkhan */
             if (STATE_PRINT) {UARTSend(PC_UART, "********SEVERE_FAULT********");}
 
-            if(anyFaults()){
-            }else{
+            if(!isRTDS() && !anyFaults()){ // Move to Tractive off iff no faults and RTD signal not set.
                 state = TRACTIVE_OFF; // All faults cleared. Move to starting state
             }
 
