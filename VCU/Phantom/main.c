@@ -130,6 +130,8 @@ void stateMachineTaskTest(void* parameters){
 
     TickType_t LastTickCount;
     LastTickCount = xTaskGetTickCount();
+    bool tractive_off_tested = false;
+
 
     while(1){
 
@@ -137,25 +139,56 @@ void stateMachineTaskTest(void* parameters){
 
             UARTSend(PC_UART, "Current state is TRACTIVE_OFF. \r\n");
 
-            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20))){
-                VCUDataPtr->DigitalVal.RTDS = 1; // Set RTD
-                vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor
 
-                UARTSend(PC_UART, "Task Returned. \r\n");
-                VCUDataPtr->DigitalVal.RTDS = 0; // Clear RTD
-                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;  // Introduce any fault you like
-                vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));
+            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20)) && !tractive_off_tested){
+                /*
+                    VCUDataPtr->DigitalVal.RTDS = 1; // Set RTD
+                    vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor
 
-                VCUDataPtr->DigitalVal.RTDS = 0; // Clear RTD
-                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;  // clear the fault.
-                vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));
+                    VCUDataPtr->DigitalVal.RTDS = 0; // Clear RTD
+                    VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;  // Introduce any fault you like
+                    vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));
+
+                    VCUDataPtr->DigitalVal.RTDS = 0; // Clear RTD
+                    VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;  // clear the fault.
+                    vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));
+                */
 
                 VCUDataPtr->DigitalVal.TSAL_ON = 1; // Set TSAL on, the state should change to TRACTIVE_ON and stay there.
+
                 xSemaphoreGive(vcuKey);
+                tractive_off_tested = true;
             }
+
 
         }else if(state == TRACTIVE_ON){
             UARTSend(PC_UART, "Current state is TRACTIVE_ON. \r\n");
+
+            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20))&& tractive_off_tested){
+
+                /*
+                    VCUDataPtr->DigitalVal.TSAL_ON=0; // Turn off TSAL and see how the system responds.
+                    vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor - correct response.
+                */
+
+                // Introduce a MINOR Error in the system - state should change MINOR_ERROR
+
+                VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE=1;
+                //vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor -
+
+                 // Correct the MINOR Error
+                 //VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT=0; // State should change back to RUNNING
+                 //vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor -
+
+
+                //VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT=1;
+                //vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor -
+
+
+
+
+                xSemaphoreGive(vcuKey);
+            }
 
         }else if(state == RUNNING){
             UARTSend(PC_UART, "Current state is RUNNING. \r\n");
@@ -315,7 +348,7 @@ int main(void)
              "HV_Current_OutOfRange_T",
              /* The timer period in ticks, must be
              greater than 0. */
-             pdMS_TO_TICKS(20),
+             20,
              /* The timers will auto-reload themselves
              when they expire. */
              pdFALSE,
@@ -333,7 +366,7 @@ int main(void)
              "HV_Voltage_OutOfRange_T",
              /* The timer period in ticks, must be
              greater than 0. */
-             pdMS_TO_TICKS(20),
+             20,
              /* The timers will auto-reload themselves
              when they expire. */
              pdFALSE,
@@ -400,6 +433,8 @@ int main(void)
          /* The timer was not created. */
         UARTSend(PC_UART, "HV Voltage Fault timer was not created.\r\n");
     }
+
+    // -- New Code added by jjkhan - Check if Timer Created
 /*********************************************************************************
  *                          freeRTOS TASK & QUEUE CREATION
  *********************************************************************************/
