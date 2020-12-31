@@ -5,7 +5,7 @@
  *      Author: gabriel
  *
  *
- *  Last Modified on: Dec 16, 2020 -> By jjkhan
+ *  Last Modified on: Dec 30, 2020 -> By jjkhan
  */
 
 #ifndef PHANTOM_TASKS_TASK_STATEMACHINE_H_
@@ -43,6 +43,11 @@ void vStateMachineTask(void *);
 
 extern State state; // Moved it from task_statemachine source file - jjkhan
 
+// Defined in main.c, used in the task for HV Current and Voltage Out of range sensors.
+extern TimerHandle_t xTimers[];
+extern volatile bool HV_VOLTAGE_TIMER_EXPIRED;
+extern volatile bool HV_CURRENT_TIMER_EXPIRED;
+
 /* Task Helper Functions. */
 
 static int checkSDC(void);
@@ -54,7 +59,7 @@ static int isRTDS(void);
 static int isTSAL_ON(void);
 static uint32_t faultLocation(void);
 static int anyFaults(void);
-static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TickType_t* timer1, uint8_t* timer2_started, TickType_t* timer2, TickType_t timer_threshold);
+static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TimerHandle_t* timer1, uint8_t* timer2_started, TimerHandle_t* timer2);
 
 
 #endif /* PHANTOM_TASKS_TASK_STATEMACHINE_H_ */
