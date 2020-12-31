@@ -128,7 +128,7 @@ static int isTSAL_ON(void){
 
 static uint32_t faultLocation(void){
 
-    int systemFaultIndicator = 0;
+    uint32_t systemFaultIndicator = 0;
 
     // Check if fault in Shutdown Circuit
     if(checkSDC()){
@@ -176,9 +176,11 @@ static int anyFaults(void){
     return NOFAULT;
 }
 
-static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TimerHandle_t* timer1, uint8_t* timer2_started, TimerHandle_t* timer2){
+//static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TimerHandle_t* timer1, uint8_t* timer2_started, TimerHandle_t* timer2){
 
-    static State state;
+static State getNewState(State currentState, uint32_t faultNumber,TimerHandle_t* xTimers, uint8_t* timer1_started, uint8_t* timer2_started){
+
+     State state_temp;
 
     /*
      * The following Faults are common to TRACTIVE_ON, RUNNING and MINOR_FAULT States + they have same state change -> i.e. change state to SEVERE_FAULT.
@@ -187,18 +189,31 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
      *
      */
 
-    // // Shutdown Circuit Fault or IMD Fault Checks - its Severe so don't need to check other faults
-    if((faultNumber && (1<<SDC_FAULT)) || (faultNumber && (1 << IMD_SYSTEM_FAULT))){
-        return SEVERE_FAULT;
-    }
+
+     // Shutdown Circuit Fault - its Severe so don't need to check other faults
+       if(faultNumber && (1<<SDC_FAULT)){
+           if (checkSDC()){
+               return SEVERE_FAULT;
+           }
+       }
+
+     // IMD Fault Checks - its Severe so don't need to check other faults
+       if(faultNumber && (1 << IMD_SYSTEM_FAULT)){
+           if(checkIMD()){
+               return SEVERE_FAULT;
+           }
+       }
 
 
     // Check BSE APPS Faults
     if(faultNumber && (1<<BSE_APPS_FAULT)){ // Either BSE or APPS Fault
-        if(!VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){ // if the fault isn't the Minor Fault, then set SEVERE_FAULT and yield, don't need to check for minor
-            return SEVERE_FAULT;
+
+        if(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){ // if the fault isn't the Minor Fault, then set SEVERE_FAULT and yield, don't need to check for minor
+            state_temp= MINOR_FAULT;
         }else{
-            state = MINOR_FAULT; // Minor Fault, so we should still look at the
+            state_temp = SEVERE_FAULT;
+            return state_temp;
+
         }
     }
 
@@ -206,9 +221,12 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
     if(faultNumber && (1<<CAN_FAULT)){ // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
 
         if(VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1){ // Severe Fault message from CAN, so don't need to check other faults, change state and yield task
-            return SEVERE_FAULT;
+
+            state_temp = SEVERE_FAULT;
+            return state_temp;
         }else{
-            state = MINOR_FAULT; // Minor fault, we should still look at the
+
+            state_temp = MINOR_FAULT; // Minor fault, we should still look at the
         }
     }
 
@@ -223,15 +241,17 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
         */
 
        if(VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT && (*timer2_started)){
+
            if(HV_VOLTAGE_TIMER_EXPIRED){ // if timer2_value>set_threshold, switch to SEVERE_FAULT
                return SEVERE_FAULT;
            }else{
-               state = MINOR_FAULT;
+               state_temp = MINOR_FAULT;
            }
        }else if(VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT){
-            if(xTimerStart(*timer2, pdMS_TO_TICKS(10))){
+
+            if(xTimerStart(xTimers[2], pdMS_TO_TICKS(10))){
                 *timer2_started = 1; // Start timer
-                state = MINOR_FAULT;
+                state_temp = MINOR_FAULT;
             }
 
        }
@@ -241,7 +261,8 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
         */
 
        if(VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE || VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE){
-           state = MINOR_FAULT;   // Give a warning
+
+           state_temp = MINOR_FAULT;   // Give a warning
        }
 
 
@@ -249,10 +270,11 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
 
         if(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT){
 
-              if((currentState == TRACTIVE_ON) && isRTDS() && (state!=MINOR_FAULT)  ){ // Check if RTDS is set and previous fault checks didn't give MINOR_FAULT
-                          state = TRACTIVE_ON;
+
+              if((currentState == TRACTIVE_ON) && isRTDS() && (state_temp!=MINOR_FAULT)  ){ // Check if RTDS is set and previous fault checks didn't give MINOR_FAULT
+                          state_temp = TRACTIVE_ON;
               }else{
-                  state = MINOR_FAULT; // previous fault checks have a MINOR_FAULT, can't ignore it
+                  state_temp = MINOR_FAULT; // previous fault checks have a MINOR_FAULT, can't ignore it
               }
          }
 
@@ -272,27 +294,34 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
         if(VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE){
 
             if(currentState==RUNNING){
+
                 return SEVERE_FAULT;  // In RUNNING State, if HV current out of safe range, state changes to SEVERE_FAULT, no need for timers
             }else{
 
-                if(*timer1_started && HV_CURRENT_TIMER_EXPIRED){    // check if this first time HV current sensed out of safe range, if true then check if timer1>timer_threshold
-                    return SEVERE_FAULT;
+                  if(*timer1_started){
 
-                }else{ // First time HV current out of safe range, start timer
+                      if(HV_CURRENT_TIMER_EXPIRED){    // check if this first time HV current sensed out of safe range, if true then check if timer1>timer_threshold
+                          return SEVERE_FAULT;
+                      }
 
-                    if(xTimerStart(*timer1, pdMS_TO_TICKS(10))){
-                        *timer1_started = 1; // Start timer
-                        state = MINOR_FAULT;
-                    }
+                  }else{ // First time HV current out of safe range, start timer
 
-                }
-            }
+                          if(xTimerStart(xTimers[3], pdMS_TO_TICKS(20))){
+                              *timer1_started = 1; // Start timer
+                              state_temp = MINOR_FAULT;
+                          }
 
-        }
+                   }
+
+
+             }
+
+         }
 
     }
 
-    return state;  // At this point you will return MINOR_FAULT
+
+    return state_temp;  // At this point you will return MINOR_FAULT
 
 }
 
@@ -327,14 +356,14 @@ void vStateMachineTask(void *pvParameters){
 
 
     // ++ For HV Current
-    uint8_t timer1_started = 0;
-    TimerHandle_t timer1_value = xTimers[2]; // HV Current Out of Range Timer
+    volatile uint8_t timer1_started = 0;
+    //TimerHandle_t timer1_value = xTimers[2]; // HV Current Out of Range Timer
     // -- For HV Current
 
 
     // ++ For HV Voltage
-    uint8_t timer2_started = 0;
-    TimerHandle_t timer2_value = xTimers[3]; // HV Voltage Out of Range Timer
+    volatile uint8_t timer2_started = 0;
+    //TimerHandle_t timer2_value = xTimers[3]; // HV Voltage Out of Range Timer
     // -- For HV Voltage
 
 
@@ -368,15 +397,17 @@ void vStateMachineTask(void *pvParameters){
             if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
 
             /* ++ New Code - Added by jjkhan */
-            if(!isTSAL_ON()){ state = SEVERE_FAULT;} // TSAL light is OFF - shouldn't happen, but if it does, handle it.
-            if(anyFaults()){
+            if(!isTSAL_ON()){
+                state = SEVERE_FAULT;// TSAL light is OFF - shouldn't happen, but if it does, handle it - Redundant
+            }else if(anyFaults()){
+
                uint32_t faultNumber = faultLocation();
-               state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
+               //state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
+               state = getNewState(state, faultNumber, xTimers, &timer1_started, &timer2_started);
+
+            }else if(isRTDS()){
+                state = RUNNING;
             }
-           // Checked for all Faults above and now if no MINOR_FAULTS were found, then we can move to RUNNING; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
-           if(isRTDS() && (state!=MINOR_FAULT) ){
-               state = RUNNING;
-           }
 
            /* -- New Code - Added by jjkhan */
 
@@ -392,7 +423,8 @@ void vStateMachineTask(void *pvParameters){
             // Find fault in the system
             if(anyFaults()){
                        uint32_t faultNumber = faultLocation();
-                       state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
+                       //state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
+                       state = getNewState(state, faultNumber, xTimers, &timer1_started, &timer2_started);
               }
             // Checked for all Faults above and now its either: 1) there were MINOR_FAULTS detected or  2) RTDS was flipped to off; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
 
@@ -401,6 +433,7 @@ void vStateMachineTask(void *pvParameters){
             }else if(!isRTDS()){
                 state=TRACTIVE_ON; // Ready To Drive Is Not Set and there were no MINOR_FAULTS, go back to TRACTIVE_ON
             }
+
 
 
             /* -- New Code - Added by jjkhan */
@@ -414,7 +447,8 @@ void vStateMachineTask(void *pvParameters){
             // Check if faults have been cleared -> Could run the same fault checking scenario above.
             if(anyFaults()){
                 uint32_t faultNumber = faultLocation();
-                state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
+                //state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
+                state = getNewState(state, faultNumber, xTimers, &timer1_started, &timer2_started);
             }
 
            // Checked for all Faults above and now if no MINOR_FAULTS were found, then we can move back to TRACTIVE_ON if RTDS is on and TSAL is ON, else we go to TRACTIVE_OFF; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
