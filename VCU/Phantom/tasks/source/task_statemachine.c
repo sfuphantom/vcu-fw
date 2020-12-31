@@ -176,7 +176,7 @@ static int anyFaults(void){
     return NOFAULT;
 }
 
-static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TickType_t* timer1, uint8_t* timer2_started, TickType_t* timer2, TickType_t timer_threshold){
+static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TimerHandle_t* timer1, uint8_t* timer2_started, TimerHandle_t* timer2){
 
     static State state;
 
@@ -223,16 +223,17 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
         */
 
        if(VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT && (*timer2_started)){
-           if(*timer2>timer_threshold){ // if timer2_value>set_threshold, switch to SEVERE_FAULT
-               *timer2_started = 0; //should reset timer here?
+           if(HV_VOLTAGE_TIMER_EXPIRED){ // if timer2_value>set_threshold, switch to SEVERE_FAULT
                return SEVERE_FAULT;
            }else{
                state = MINOR_FAULT;
            }
        }else if(VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT){
-            *timer2_started = 1; // Start timer
-            *timer2 = xTaskGetTickCount();
-            state = MINOR_FAULT;
+            if(xTimerStart(*timer2, pdMS_TO_TICKS(10))){
+                *timer2_started = 1; // Start timer
+                state = MINOR_FAULT;
+            }
+
        }
 
        /*
@@ -274,14 +275,16 @@ static State getNewState(State currentState, uint32_t faultNumber, uint8_t* time
                 return SEVERE_FAULT;  // In RUNNING State, if HV current out of safe range, state changes to SEVERE_FAULT, no need for timers
             }else{
 
-                if(*timer1_started && *timer1>timer_threshold){    // check if this first time HV current sensed out of safe range, if true then check if timer1>timer_threshold
-                    *timer1_started = 0;   // Reset Timer
+                if(*timer1_started && HV_CURRENT_TIMER_EXPIRED){    // check if this first time HV current sensed out of safe range, if true then check if timer1>timer_threshold
                     return SEVERE_FAULT;
 
                 }else{ // First time HV current out of safe range, start timer
-                    *timer1_started =1;
-                    *timer1 = xTaskGetTickCount();
-                    state = MINOR_FAULT;
+
+                    if(xTimerStart(*timer1, pdMS_TO_TICKS(10))){
+                        *timer1_started = 1; // Start timer
+                        state = MINOR_FAULT;
+                    }
+
                 }
             }
 
@@ -325,26 +328,21 @@ void vStateMachineTask(void *pvParameters){
 
     // ++ For HV Current
     uint8_t timer1_started = 0;
-    TickType_t timer1_value;
+    TimerHandle_t timer1_value = xTimers[2]; // HV Current Out of Range Timer
     // -- For HV Current
 
 
     // ++ For HV Voltage
     uint8_t timer2_started = 0;
-    TickType_t timer2_value;
+    TimerHandle_t timer2_value = xTimers[3]; // HV Voltage Out of Range Timer
     // -- For HV Voltage
-
-
-    // Timer Threshold
-    TickType_t timer_threshold = pdMS_TO_TICKS(5); // 5 milliseconds - just a random value  for now.
 
 
     /* -- Added to simulate Timer for HV Current and Voltage Fault, will implement proper timer later - jjkhan */
 
     while(true)
     {
-        // Wait for the next cycle
-         vTaskDelayUntil(&xLastWakeTime, xFrequency);
+
 
         // for timing:
         gioSetBit(hetPORT1, 9, 1);
@@ -373,7 +371,7 @@ void vStateMachineTask(void *pvParameters){
             if(!isTSAL_ON()){ state = SEVERE_FAULT;} // TSAL light is OFF - shouldn't happen, but if it does, handle it.
             if(anyFaults()){
                uint32_t faultNumber = faultLocation();
-               state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value, timer_threshold);
+               state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
             }
            // Checked for all Faults above and now if no MINOR_FAULTS were found, then we can move to RUNNING; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
            if(isRTDS() && (state!=MINOR_FAULT) ){
@@ -394,7 +392,7 @@ void vStateMachineTask(void *pvParameters){
             // Find fault in the system
             if(anyFaults()){
                        uint32_t faultNumber = faultLocation();
-                       state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value, timer_threshold);
+                       state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
               }
             // Checked for all Faults above and now its either: 1) there were MINOR_FAULTS detected or  2) RTDS was flipped to off; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
 
@@ -416,7 +414,7 @@ void vStateMachineTask(void *pvParameters){
             // Check if faults have been cleared -> Could run the same fault checking scenario above.
             if(anyFaults()){
                 uint32_t faultNumber = faultLocation();
-                state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value, timer_threshold);
+                state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
             }
 
            // Checked for all Faults above and now if no MINOR_FAULTS were found, then we can move back to TRACTIVE_ON if RTDS is on and TSAL is ON, else we go to TRACTIVE_OFF; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
@@ -451,6 +449,9 @@ void vStateMachineTask(void *pvParameters){
 
         // for timing:
         gioSetBit(hetPORT1, 9, 0);
+
+        // Wait for the next cycle
+         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
     }
 }
