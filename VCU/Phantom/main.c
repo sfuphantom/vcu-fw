@@ -69,7 +69,7 @@
 /*********************************************************************************
  *                          SOFTWARE TIMER INITIALIZATION
  *********************************************************************************/
-#define NUMBER_OF_TIMERS   2
+#define NUMBER_OF_TIMERS   4
 
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
@@ -80,6 +80,18 @@ bool THROTTLE_AVAILABLE = false; // used to only enable throttle after the buzze
 
 void Timer_300ms(TimerHandle_t xTimers);
 void Timer_2s(TimerHandle_t xTimers);
+
+
+
+// ++ Added by jjkhan
+
+volatile bool HV_CURRENT_TIMER_EXPIRED = false;
+volatile bool HV_VOLTAGE_TIMER_EXPIRED = false;
+
+
+void Timer_HV_CurrentRange(TimerHandle_t xTimers);
+void Timer_HV_VoltageRange(TimerHandle_t xTimers);
+// -- Added by jjkhan
 
 /*********************************************************************************
  *                          STATE ENUMERATION
@@ -124,12 +136,21 @@ void stateMachineTaskTest(void* parameters){
         if(state == TRACTIVE_OFF){
 
             UARTSend(PC_UART, "Current state is TRACTIVE_OFF. \r\n");
-            vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(20));
 
+            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20))){
+                VCUDataPtr->DigitalVal.RTDS = 1; // Set RTD
+                vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor
 
-            if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(20))){ // take VCU key to change VCU Data Structure and see how the state machine task responds
+                UARTSend(PC_UART, "Task Returned. \r\n");
+                VCUDataPtr->DigitalVal.RTDS = 0; // Clear RTD
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;  // Introduce any fault you like
+                vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));
 
-                VCUDataPtr->DigitalVal.RTDS = 1; // this should change the state of the VCU to Severe Fault and keep it there.
+                VCUDataPtr->DigitalVal.RTDS = 0; // Clear RTD
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;  // clear the fault.
+                vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));
+
+                VCUDataPtr->DigitalVal.TSAL_ON = 1; // Set TSAL on, the state should change to TRACTIVE_ON and stay there.
                 xSemaphoreGive(vcuKey);
             }
 
@@ -144,11 +165,6 @@ void stateMachineTaskTest(void* parameters){
 
         }else if(state == SEVERE_FAULT){
             UARTSend(PC_UART, "Current state is SEVERE_FAULT. \r\n");
-
-            if(VCUDataPtr->DigitalVal.RTDS){ // Check if RTD is set
-
-            }
-
         }else{
             UARTSend(PC_UART, "Current state unknown. \r\n");
         }
@@ -308,7 +324,7 @@ int main(void)
              is initialised to 0. */
              ( void * ) 0,
              /* Callback function for when the timer expires*/
-             HV_CurrentRange_Check
+             Timer_HV_CurrentRange
            );
 
     xTimers[3] = xTimerCreate
@@ -326,7 +342,7 @@ int main(void)
              is initialised to 0. */
              ( void * ) 0,
              /* Callback function for when the timer expires*/
-             HV_VoltageRange_Check
+             Timer_HV_VoltageRange
            );
 
     // -- New code by jjkhan - Timeres for HV Current and Voltage Flags
@@ -446,7 +462,7 @@ int main(void)
 
 
     // ++ Added by jjkhan - State machine Test Task
-    if(xTaskCreate(stateMachineTaskTest, (const char*)"State Machine Task Test", 240, NULL, tskIDLE_PRIORITY+2, &testingStateMachineTask)!= pdTRUE){
+    if(xTaskCreate(stateMachineTaskTest, (const char*)"State Machine Task Test", 240, NULL, tskIDLE_PRIORITY, &testingStateMachineTask)!= pdTRUE){
         sciSend(PC_UART,23,(unsigned char*)"TestTask Creation Failed.\r\n");
         while(1);
     }
@@ -532,12 +548,14 @@ void gioNotification(gioPORT_t *port, uint32 bit)
 
  // ++ Added by jjkhan - Timer Callbacks for HV Current and Voltage Fault Timers
 
- void HV_CurrentRange_Check(TimerHandle_t xTimers){
+ void Timer_HV_CurrentRange(TimerHandle_t xTimers){
+     HV_CURRENT_TIMER_EXPIRED = true; //  i.e. Timer value = threshold
+
 
  }
 
- void HV_VoltageRange_Check(TimerHandle_t xTimers){
-
+ void Timer_HV_VoltageRange(TimerHandle_t xTimers){
+     HV_VOLTAGE_TIMER_EXPIRED = true; //  i.e. Timer value = threshold
  }
 
  // -- Added by jjkhan - Timer Callbacks for HV Current and Voltage Fault Timers
