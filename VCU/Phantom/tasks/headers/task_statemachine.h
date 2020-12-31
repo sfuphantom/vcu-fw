@@ -25,21 +25,17 @@
  *  Possible Fault Locations - Bit Number
  *
  */
-#define SDC_FAULT              1U
-#define BSE_APPS_FAULT         2U
-#define HV_LV_FAULT            3U
-#define CAN_FAULT              4U
-#define IMD_SYSTEM_FAULT       5U
+#define SDC_FAULT              0U
+#define BSE_APPS_FAULT         1U
+#define HV_LV_FAULT            2U
+#define CAN_FAULT              3U
+#define IMD_SYSTEM_FAULT       4U
 
-/*
 
-/* SET/RESET */
+
+/* SET RESET */
 #define SET         1U
 #define ON          SET
-
-
-void vStateMachineTask(void *);
-
 
 extern State state; // Moved it from task_statemachine source file - jjkhan
 
@@ -59,7 +55,14 @@ static int isRTDS(void);
 static int isTSAL_ON(void);
 static uint32_t faultLocation(void);
 static int anyFaults(void);
-static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TimerHandle_t* timer1, uint8_t* timer2_started, TimerHandle_t* timer2);
+//static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TimerHandle_t* timer1, uint8_t* timer2_started, TimerHandle_t* timer2);
+static State getNewState(State currentState, uint32_t faultNumber,TimerHandle_t* xTimers, uint8_t* timer1_started, uint8_t* timer2_started);
+
+/* Task */
+void vStateMachineTask(void *);
+
+
+
 
 
 #endif /* PHANTOM_TASKS_TASK_STATEMACHINE_H_ */
