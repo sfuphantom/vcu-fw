@@ -133,6 +133,7 @@ void stateMachineTaskTest(void* parameters){
     bool tractive_off_tested = false;
 
 
+
     while(1){
 
         if(state == TRACTIVE_OFF){
@@ -173,7 +174,7 @@ void stateMachineTaskTest(void* parameters){
 
                 // Introduce a MINOR Error in the system - state should change MINOR_ERROR
 
-                VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE=1;
+                //VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT=1;
                 //vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor -
 
                  // Correct the MINOR Error
@@ -185,24 +186,25 @@ void stateMachineTaskTest(void* parameters){
                 //vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor -
                 //VCUDataPtr->DigitalVal.RTDS = 1;
 
-
+                VCUDataPtr->DigitalVal.RTDS=1;
 
                 xSemaphoreGive(vcuKey);
             }
 
         }else if(state == RUNNING){
             //UARTSend(PC_UART, "Current state is RUNNING. \r\n");
-            /*if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20))){
-                UARTSend(PC_UART, "Key Accessed.\r\n");
-                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
+            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20))){
+                //UARTSend(PC_UART, "Key Accessed.\r\n");
+                VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT = 1;
                 xSemaphoreGive(vcuKey);
-            }*/
+            }
 
 
         }else if(state == MINOR_FAULT){
             //UARTSend(PC_UART, "Current state is MINOR_FAULT. \r\n");
 
         }else if(state == SEVERE_FAULT){
+
             //UARTSend(PC_UART, "Current state is SEVERE_FAULT. \r\n");
         }else{
             //UARTSend(PC_UART, "Current state unknown. \r\n");
