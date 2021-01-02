@@ -248,7 +248,7 @@ void vThrottleTask(void *pvParameters){
         FP_sensor_diff = FP_sensor_diff / ((FP_sensor_1_sum + FP_sensor_2_sum) / 2);
 
         // 10% APPS redundancy check
-        if(FP_sensor_diff > 0.10)
+        if (FP_sensor_diff > 0.10)
         {
             UARTSend(PC_UART, "SENSOR DIFFERENCE FAULT\r\n");
             VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1;
@@ -263,16 +263,23 @@ void vThrottleTask(void *pvParameters){
             gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
         }
 
-        // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25% 
-        // Need to change condition and formula for this if statement
-        // if( BSE_SENSOR_SUM > BSE_MIN_VALUE && [foo var here!!!] >= 1.25 * APPS1_MIN_VALUE ){
-            // Set state to fault
 
-            // Disable tractive system
 
-            // Motor stops
+        // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25% - jaypacamarra
+         if ( BSE_sensor_sum >= BRAKING_THRESHOLD &&
+              FP_sensor_1_sum >= APPS1_MIN_VALUE + 0.25 * (APPS1_MAX_VALUE - APPS1_MIN_VALUE) &&
+              FP_sensor_2_sum >= APPS2_MIN_VALUE + 0.25 * (APPS2_MAX_VALUE - APPS2_MIN_VALUE) )
+         {
+             // Set state to fault
+             VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 1;
+         }
+         else
+         {
+             // No fault
+             VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
+         }
 
-        }
+    
 
         // What is this?
         if (state == RUNNING && THROTTLE_AVAILABLE)
@@ -302,6 +309,6 @@ void vThrottleTask(void *pvParameters){
 
         // for timing:
         gioSetBit(hetPORT1, 5, 0);
-
     }
+
 }
