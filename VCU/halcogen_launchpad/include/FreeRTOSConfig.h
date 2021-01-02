@@ -100,7 +100,7 @@
 #define configCPU_CLOCK_HZ			  ( ( unsigned portLONG ) 80000000 ) /* Timer clock. */
 #define configTICK_RATE_HZ			  ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		  ( 5 )
-#define configMINIMAL_STACK_SIZE	  ( ( unsigned portSHORT ) 128 )
+#define configMINIMAL_STACK_SIZE	  ( ( unsigned portSHORT ) 256 )
 #define configTOTAL_HEAP_SIZE		  ( ( size_t ) 8192 )
 #define configMAX_TASK_NAME_LEN		  ( 16 )
 #define configIDLE_SHOULD_YIELD		  1
@@ -132,8 +132,8 @@
 
 /* Timers */
 #define configUSE_TIMERS                1
-#define configTIMER_TASK_PRIORITY		(configMAX_PRIORITIES-1)
-#define configTIMER_QUEUE_LENGTH		4         // We have two timer tasks - added by jjkhan
+#define configTIMER_TASK_PRIORITY		(1)
+#define configTIMER_QUEUE_LENGTH		10         // We have two timer tasks - added by jjkhan
 #define configTIMER_TASK_STACK_DEPTH	(configMINIMAL_STACK_SIZE*2)   // Fixed by jjkhan -> Without Task Stack Depth, no task will be created.
 
 /* USER CODE BEGIN (3) */
