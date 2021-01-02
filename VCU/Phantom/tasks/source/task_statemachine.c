@@ -199,7 +199,6 @@ void vStateMachineTask(void *pvParameters){
     xLastWakeTime = xTaskGetTickCount();
 
 
-
     /* ++ Added to simulate Timer for HV Current and Voltage Fault, will implement proper timer later - jjkhan */
 
 
@@ -259,27 +258,25 @@ void vStateMachineTask(void *pvParameters){
 
                   // Shutdown Circuit Fault - its Severe so don't need to check other faults
                   if((faultNumber & (1U<<SDC_FAULT))){
-                     UARTSend(PC_UART,"SDC FAULT DETECTED.\r\n");
+                     //UARTSend(PC_UART,"SDC FAULT DETECTED.\r\n");
                      if (checkSDC()){
                          temp_state= SEVERE_FAULT;
                      }
                   }else if((faultNumber & (1U << IMD_SYSTEM_FAULT))){
 
                       // IMD Fault Checks - its Severe so don't need to check other faults
-                     UARTSend(PC_UART, "IMD FAULT DETECTED. \r\n");
+                     //UARTSend(PC_UART, "IMD FAULT DETECTED. \r\n");
                      if(checkIMD()){
                          temp_state=SEVERE_FAULT;
                      }
                   }
                   // Check BSE APPS Faults
                   if((faultNumber & (1U<<BSE_APPS_FAULT))){ // Either BSE or APPS Fault
-                      UARTSend(PC_UART, "BSE_APPS FAULT DETECTED. \r\n");
+                      //UARTSend(PC_UART, "BSE_APPS FAULT DETECTED. \r\n");
                       if(!(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)){ // if the fault isn't the Minor Fault, then set SEVERE_FAULT and yield, don't need to check for minor
                           temp_state= SEVERE_FAULT;
                       }
                   }
-
-
 
                   if((faultNumber & (1U << HV_LV_FAULT))){
                       //UARTSend(PC_UART, "HV  FAULT DETECTED. \r\n");
@@ -306,7 +303,7 @@ void vStateMachineTask(void *pvParameters){
 
                   // Check CAN Faults
                   if((faultNumber & (1U<<CAN_FAULT))){ // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
-                      UARTSend(PC_UART, "CAN FAULT DETECTED. \r\n");
+                      //UARTSend(PC_UART, "CAN FAULT DETECTED. \r\n");
 
                       if(VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1){ // Severe Fault message from CAN, so don't need to check other faults, change state and yield task
                           temp_state= SEVERE_FAULT;
@@ -360,7 +357,6 @@ void vStateMachineTask(void *pvParameters){
                   state = temp_state;
 
 
-              // -- Moved the function getNewState()  field here - having issues with Function call - idk why.
 
             }else if(isRTDS()){
                 state = RUNNING;
@@ -381,31 +377,28 @@ void vStateMachineTask(void *pvParameters){
 
             if(anyFaults()){
                        faultNumber = faultLocation();
-                       //state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
-                       //state = getNewState(state, &faultNumber, xTimers, &timer1_started, &timer2_started);
 
-                       // ++ Moved the function getNewState()  field here - having issues with Function call - idk why.
-                         UARTSend(PC_UART,"Got Fault number. \r\n");
+                         //UARTSend(PC_UART,"Got Fault number. \r\n");
                          if((faultNumber & (1U<<SDC_FAULT))){
-                            UARTSend(PC_UART,"SDC FAULT DETECTED.\r\n");
+                            //UARTSend(PC_UART,"SDC FAULT DETECTED.\r\n");
                             if (checkSDC()){
                                 temp_state= SEVERE_FAULT;
                             }
                          }else if((faultNumber & (1U << IMD_SYSTEM_FAULT))){
-                            UARTSend(PC_UART, "IMD FAULT DETECTED. \r\n");
+                            //UARTSend(PC_UART, "IMD FAULT DETECTED. \r\n");
                             if(checkIMD()){
                                 temp_state=SEVERE_FAULT;
                             }
                          }
 
                          if((faultNumber & (1U<<BSE_APPS_FAULT))){ // Either BSE or APPS Fault
-                             UARTSend(PC_UART, "BSE_APPS FAULT DETECTED. \r\n");
+                             //UARTSend(PC_UART, "BSE_APPS FAULT DETECTED. \r\n");
                              if(!(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)){ // if the fault isn't the Minor Fault, then set SEVERE_FAULT and yield, don't need to check for minor
                                  temp_state= SEVERE_FAULT;
                              }
                          }
                          if((faultNumber & (1U<<CAN_FAULT))){ // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
-                             UARTSend(PC_UART, "CAN FAULT DETECTED. \r\n");
+                             //UARTSend(PC_UART, "CAN FAULT DETECTED. \r\n");
 
                              if(VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1){ // Severe Fault message from CAN, so don't need to check other faults, change state and yield task
                                  temp_state= SEVERE_FAULT;
@@ -469,7 +462,7 @@ void vStateMachineTask(void *pvParameters){
                                  }
                              }
                         }
-                         // ++ Moved the function getNewState()  field here - having issues with Function call - Need to Debug
+
             }
 
             if(faultNumber==0){
@@ -482,15 +475,6 @@ void vStateMachineTask(void *pvParameters){
                 state = temp_state;
             }
 
-            // Checked for all Faults above and now its either: 1) there were MINOR_FAULTS detected or  2) RTDS was flipped to off; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
-
-            /*
-            if(isRTDS() && state==MINOR_FAULT){
-                state = MINOR_FAULT;
-            }else if(!isRTDS()){
-                state=TRACTIVE_ON; // Ready To Drive Is Not Set and there were no MINOR_FAULTS, go back to TRACTIVE_ON
-            }*/
-
             /* -- New Code - Added by jjkhan */
         }else if (state == MINOR_FAULT){
 
@@ -502,8 +486,6 @@ void vStateMachineTask(void *pvParameters){
             // Check if faults have been cleared -> Could run the same fault checking scenario above.
             if(anyFaults()){
                 faultNumber = faultLocation();
-                //state = getNewState(state,faultNumber,&timer1_started, &timer1_value, &timer2_started, &timer2_value);
-                //state = getNewState(state, &faultNumber, xTimers, &timer1_started, &timer2_started);
 
                 // In MINOR FAULT state, only need to worry about MINOR FAULTS.
 
@@ -525,7 +507,7 @@ void vStateMachineTask(void *pvParameters){
                          }else if(VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE){
 
                              if(HV_CURRENT_TIMER_EXPIRED){
-                                 UARTSend(PC_UART, "Timeout. \r\n");
+                                 //UARTSend(PC_UART, "Timeout. \r\n");
                                  temp_state = SEVERE_FAULT;
                                  timer1_started = 0; // Reset Timer
                                  HV_CURRENT_TIMER_EXPIRED = false;
@@ -535,6 +517,7 @@ void vStateMachineTask(void *pvParameters){
                              }
 
                          }
+
                      }else if(VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE){
                          temp_state = MINOR_FAULT;
 
@@ -556,31 +539,24 @@ void vStateMachineTask(void *pvParameters){
            // Checked for all Faults above and now if no MINOR_FAULTS were found, then we can move back to TRACTIVE_ON if RTDS is on and TSAL is ON, else we go to TRACTIVE_OFF; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
 
             if(faultNumber==0){
-                if(isRTDS() & isTSAL_ON()){  // RTDS =1 and HV present
-                    state = RUNNING;
-                }else if(!isRTDS() & isTSAL_ON()){ // RTDS = 0 but HV present
-                    state = TRACTIVE_ON;
-                }else{  // RTDS = 0 and HV not present
-                    state = TRACTIVE_OFF;
-                }
+
+                    if(isRTDS() & isTSAL_ON()){  // RTDS =1 and HV present
+                        state = RUNNING;
+
+                    }else if(!isRTDS() & isTSAL_ON()){ // RTDS = 0 but HV present
+                        state = TRACTIVE_ON;
+                    }else{  // RTDS = 0 and HV not present
+                        state = TRACTIVE_OFF;
+                    }
+                    // Reset the HV timer_started flags as the fault was fixed before timeout
+                    if(timer1_started || timer2_started){
+                        timer1_started = 0;
+                        timer2_started = 0;
+                    }
 
             }else{
                 state = temp_state;
             }
-
-            /*
-            if(state!=MINOR_FAULT){
-                if(isRTDS() && isTSAL_ON()){  // RTDS =1 and HV present
-                    state = RUNNING;
-                }else if(!isRTDS() && isTSAL_ON()){ // RTDS = 0 but HV present
-                    state = TRACTIVE_ON;
-                }else{  // RTDS = 0 and HV not present
-                    state = TRACTIVE_OFF;
-                }
-
-            }else{ // We could check if RTDS is still ON here despite being in MINOR_FAULT??
-                state = MINOR_FAULT;
-            }*/
 
             /* -- New Code - Added by jjkhan */
         }else if(state==SEVERE_FAULT){
@@ -593,11 +569,6 @@ void vStateMachineTask(void *pvParameters){
             }else{
                 state = TRACTIVE_OFF;
             }
-
-            /*
-            if(!isRTDS() && !anyFaults()){ // Move to Tractive off iff no faults and RTD signal not set.
-                state = TRACTIVE_OFF; // All faults cleared. Move to starting state
-            }*/
 
             /* -- New Code - Added by jjkhan */
         }
