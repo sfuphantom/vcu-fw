@@ -46,17 +46,15 @@ extern volatile bool HV_CURRENT_TIMER_EXPIRED;
 
 /* Task Helper Functions. */
 
-static int checkSDC(void);
-static int checkIMD(void);
-static int checkBSE_APPS(void);
-static int CheckHVLVSensor(void);
-static int checkCAN(void);
-static int isRTDS(void);
-static int isTSAL_ON(void);
-static uint32_t faultLocation(void);
-static int anyFaults(void);
-//static State getNewState(State currentState, uint32_t faultNumber, uint8_t* timer1_started, TimerHandle_t* timer1, uint8_t* timer2_started, TimerHandle_t* timer2);
-static State getNewState(State currentState, uint32_t faultNumber,TimerHandle_t* xTimers, uint8_t* timer1_started, uint8_t* timer2_started);
+int checkSDC(void);
+int checkIMD(void);
+int checkBSE_APPS(void);
+int CheckHVLVSensor(void);
+int checkCAN(void);
+int isRTDS(void);
+int isTSAL_ON(void);
+uint16_t faultLocation(void);
+int anyFaults(void);
 
 /* Task */
 void vStateMachineTask(void *);
