@@ -137,7 +137,7 @@ void stateMachineTaskTest(void* parameters){
 
         if(state == TRACTIVE_OFF){
 
-            UARTSend(PC_UART, "Current state is TRACTIVE_OFF. \r\n");
+            //UARTSend(PC_UART, "TRACTIVE_OFF.\r\n");
 
 
             if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20)) && !tractive_off_tested){
@@ -162,7 +162,7 @@ void stateMachineTaskTest(void* parameters){
 
 
         }else if(state == TRACTIVE_ON){
-            UARTSend(PC_UART, "Current state is TRACTIVE_ON. \r\n");
+            //UARTSend(PC_UART, "TRACTIVE_ON.\r\n");
 
             if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20))&& tractive_off_tested){
 
@@ -183,7 +183,7 @@ void stateMachineTaskTest(void* parameters){
 
                 //VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT=1;
                 //vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));  // Create  delay to check the response of state machine task on serial monitor -
-
+                //VCUDataPtr->DigitalVal.RTDS = 1;
 
 
 
@@ -191,15 +191,21 @@ void stateMachineTaskTest(void* parameters){
             }
 
         }else if(state == RUNNING){
-            UARTSend(PC_UART, "Current state is RUNNING. \r\n");
+            //UARTSend(PC_UART, "Current state is RUNNING. \r\n");
+            /*if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20))){
+                UARTSend(PC_UART, "Key Accessed.\r\n");
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
+                xSemaphoreGive(vcuKey);
+            }*/
+
 
         }else if(state == MINOR_FAULT){
-            UARTSend(PC_UART, "Current state is MINOR_FAULT. \r\n");
+            //UARTSend(PC_UART, "Current state is MINOR_FAULT. \r\n");
 
         }else if(state == SEVERE_FAULT){
-            UARTSend(PC_UART, "Current state is SEVERE_FAULT. \r\n");
+            //UARTSend(PC_UART, "Current state is SEVERE_FAULT. \r\n");
         }else{
-            UARTSend(PC_UART, "Current state unknown. \r\n");
+            //UARTSend(PC_UART, "Current state unknown. \r\n");
         }
 
         vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));
@@ -388,36 +394,37 @@ int main(void)
          /* The timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
     }
-    else
+    /*else
     {
-         /* Start the timer.  No block time is specified, and
+
+          Start the timer.  No block time is specified, and
          even if one was it would be ignored because the RTOS
-         scheduler has not yet been started. */
+         scheduler has not yet been started.
          if( xTimerStart( xTimers[0], 0 ) != pdPASS )
          {
              /* The timer could not be set into the Active
-             state. */
+             state.
              UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
          }
     }
-
+    */
     if( xTimers[1] == NULL )
     {
          /* The timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
     }
-    else
+    /*else
     {
-         /* Start the timer.  No block time is specified, and
+          Start the timer.  No block time is specified, and
          even if one was it would be ignored because the RTOS
-         scheduler has not yet been started. */
+         scheduler has not yet been started.
          if( xTimerStart( xTimers[1], 0 ) != pdPASS )
          {
              /* The timer could not be set into the Active
-             state. */
+             state.
              UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
          }
-    }
+    }*/
 
 
 
@@ -426,13 +433,27 @@ int main(void)
     {
          /* The timer was not created. */
         UARTSend(PC_UART, "HV Current Fault timer was not created.\r\n");
-    }
+    }/*else{
+           if( xTimerStart( xTimers[2], 0 ) != pdPASS )
+        {
+            //The timer could not be set into the Active state.
+            UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
+        }
+    }*/
+
 
     if( xTimers[3] == NULL )
     {
          /* The timer was not created. */
         UARTSend(PC_UART, "HV Voltage Fault timer was not created.\r\n");
     }
+    /*else{
+            if( xTimerStart( xTimers[3], 0 ) != pdPASS )
+        {
+            //The timer could not be set into the Active state.
+            UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
+        }
+    }*/
 
     // -- New Code added by jjkhan - Check if Timer Created
 /*********************************************************************************
@@ -449,7 +470,7 @@ int main(void)
     // need to do an "if queue != NULL"
 
     // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
-    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
+    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY+1), NULL) != pdTRUE)
     {
         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
         // probably need a better error handler
