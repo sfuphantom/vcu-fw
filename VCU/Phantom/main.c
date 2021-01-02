@@ -131,7 +131,7 @@ void stateMachineTaskTest(void* parameters){
     TickType_t LastTickCount;
     LastTickCount = xTaskGetTickCount();
     bool tractive_off_tested = false;
-
+    bool faultCorrected = false;
 
 
     while(1){
@@ -193,7 +193,7 @@ void stateMachineTaskTest(void* parameters){
 
         }else if(state == RUNNING){
             //UARTSend(PC_UART, "Current state is RUNNING. \r\n");
-            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20))){
+            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20)) && !faultCorrected){
                 //UARTSend(PC_UART, "Key Accessed.\r\n");
                 VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT = 1;
                 xSemaphoreGive(vcuKey);
@@ -202,6 +202,12 @@ void stateMachineTaskTest(void* parameters){
 
         }else if(state == MINOR_FAULT){
             //UARTSend(PC_UART, "Current state is MINOR_FAULT. \r\n");
+            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(20))&& !faultCorrected){
+                           //UARTSend(PC_UART, "Key Accessed.\r\n");
+                           VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT = 0;
+                           xSemaphoreGive(vcuKey);
+                           faultCorrected = true;
+             }
 
         }else if(state == SEVERE_FAULT){
 
@@ -210,7 +216,7 @@ void stateMachineTaskTest(void* parameters){
             //UARTSend(PC_UART, "Current state unknown. \r\n");
         }
 
-        vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(1000));
+        vTaskDelayUntil(&LastTickCount, pdMS_TO_TICKS(500));
 
 
     }
@@ -356,7 +362,7 @@ int main(void)
              "HV_Current_OutOfRange_T",
              /* The timer period in ticks, must be
              greater than 0. */
-             20,
+             pdMS_TO_TICKS(100),
              /* The timers will auto-reload themselves
              when they expire. */
              pdFALSE,
@@ -374,7 +380,7 @@ int main(void)
              "HV_Voltage_OutOfRange_T",
              /* The timer period in ticks, must be
              greater than 0. */
-             20,
+             pdMS_TO_TICKS(100),
              /* The timers will auto-reload themselves
              when they expire. */
              pdFALSE,
