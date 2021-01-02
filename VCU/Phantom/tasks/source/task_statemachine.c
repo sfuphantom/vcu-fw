@@ -193,7 +193,7 @@ void vStateMachineTask(void *pvParameters){
 //    int nchars;
 
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 50; // task frequency in ms
+    const TickType_t xFrequency = 100; // task frequency in ms
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
@@ -538,12 +538,12 @@ void vStateMachineTask(void *pvParameters){
 
            // Checked for all Faults above and now if no MINOR_FAULTS were found, then we can move back to TRACTIVE_ON if RTDS is on and TSAL is ON, else we go to TRACTIVE_OFF; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
 
-            if(faultNumber==0){
+            if(!anyFaults()){
 
-                    if(isRTDS() & isTSAL_ON()){  // RTDS =1 and HV present
+                    if(isRTDS() && isTSAL_ON()){  // RTDS =1 and HV present
                         state = RUNNING;
 
-                    }else if(!isRTDS() & isTSAL_ON()){ // RTDS = 0 but HV present
+                    }else if(!isRTDS() && isTSAL_ON()){ // RTDS = 0 but HV present
                         state = TRACTIVE_ON;
                     }else{  // RTDS = 0 and HV not present
                         state = TRACTIVE_OFF;
