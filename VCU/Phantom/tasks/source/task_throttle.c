@@ -225,6 +225,7 @@ void vThrottleTask(void *pvParameters){
             gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
         }
 
+        // What is all of this?? - jaypacamarra
         NumberOfChars = ltoa(BSE_sensor_sum,(char *)command);
         if (BSE_PRINT) {UARTSend(PC_UART, "*****BSE**** ");}
         if (BSE_PRINT) {sciSend(PC_UART, NumberOfChars, command);}
@@ -258,12 +259,11 @@ void vThrottleTask(void *pvParameters){
             // if fault occurs more than 100 ms then it's a fault
             if (faultCounterMS >= 100)
             {
+                // Set fault flag
                 VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1;
 
-                // Debugging
+                // Send UART message
                 UARTSend(PC_UART, "APPS1 & APPS2 10% DIFFERENCE FAULT\r\n");
-//                gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-//                gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
             }
         }
         else
@@ -274,10 +274,8 @@ void vThrottleTask(void *pvParameters){
             // No fault
             VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0; // Added this else statement so we have a way to set APPS 10% fault to 0 - jaypacamarra
 
-            // Debugging
+            // Send UART message
             UARTSend(PC_UART, "APPS1 & APPS2 NO FAULT\r\n");
-//            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
         }
 
 
