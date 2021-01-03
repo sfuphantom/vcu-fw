@@ -60,6 +60,9 @@ extern data* VCUDataPtr;
 
 extern bool THROTTLE_AVAILABLE;
 
+// hold increasing time when fault occurs
+uint32_t faultCounterms = 0;
+
 /***********************************************************
  * @function                - vThrottleTask
  *
@@ -78,7 +81,6 @@ void vThrottleTask(void *pvParameters){
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
 
-    // hello bitch
     while(true)
     {
         // Wait for the next cycle
@@ -250,15 +252,30 @@ void vThrottleTask(void *pvParameters){
         // 10% APPS redundancy check
         if (FP_sensor_diff > 0.10)
         {
-            UARTSend(PC_UART, "SENSOR DIFFERENCE FAULT\r\n");
-            VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1;
-            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+            // increment how long 10 Diff fault occurs - jaypacamarra
+            faultCounterms += 10; // since throttle task occurs every 10 ms
 
+            // if fault occurs more than 100 ms then it's a fault
+            if (faultCounterms >= 100)
+            {
+                VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1;
+
+                // Debugging
+                UARTSend(PC_UART, "APPS1 & APPS2 10% DIFFERENCE FAULT\r\n");
+                gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
+                gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+            }
         }
         else
         {
+            // reset fault timer
+            faultCounterms = 0;
+
+            // No fault
             VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0; // Added this else statement so we have a way to set APPS 10% fault to 0 - jaypacamarra
+
+            // Debugging
+            UARTSend(PC_UART, "APPS1 & APPS2 NO FAULT\r\n");
             gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
             gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
         }
