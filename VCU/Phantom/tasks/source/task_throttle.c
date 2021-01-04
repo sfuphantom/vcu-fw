@@ -60,8 +60,10 @@ extern data* VCUDataPtr;
 
 extern bool THROTTLE_AVAILABLE;
 
-// hold increasing time when fault occurs in milliseconds
-uint32_t faultCounterMS = 0;
+uint32_t faultCounterMS = 0;    // hold increasing time when fault occurs in milliseconds
+
+float Percent_APPS1_pressed; // hold percentage foot pedal (APPS1) is pressed, 0-1
+float Percent_APPS2_pressed; // hold percentage foot pedal (APPS2) is pressed, 0-1
 
 /***********************************************************
  * @function                - vThrottleTask
@@ -245,16 +247,20 @@ void vThrottleTask(void *pvParameters){
 //        xStatus = xQueueSendToBack(xq, &FP_sensor_2_avg, 0);
 
 
-        // Calculate FP_sensor_diff, NEED TO TEST-jaypacamarra
-        // May need to be modified, wasn't sure about the conversion to float
-        FP_sensor_diff = abs( (float) FP_sensor_1_sum - FP_sensor_2_sum );
-        FP_sensor_diff = FP_sensor_diff / ((FP_sensor_1_sum + FP_sensor_2_sum) / 2);
+        // Calculate FP_sensor_diff - jaypacamarra
+        Percent_APPS1_pressed = ((float)FP_sensor_1_sum - APPS1_MIN_VALUE) / (APPS1_MAX_VALUE - APPS1_MIN_VALUE);
+        Percent_APPS1_pressed =  Percent_APPS1_pressed < 0 ? 0 : Percent_APPS1_pressed;
+        Percent_APPS2_pressed = ((float)FP_sensor_2_sum - APPS2_MIN_VALUE) / (APPS2_MAX_VALUE - APPS2_MIN_VALUE);
+        Percent_APPS2_pressed =  Percent_APPS2_pressed < 0 ? 0 : Percent_APPS2_pressed;
+//        FP_sensor_diff = abs( (float) Percent_APPS1_pressed - Percent_APPS2_pressed );
+//        FP_sensor_diff = FP_sensor_diff / ((Percent_APPS1_pressed + Percent_APPS2_pressed) / 2);
+        FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed);
 
         // 10% APPS redundancy check
         if (FP_sensor_diff > 0.10)
         {
             // increment how long 10 Diff fault occurs - jaypacamarra
-            faultCounterMS += 10; // since throttle task occurs every 10 ms
+            faultCounterMS += xFrequency; // throttle task occurence frequency defined by xFrequency
 
             // if fault occurs more than 100 ms then it's a fault
             if (faultCounterMS >= 100)
