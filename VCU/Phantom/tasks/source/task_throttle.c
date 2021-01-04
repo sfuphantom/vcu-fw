@@ -60,10 +60,10 @@ extern data* VCUDataPtr;
 
 extern bool THROTTLE_AVAILABLE;
 
-uint32_t faultCounterMS = 0;    // hold increasing time when fault occurs in milliseconds
+uint32_t fault_10DIFF_counter_ms = 0;    // hold increasing time when fault occurs in milliseconds -jaypacamarra
 
-float Percent_APPS1_pressed; // hold percentage foot pedal (APPS1) is pressed, 0-1
-float Percent_APPS2_pressed; // hold percentage foot pedal (APPS2) is pressed, 0-1
+float Percent_APPS1_pressed; // hold percentage foot pedal (APPS1) is pressed, 0-1 -jaypacamarra
+float Percent_APPS2_pressed; // hold percentage foot pedal (APPS2) is pressed, 0-1 -jaypacamarra
 
 /***********************************************************
  * @function                - vThrottleTask
@@ -243,27 +243,26 @@ void vThrottleTask(void *pvParameters){
         if (BSE_PRINT) {sciSend(PC_UART, NumberOfChars, command);}
         if (BSE_PRINT) {UARTSend(PC_UART, "\r\n");}
 
+        // What does this do?? -jaypacamarra
 //        xStatus = xQueueSendToBack(xq, &FP_sensor_1_avg, 0);
 //        xStatus = xQueueSendToBack(xq, &FP_sensor_2_avg, 0);
 
 
         // Calculate FP_sensor_diff - jaypacamarra
-        Percent_APPS1_pressed = ((float)FP_sensor_1_sum - APPS1_MIN_VALUE) / (APPS1_MAX_VALUE - APPS1_MIN_VALUE);
-        Percent_APPS1_pressed =  Percent_APPS1_pressed < 0 ? 0 : Percent_APPS1_pressed;
-        Percent_APPS2_pressed = ((float)FP_sensor_2_sum - APPS2_MIN_VALUE) / (APPS2_MAX_VALUE - APPS2_MIN_VALUE);
-        Percent_APPS2_pressed =  Percent_APPS2_pressed < 0 ? 0 : Percent_APPS2_pressed;
-//        FP_sensor_diff = abs( (float) Percent_APPS1_pressed - Percent_APPS2_pressed );
-//        FP_sensor_diff = FP_sensor_diff / ((Percent_APPS1_pressed + Percent_APPS2_pressed) / 2);
-        FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed);
+        Percent_APPS1_pressed = ((float)FP_sensor_1_sum - APPS1_MIN_VALUE) / (APPS1_MAX_VALUE - APPS1_MIN_VALUE);   // APPS1 % pressed compared to MAX and MIN values
+        Percent_APPS1_pressed =  Percent_APPS1_pressed < 0 ? 0 : Percent_APPS1_pressed;                             // negative values are set to 0
+        Percent_APPS2_pressed = ((float)FP_sensor_2_sum - APPS2_MIN_VALUE) / (APPS2_MAX_VALUE - APPS2_MIN_VALUE);   // APPS2 % pressed compared to MAX and MIN values
+        Percent_APPS2_pressed =  Percent_APPS2_pressed < 0 ? 0 : Percent_APPS2_pressed;                             // negative values are set to 0
+        FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed);                                       // Calculate absolute difference between APPS1 and APPS2 readings
 
         // 10% APPS redundancy check
         if (FP_sensor_diff > 0.10)
         {
-            // increment how long 10 Diff fault occurs - jaypacamarra
-            faultCounterMS += xFrequency; // throttle task occurence frequency defined by xFrequency
+            // increment how long 10% Diff fault occurs - jaypacamarra
+            fault_10DIFF_counter_ms += xFrequency; // throttle task occurence frequency defined by xFrequency
 
             // if fault occurs more than 100 ms then it's a fault
-            if (faultCounterMS >= 100)
+            if (fault_10DIFF_counter_ms >= 100)
             {
                 // Set fault flag
                 VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1;
@@ -275,7 +274,7 @@ void vThrottleTask(void *pvParameters){
         else
         {
             // reset fault timer
-            faultCounterMS = 0;
+            fault_10DIFF_counter_ms = 0;
 
             // No fault
             VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0; // Added this else statement so we have a way to set APPS 10% fault to 0 - jaypacamarra
