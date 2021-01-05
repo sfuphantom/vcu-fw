@@ -28,7 +28,7 @@
 extern State state;
 
 /*********************************************************************************
-                 ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
+  ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
  *********************************************************************************/
 extern adcData_t FP_data[3];
 extern adcData_t *FP_data_ptr;// = &FP_data[0];
@@ -96,25 +96,25 @@ void vThrottleTask(void *pvParameters){
         if (TASK_PRINT) {
             UARTSend(PC_UART, "THROTTLE CONTROL\r\n");
         }
-//        UARTSend(scilinREG, xTaskGetTickCount());
+        //        UARTSend(scilinREG, xTaskGetTickCount());
 
         // how was this i from 0 to 10 selected?
-//        for(i=0; i<10; i++)
-//        {
-//            adcStartConversion(adcREG1, adcGROUP1);
-//            while(!adcIsConversionComplete(adcREG1, adcGROUP1));
-//            adcGetData(adcREG1, 1U, FP_data_ptr);
-//            FP_sensor_1_sum += (unsigned int)FP_data[0].value;
-//            FP_sensor_2_sum += (unsigned int)FP_data[1].value;
-//            BSE_sensor_sum  += (unsigned int)FP_data[2].value;
-//        }
+        //        for(i=0; i<10; i++)
+        //        {
+        //            adcStartConversion(adcREG1, adcGROUP1);
+        //            while(!adcIsConversionComplete(adcREG1, adcGROUP1));
+        //            adcGetData(adcREG1, 1U, FP_data_ptr);
+        //            FP_sensor_1_sum += (unsigned int)FP_data[0].value;
+        //            FP_sensor_2_sum += (unsigned int)FP_data[1].value;
+        //            BSE_sensor_sum  += (unsigned int)FP_data[2].value;
+        //        }
 
         adcStartConversion(adcREG1, adcGROUP1);
         while(!adcIsConversionComplete(adcREG1, adcGROUP1));
         adcGetData(adcREG1, adcGROUP1, FP_data_ptr);
-        BSE_sensor_sum = (unsigned int)FP_data[0].value;
-        FP_sensor_1_sum = (unsigned int)FP_data[1].value;
-        FP_sensor_2_sum = (unsigned int)FP_data[2].value;
+        BSE_sensor_sum = (unsigned int)FP_data[0].value;    // AD1IN[0] -jaypacamarra
+        FP_sensor_1_sum = (unsigned int)FP_data[1].value;   // AD1IN[1] -jaypacamarra
+        FP_sensor_2_sum = (unsigned int)FP_data[2].value;   // AD1IN[2] -jaypacamarra
 
         // check for short to GND/5V on APPS sensor 1
         if (FP_sensor_1_sum < APPS1_MIN_VALUE)  // APPS1 is shorted to GND
@@ -143,7 +143,7 @@ void vThrottleTask(void *pvParameters){
         {
             // should be in normal range
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
-            
+
             // reset fault timer
             fault_APPS1_Range_counter_ms += 0;
         }
@@ -155,7 +155,7 @@ void vThrottleTask(void *pvParameters){
         {
             // Increment fault timer
             fault_APPS2_Range_counter_ms += xFrequency;
-            
+
             // if fault occurs for more than 100ms set fault flag
             if (fault_APPS2_Range_counter_ms >= 100)
             {
@@ -190,7 +190,7 @@ void vThrottleTask(void *pvParameters){
         {
             // Increment fault timer
             fault_BSE_Range_counter_ms += xFrequency;
-            
+
             // if faults occurs for more than 100ms then set fault flag
             if (fault_BSE_Range_counter_ms >= 100)
             {
@@ -208,7 +208,7 @@ void vThrottleTask(void *pvParameters){
             {
                 VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
             }
-            
+
         }
         else
         {
@@ -223,28 +223,28 @@ void vThrottleTask(void *pvParameters){
 
 
         // moving average signal conditioning.. worth it to graph this out and find a good filter time constant
-//        FP_sensor_1_avg = FP_sensor_1_sum/10;
-//        FP_sensor_2_avg = FP_sensor_2_sum/10;
-//        BSE_sensor_avg  = BSE_sensor_sum;
+        //        FP_sensor_1_avg = FP_sensor_1_sum/10;
+        //        FP_sensor_2_avg = FP_sensor_2_sum/10;
+        //        BSE_sensor_avg  = BSE_sensor_sum;
 
-//        FP_sensor_1_sum = 0;
-//        FP_sensor_2_sum = 0;
-//        BSE_sensor_sum  = 0;
+        //        FP_sensor_1_sum = 0;
+        //        FP_sensor_2_sum = 0;
+        //        BSE_sensor_sum  = 0;
 
-//        BSE_sensor_sum  = (unsigned int)FP_data[2].value;
+        //        BSE_sensor_sum  = (unsigned int)FP_data[2].value;
 
-//        FP_sensor_1_percentage = (FP_sensor_1_avg-FP_sensor_1_min)/(FP_sensor_1_max-FP_sensor_1_min);
-//        FP_sensor_2_percentage = (FP_sensor_2_avg-FP_sensor_2_min)/(FP_sensor_2_max-FP_sensor_2_min);
-//        FP_sensor_diff = abs(FP_sensor_2_percentage - FP_sensor_1_percentage);
+        //        FP_sensor_1_percentage = (FP_sensor_1_avg-FP_sensor_1_min)/(FP_sensor_1_max-FP_sensor_1_min);
+        //        FP_sensor_2_percentage = (FP_sensor_2_avg-FP_sensor_2_min)/(FP_sensor_2_max-FP_sensor_2_min);
+        //        FP_sensor_diff = abs(FP_sensor_2_percentage - FP_sensor_1_percentage);
 
-//        ltoa(FP_sensor_1_avg,(char *)command);
-//        if (APPS_PRINT) {UARTSend(scilinREG, "0x");}
-//        if (APPS_PRINT) {UARTSend(scilinREG, command);}
-//
-//        ltoa(FP_sensor_2_avg,(char *)command);
-//        if (APPS_PRINT) {UARTSend(scilinREG, "   0x");}
-//        if (APPS_PRINT) {UARTSend(scilinREG, command);}
-//        if (APPS_PRINT) {UARTSend(scilinREG, "\r\n");}
+        //        ltoa(FP_sensor_1_avg,(char *)command);
+        //        if (APPS_PRINT) {UARTSend(scilinREG, "0x");}
+        //        if (APPS_PRINT) {UARTSend(scilinREG, command);}
+        //
+        //        ltoa(FP_sensor_2_avg,(char *)command);
+        //        if (APPS_PRINT) {UARTSend(scilinREG, "   0x");}
+        //        if (APPS_PRINT) {UARTSend(scilinREG, command);}
+        //        if (APPS_PRINT) {UARTSend(scilinREG, "\r\n");}
 
         // brake light (flickers if pedal is around 2000 and is noisily jumping above and below!)
         if (BSE_sensor_sum < BRAKING_THRESHOLD)
@@ -273,17 +273,17 @@ void vThrottleTask(void *pvParameters){
         if (BSE_PRINT) {UARTSend(PC_UART, "\r\n");}
 
         // What does this do?? -jaypacamarra
-//        xStatus = xQueueSendToBack(xq, &FP_sensor_1_avg, 0);
-//        xStatus = xQueueSendToBack(xq, &FP_sensor_2_avg, 0);
+        //        xStatus = xQueueSendToBack(xq, &FP_sensor_1_avg, 0);
+        //        xStatus = xQueueSendToBack(xq, &FP_sensor_2_avg, 0);
 
 
         // Calculate FP_sensor_diff - jaypacamarra
         Percent_APPS1_pressed = ((float)FP_sensor_1_sum - APPS1_MIN_VALUE) / (APPS1_MAX_VALUE - APPS1_MIN_VALUE);   // APPS1 % pressed compared to MAX and MIN values
         Percent_APPS1_pressed =  FP_sensor_1_sum <= APPS1_MIN_VALUE ? 0 : Percent_APPS1_pressed;                    // negative values are set to 0
-        
+
         Percent_APPS2_pressed = ((float)FP_sensor_2_sum - APPS2_MIN_VALUE) / (APPS2_MAX_VALUE - APPS2_MIN_VALUE);   // APPS2 % pressed compared to MAX and MIN values
         Percent_APPS2_pressed =  FP_sensor_2_sum <= APPS2_MIN_VALUE ? 0 : Percent_APPS2_pressed;                    // negative values are set to 0
-        
+
         FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed);                                       // Calculate absolute difference between APPS1 and APPS2 readings
 
         // 10% APPS redundancy check
@@ -317,20 +317,26 @@ void vThrottleTask(void *pvParameters){
 
 
         // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25% - jaypacamarra
-         if ( BSE_sensor_sum >= BRAKING_THRESHOLD &&
-              FP_sensor_1_sum >= APPS1_MIN_VALUE + 0.25 * (APPS1_MAX_VALUE - APPS1_MIN_VALUE) &&
-              FP_sensor_2_sum >= APPS2_MIN_VALUE + 0.25 * (APPS2_MAX_VALUE - APPS2_MIN_VALUE) )
-         {
-             // Set state to fault
-             VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 1;
-         }
-         else
-         {
-             // No fault
-             VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
-         }
+        if ( BSE_sensor_sum >= BRAKING_THRESHOLD &&
+             FP_sensor_1_sum >= APPS1_MIN_VALUE + 0.25 * (APPS1_MAX_VALUE - APPS1_MIN_VALUE) &&
+             FP_sensor_2_sum >= APPS2_MIN_VALUE + 0.25 * (APPS2_MAX_VALUE - APPS2_MIN_VALUE) )
+        {
+            // Set state to fault
+            VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 1;
+        }
+        else
+        {
+            // APPS/Brake plausibility fault only clears if APPS returns to less than 5% pedal position
+            // with or without brake operation (see EV.5.7.2)
+            if ( FP_sensor_1_sum < APPS1_MIN_VALUE + 0.05 * (APPS1_MAX_VALUE - APPS1_MIN_VALUE) &&
+                 FP_sensor_2_sum < APPS2_MIN_VALUE + 0.05 * (APPS2_MAX_VALUE - APPS2_MIN_VALUE) )
+            {
+                // No fault
+                VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
+            }
+        }
 
-    
+
 
         // What is this?
         if (state == RUNNING && THROTTLE_AVAILABLE)
@@ -348,8 +354,8 @@ void vThrottleTask(void *pvParameters){
             NumberOfChars = ltoa(throttle,(char *)command);
 
             // printing debug:
-//            sciSend(PC_UART, NumberOfChars, command);
-//            UARTSend(PC_UART, "\r\n");
+            //            sciSend(PC_UART, NumberOfChars, command);
+            //            UARTSend(PC_UART, "\r\n");
         }
         else
         {
