@@ -250,9 +250,9 @@ void vThrottleTask(void *pvParameters){
 
         // Calculate FP_sensor_diff - jaypacamarra
         Percent_APPS1_pressed = ((float)FP_sensor_1_sum - APPS1_MIN_VALUE) / (APPS1_MAX_VALUE - APPS1_MIN_VALUE);   // APPS1 % pressed compared to MAX and MIN values
-        Percent_APPS1_pressed =  Percent_APPS1_pressed < 0 ? 0 : Percent_APPS1_pressed;                             // negative values are set to 0
+        Percent_APPS1_pressed =  FP_sensor_1_sum <= APPS1_MIN_VALUE ? 0 : Percent_APPS1_pressed;                             // negative values are set to 0
         Percent_APPS2_pressed = ((float)FP_sensor_2_sum - APPS2_MIN_VALUE) / (APPS2_MAX_VALUE - APPS2_MIN_VALUE);   // APPS2 % pressed compared to MAX and MIN values
-        Percent_APPS2_pressed =  Percent_APPS2_pressed < 0 ? 0 : Percent_APPS2_pressed;                             // negative values are set to 0
+        Percent_APPS2_pressed =  FP_sensor_2_sum <= APPS2_MIN_VALUE ? 0 : Percent_APPS2_pressed;                             // negative values are set to 0
         FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed);                                       // Calculate absolute difference between APPS1 and APPS2 readings
 
         // 10% APPS redundancy check
