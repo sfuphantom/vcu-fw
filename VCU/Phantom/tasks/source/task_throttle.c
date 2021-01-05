@@ -53,14 +53,15 @@ extern float FP_sensor_diff;
 
 extern char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
 
-
-//extern uint8_t BSE_FAULT;// = 0;
-
 extern data* VCUDataPtr;
 
 extern bool THROTTLE_AVAILABLE;
 
-uint32_t fault_10DIFF_counter_ms = 0;    // hold increasing time when fault occurs in milliseconds -jaypacamarra
+uint32_t fault_10DIFF_counter_ms = 0;           // hold duration of fault in milliseconds - jaypacamarra
+uint32_t fault_BSE_Range_counter_ms = 0;        // hold duration of fault in milliseconds - jaypacamarra
+uint32_t fault_APPS1_Range_counter_ms = 0;      // hold duration of fault in milliseconds - jaypacamarra
+uint32_t fault_APPS2_Range_counter_ms = 0;      // hold duration of fault in milliseconds - jaypacamarra
+uint32_t fault_APPS_BSE_Simult_counter_ms = 0;  // hold duration of fault in milliseconds - jaypacamarra
 
 float Percent_APPS1_pressed; // hold percentage foot pedal (APPS1) is pressed, 0-1 -jaypacamarra
 float Percent_APPS2_pressed; // hold percentage foot pedal (APPS2) is pressed, 0-1 -jaypacamarra
@@ -116,78 +117,106 @@ void vThrottleTask(void *pvParameters){
         FP_sensor_2_sum = (unsigned int)FP_data[2].value;
 
         // check for short to GND/5V on APPS sensor 1
-        if (FP_sensor_1_sum < APPS1_MIN_VALUE)
+        if (FP_sensor_1_sum < APPS1_MIN_VALUE)  // APPS1 is shorted to GND
         {
-            // if it's less than 1.5V, then assume shorted to GND as this is not normal range
-            VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
-//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+            // increment fault timer
+            fault_APPS1_Range_counter_ms += xFrequency;
+
+            // if faults occurs more than 100 ms set then set fault flag 
+            if (fault_APPS2_Range_counter_ms >= 100)
+            {
+                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
+            }
         }
-        else if(FP_sensor_1_sum > APPS1_MAX_VALUE)
+        else if (FP_sensor_1_sum > APPS1_MAX_VALUE)  // APPS1 is shorted to 5V
         {
-            // if it's greater than 4.4V, then assume shorted to 5V as this is not normal range
-            VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
-//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+            // increment fault timer
+            fault_APPS1_Range_counter_ms += xFrequency;
+
+            // if faults occurs more than 100 ms set then set fault flag 
+            if (fault_APPS2_Range_counter_ms >= 100)
+            {
+                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
+            }
         }
         else
         {
             // should be in normal range
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
-//            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
+            
+            // reset fault timer
+            fault_APPS1_Range_counter_ms += 0;
         }
 
 
 
         // check for short to GND/3V3 on APPS sensor 2
-        if (FP_sensor_2_sum < APPS2_MIN_VALUE)
+        if (FP_sensor_2_sum < APPS2_MIN_VALUE)  // APPS2 shorted to GND
         {
-            // if it's less than 0.5V, then assume shorted to GND as this is not normal range
-            VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
-//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+            // Increment fault timer
+            fault_APPS2_Range_counter_ms += xFrequency;
+            
+            // if fault occurs for more than 100ms set fault flag
+            if (fault_APPS2_Range_counter_ms >= 100)
+            {
+                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
+            }
         }
-        else if(FP_sensor_2_sum > APPS2_MAX_VALUE)
+        else if (FP_sensor_2_sum > APPS2_MAX_VALUE)  // APPS2 shorted to 3.3V
         {
-            // if it's greater than 1.5V, then assume shorted to 5V as this is not normal range
-            VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
-//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+            // Increment fault timer
+            fault_APPS2_Range_counter_ms += xFrequency;
+
+            // if fault occurs for more than 100ms set fault flag
+            if (fault_APPS2_Range_counter_ms >= 100)
+            {
+                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
+            }
         }
         else
         {
             // should be in normal range
             VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
-//            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
-        }
 
+            // reset fault timer
+            fault_APPS2_Range_counter_ms = 0;
+
+        }
 
 
 
         // check for short to GND/5V on BSE
-        if (BSE_sensor_sum < BSE_MIN_VALUE)
+        if (BSE_sensor_sum < BSE_MIN_VALUE) // BSE shorted to GND
         {
-            // if it's less than 0.5V, then assume shorted to GND as this is not normal range
-            VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
-//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+            // Increment fault timer
+            fault_BSE_Range_counter_ms += xFrequency;
+            
+            // if faults occurs for more than 100ms then set fault flag
+            if (fault_BSE_Range_counter_ms >= 100)
+            {
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
+            }
 
         }
-        else if (BSE_sensor_sum > BSE_MAX_VALUE) // change from magic number to a #define BSE_MAX_VALUE
+        else if (BSE_sensor_sum > BSE_MAX_VALUE) // BSE shorted to 5V
         {
-            // if it's greater than 4.5V, then assume shorted to 5V as this is not normal range
-            VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
-//            gioSetBit(gioPORTB, 2, 1); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 0); //debugging - jaypacamarra
+            // Increment fault timer
+            fault_BSE_Range_counter_ms += xFrequency;
+
+            // if fault occurs for more than 100ms then set fault flag 
+            if (fault_BSE_Range_counter_ms >= 100)
+            {
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
+            }
+            
         }
         else
         {
             // should be in normal range
             VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
-//            gioSetBit(gioPORTB, 2, 0); //debugging - jaypacamarra
-//            gioSetBit(gioPORTB, 1, 1); //debugging - jaypacamarra
+
+            // reset fault timer
+            fault_BSE_Range_counter_ms = 0;
         }
 
 
@@ -250,9 +279,11 @@ void vThrottleTask(void *pvParameters){
 
         // Calculate FP_sensor_diff - jaypacamarra
         Percent_APPS1_pressed = ((float)FP_sensor_1_sum - APPS1_MIN_VALUE) / (APPS1_MAX_VALUE - APPS1_MIN_VALUE);   // APPS1 % pressed compared to MAX and MIN values
-        Percent_APPS1_pressed =  FP_sensor_1_sum <= APPS1_MIN_VALUE ? 0 : Percent_APPS1_pressed;                             // negative values are set to 0
+        Percent_APPS1_pressed =  FP_sensor_1_sum <= APPS1_MIN_VALUE ? 0 : Percent_APPS1_pressed;                    // negative values are set to 0
+        
         Percent_APPS2_pressed = ((float)FP_sensor_2_sum - APPS2_MIN_VALUE) / (APPS2_MAX_VALUE - APPS2_MIN_VALUE);   // APPS2 % pressed compared to MAX and MIN values
-        Percent_APPS2_pressed =  FP_sensor_2_sum <= APPS2_MIN_VALUE ? 0 : Percent_APPS2_pressed;                             // negative values are set to 0
+        Percent_APPS2_pressed =  FP_sensor_2_sum <= APPS2_MIN_VALUE ? 0 : Percent_APPS2_pressed;                    // negative values are set to 0
+        
         FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed);                                       // Calculate absolute difference between APPS1 and APPS2 readings
 
         // 10% APPS redundancy check
