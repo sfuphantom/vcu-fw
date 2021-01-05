@@ -61,10 +61,17 @@ uint32_t fault_10DIFF_counter_ms = 0;           // hold duration of fault in mil
 uint32_t fault_BSE_Range_counter_ms = 0;        // hold duration of fault in milliseconds - jaypacamarra
 uint32_t fault_APPS1_Range_counter_ms = 0;      // hold duration of fault in milliseconds - jaypacamarra
 uint32_t fault_APPS2_Range_counter_ms = 0;      // hold duration of fault in milliseconds - jaypacamarra
-uint32_t fault_APPS_BSE_Simult_counter_ms = 0;  // hold duration of fault in milliseconds - jaypacamarra
 
 float Percent_APPS1_pressed; // hold percentage foot pedal (APPS1) is pressed, 0-1 -jaypacamarra
 float Percent_APPS2_pressed; // hold percentage foot pedal (APPS2) is pressed, 0-1 -jaypacamarra
+
+float alpha = 0.1;                                  // Change this to tweak lowpass filter response - jaypacamarra
+float BSE_filtered_sensor_value;                    // filtered BSE sensor value - jaypacamarra
+float BSE_previous_filtered_sensor_values = 0;      // previous BSE filtered output - jaypacamarra
+float APPS1_filtered_sensor_value;                  // filtered APPS1 sensor value - jaypacamarra
+float APPS1_previous_filtered_sensor_values = 0;    // previous APPS1 filtered output - jaypacamarra
+float APPS2_filtered_sensor_value;                  // filtered APPS2 sensor value - jaypacamarra
+float APPS2_previous_filtered_sensor_values = 0;    // previous BSE filtered output - jaypacamarra
 
 /***********************************************************
  * @function                - vThrottleTask
@@ -98,8 +105,7 @@ void vThrottleTask(void *pvParameters){
         }
         //        UARTSend(scilinREG, xTaskGetTickCount());
 
-        // how was this i from 0 to 10 selected?
-        //        for(i=0; i<10; i++)
+        // how was this i from 0 to 10 selected?  //        for(i=0; i<10; i++)
         //        {
         //            adcStartConversion(adcREG1, adcGROUP1);
         //            while(!adcIsConversionComplete(adcREG1, adcGROUP1));
@@ -115,6 +121,21 @@ void vThrottleTask(void *pvParameters){
         BSE_sensor_sum = (unsigned int)FP_data[0].value;    // AD1IN[0] -jaypacamarra
         FP_sensor_1_sum = (unsigned int)FP_data[1].value;   // AD1IN[1] -jaypacamarra
         FP_sensor_2_sum = (unsigned int)FP_data[2].value;   // AD1IN[2] -jaypacamarra
+
+
+
+        /******** Signal conditioning - lowpass filter - jaypacamarra *********/
+        // Filter the raw BSE,APPS1, and APPS2 sensor values
+        BSE_sensor_sum = BSE_previous_filtered_sensor_values + alpha * (BSE_sensor_sum - BSE_previous_filtered_sensor_values);
+        FP_sensor_1_sum = APPS1_previous_filtered_sensor_values + alpha * (FP_sensor_1_sum - APPS1_previous_filtered_sensor_values);
+        FP_sensor_2_sum = APPS2_previous_filtered_sensor_values + alpha * (FP_sensor_2_sum - APPS2_previous_filtered_sensor_values);
+
+        // Set previous filtered values to current filtered values
+        BSE_previous_filtered_sensor_values = BSE_sensor_sum;
+        APPS1_previous_filtered_sensor_values = FP_sensor_1_sum;
+        APPS2_previous_filtered_sensor_values = FP_sensor_2_sum;
+
+
 
         // check for short to GND/5V on APPS sensor 1
         if (FP_sensor_1_sum < APPS1_MIN_VALUE)  // APPS1 is shorted to GND
@@ -220,8 +241,6 @@ void vThrottleTask(void *pvParameters){
         }
 
 
-
-
         // moving average signal conditioning.. worth it to graph this out and find a good filter time constant
         //        FP_sensor_1_avg = FP_sensor_1_sum/10;
         //        FP_sensor_2_avg = FP_sensor_2_sum/10;
@@ -245,6 +264,8 @@ void vThrottleTask(void *pvParameters){
         //        if (APPS_PRINT) {UARTSend(scilinREG, "   0x");}
         //        if (APPS_PRINT) {UARTSend(scilinREG, command);}
         //        if (APPS_PRINT) {UARTSend(scilinREG, "\r\n");}
+
+
 
         // brake light (flickers if pedal is around 2000 and is noisily jumping above and below!)
         if (BSE_sensor_sum < BRAKING_THRESHOLD)
