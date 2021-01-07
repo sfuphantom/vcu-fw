@@ -138,7 +138,7 @@ void vThrottleTask(void *pvParameters){
 
 
         // check for short to GND/5V on APPS sensor 1
-        if (FP_sensor_1_sum < APPS1_MIN_VALUE)  // APPS1 is shorted to GND
+        if (FP_sensor_1_sum < APPS1_MIN_VALUE)  // APPS1 is assumed shorted to GND
         {
             // increment fault timer
             fault_APPS1_Range_counter_ms += xFrequency;
@@ -149,7 +149,7 @@ void vThrottleTask(void *pvParameters){
                 VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
             }
         }
-        else if (FP_sensor_1_sum > APPS1_MAX_VALUE)  // APPS1 is shorted to 5V
+        else if (FP_sensor_1_sum > APPS1_MAX_VALUE)  // APPS1 is assumed shorted to 5V
         {
             // increment fault timer
             fault_APPS1_Range_counter_ms += xFrequency;
@@ -172,7 +172,7 @@ void vThrottleTask(void *pvParameters){
 
 
         // check for short to GND/3V3 on APPS sensor 2
-        if (FP_sensor_2_sum < APPS2_MIN_VALUE)  // APPS2 shorted to GND
+        if (FP_sensor_2_sum < APPS2_MIN_VALUE)  // APPS2 assumed shorted to GND
         {
             // Increment fault timer
             fault_APPS2_Range_counter_ms += xFrequency;
@@ -183,7 +183,7 @@ void vThrottleTask(void *pvParameters){
                 VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
             }
         }
-        else if (FP_sensor_2_sum > APPS2_MAX_VALUE)  // APPS2 shorted to 3.3V
+        else if (FP_sensor_2_sum > APPS2_MAX_VALUE)  // APPS2 assumed shorted to 3.3V
         {
             // Increment fault timer
             fault_APPS2_Range_counter_ms += xFrequency;
@@ -207,7 +207,7 @@ void vThrottleTask(void *pvParameters){
 
 
         // check for short to GND/5V on BSE
-        if (BSE_sensor_sum < BSE_MIN_VALUE) // BSE shorted to GND
+        if (BSE_sensor_sum < BSE_MIN_VALUE) // BSE is assumed shorted to GND
         {
             // Increment fault timer
             fault_BSE_Range_counter_ms += xFrequency;
@@ -219,7 +219,7 @@ void vThrottleTask(void *pvParameters){
             }
 
         }
-        else if (BSE_sensor_sum > BSE_MAX_VALUE) // BSE shorted to 5V
+        else if (BSE_sensor_sum > BSE_MAX_VALUE) // BSE is assumed shorted to 5V
         {
             // Increment fault timer
             fault_BSE_Range_counter_ms += xFrequency;
