@@ -129,14 +129,14 @@ void vThrottleTask(void *pvParameters)
 
         /******** Signal conditioning - lowpass filter - jaypacamarra *********/
         // Filter the raw BSE,APPS1, and APPS2 sensor values
-        BSE_sensor_sum = BSE_previous_filtered_sensor_values + alpha * (BSE_sensor_sum - BSE_previous_filtered_sensor_values);
-        FP_sensor_1_sum = APPS1_previous_filtered_sensor_values + alpha * (FP_sensor_1_sum - APPS1_previous_filtered_sensor_values);
-        FP_sensor_2_sum = APPS2_previous_filtered_sensor_values + alpha * (FP_sensor_2_sum - APPS2_previous_filtered_sensor_values);
-
-        // Set previous filtered values to current filtered values
-        BSE_previous_filtered_sensor_values = BSE_sensor_sum;
-        APPS1_previous_filtered_sensor_values = FP_sensor_1_sum;
-        APPS2_previous_filtered_sensor_values = FP_sensor_2_sum;
+//        BSE_sensor_sum = BSE_previous_filtered_sensor_values + alpha * (BSE_sensor_sum - BSE_previous_filtered_sensor_values);
+//        FP_sensor_1_sum = APPS1_previous_filtered_sensor_values + alpha * (FP_sensor_1_sum - APPS1_previous_filtered_sensor_values);
+//        FP_sensor_2_sum = APPS2_previous_filtered_sensor_values + alpha * (FP_sensor_2_sum - APPS2_previous_filtered_sensor_values);
+//
+//        // Set previous filtered values to current filtered values
+//        BSE_previous_filtered_sensor_values = BSE_sensor_sum;
+//        APPS1_previous_filtered_sensor_values = FP_sensor_1_sum;
+//        APPS2_previous_filtered_sensor_values = FP_sensor_2_sum;
 
         // check for short to GND/5V on APPS sensor 1
         if (FP_sensor_1_sum < APPS1_MIN_VALUE) // APPS1 is assumed shorted to GND
@@ -278,11 +278,17 @@ void vThrottleTask(void *pvParameters)
             // update brake light state
             previous_brake_light_state = 0;
         }
-        else
-        {
-            // The brake pedal signal is not near the threshhold
-            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, ~previous_brake_light_state);
-        }
+
+
+          // No hysteresis for brakelights - jaypacamarra
+//        if (BSE_sensor_sum > BRAKING_THRESHOLD){
+//            // turn on brake lights
+//            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
+//        }
+//        else {
+//            // turn off brake lights
+//            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
+//        }
         
 
         // What is all of this?? - jaypacamarra
