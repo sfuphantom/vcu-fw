@@ -26,28 +26,6 @@
 
 //***Pins configured with launchpad***//
 
-//Will be put into VCU data structure
-
-bool BMSval;
-
-bool IMDval;
-
-bool TSALval;
-
-bool BSPDval;
-
-bool RESETval;
-
-
-//Will be put in VCU data structure
-bool IMD_FAULT;
-
-bool BSPD_FAULT;
-
-bool BMS_FAULT;
-
-bool TSAL_WELDED;
-
 //triggered on...falling edge
 #define BMSPin gioPORTA
 #define BMSNumPin 0
@@ -68,16 +46,21 @@ bool TSAL_WELDED;
 #define RESETPin 20
 #define RESETedge 0
 
-void print_Shutdownvals();
 
-//resets all Shutdown faults
+/*Function Headers */
+
 static void resetSignals();
 
 void ShutdownInit();
 
-//stores current values of Shutdown faults
-//returns nothing
+void print_Shutdownvals();
+
 void storeShutdownValues();
+
+//void gioNotification(gioPORT_t* port,uint32 bit);
+
+//void edgeNotification(hetBASE_t * hetREG,uint32 edge);
+
 
 
 #endif

@@ -7,26 +7,6 @@
 
 #include "Shutdown.h"
 
-void print_Shutdownvals(){
-
-    printf("\nBMSval: ");
-    printf(BMSval ? "true" : "false");
-
-    printf("\nBSPDval: ");
-    printf(BSPDval ? "true" : "false");
-
-
-    printf("\nIMDval: ");
-    printf(IMDval ? "true" : "false");
-
-    printf("\nTSALval: ");
-    printf(TSALval ? "true" : "false");
-
-    printf("\nRESETval: ");
-    printf(RESETval ? "true" : "false");
-
-}
-
 static void resetSignals(){
 
     BMS_FAULT = false;
@@ -36,26 +16,6 @@ static void resetSignals(){
     TSAL_WELDED = false;
 
     IMD_FAULT = false;
-
-}
-
-void gioNotification(gioPORT_t* port,uint32 bit){
-
-    if(port == BMSPin && bit == BMSNumPin) BMS_FAULT = true;
-
-    if(port == BSPDPin && bit == BSPDNumPin) BSPD_FAULT = true;
-
-    if(port == IMDPin && bit == IMDNumPin) IMD_FAULT = true;
-
-    // (Shutdown Board SHOULD be Triggered)   &&   (TSAL_HV == ON) ----> TSAL_WELDED
-    if((BMS_FAULT || IMD_FAULT || BSPD_FAULT) && gioGetBit(TSALPin,TSALNumPin)) TSAL_WELDED = true;
-
-}
-
-//code will have to be merged with edgeNotification in IMD driver
-void edgeNotification(hetBASE_t * hetREG,uint32 edge)
-{
-    if(hetREG == RESETPort && edge == RESETedge) resetSignals();
 
 }
 
@@ -86,18 +46,60 @@ void ShutdownInit(){
        printf("Shutdown Driver initialized\n");
 }
 
+void print_Shutdownvals(){
+
+    printf("\nBMSval: ");
+    printf(BMS_STATUS ? "true" : "false");
+
+    printf("\nBSPDval: ");
+    printf(BSPD_STATUS ? "true" : "false");
+
+
+    printf("\nIMDval: ");
+    printf(IMD_STATUS ? "true" : "false");
+
+    printf("\nTSALval: ");
+    printf(TSAL_STATUS ? "true" : "false");
+
+    printf("\nRESETval: ");
+    printf(RESETval ? "true" : "false");
+
+}
+
 void storeShutdownValues(){
 
     //getBit(blah blah)
 
-    BMSval = gioGetBit(BMSPin,BMSNumPin);
+    BMS_STATUS = gioGetBit(BMSPin,BMSNumPin);
 
-    IMDval = gioGetBit(IMDPin,IMDNumPin);
+    IMD_STATUS = gioGetBit(IMDPin,IMDNumPin);
 
-    TSALval = gioGetBit(TSALPin,TSALNumPin);
+    TSAL_STATUS = gioGetBit(TSALPin,TSALNumPin);
 
-    BSPDval = gioGetBit(BSPDPin,BSPDNumPin);
+    BSPD_STATUS = gioGetBit(BSPDPin,BSPDNumPin);
 
     RESETval = gioGetBit(RESETPort,RESETPin);
 
 }
+
+void gioNotification(gioPORT_t* port,uint32 bit){
+
+    if(port == BMSPin && bit == BMSNumPin) BMS_FAULT = true;
+
+    if(port == BSPDPin && bit == BSPDNumPin) BSPD_FAULT = true;
+
+    if(port == IMDPin && bit == IMDNumPin) IMD_FAULT = true;
+
+    // (Shutdown Board SHOULD be Triggered)   &&   (TSAL_HV == ON) ----> TSAL_WELDED
+    if((BMS_FAULT || IMD_FAULT || BSPD_FAULT) && gioGetBit(TSALPin,TSALNumPin)) TSAL_WELDED = true;
+
+}
+
+//code will have to be merged with edgeNotification in IMD driver
+void edgeNotification(hetBASE_t * hetREG,uint32 edge)
+{
+    if(hetREG == RESETPort && edge == RESETedge) resetSignals();
+
+}
+
+

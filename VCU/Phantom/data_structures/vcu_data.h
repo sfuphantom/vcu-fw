@@ -43,8 +43,23 @@ typedef struct digitalValues
     uint8_t TSAL_STATUS;        // if 1, then TSAL is on and AIRs are closed, if 0 then TSAL is off and AIRs should be open
     uint8_t BSE_FAULT;          // if 0, then BSE is healthy, if 1 then BSE fault
     uint8_t APPS_FAULT;         // if 0, then APPS is healthy, if 1 then APPS fault
-    uint8_t APPS_PROPORTION_ERROR; // if 1, then APPS not sending proper current ratio to motor -rafguevara14
-    uint8_t HVCURRENT_OUT_OF_RANGE;// if 1, then HV current exceeds maximum current range -rafguevara14
+    uint8_t APPS_PROPORTION_ERROR; // if 1, then APPS not sending proper current ratio to motor -rafguevara14.....
+    uint8_t HVCURRENT_OUT_OF_RANGE;// if 1, then HV current exceeds maximum current range
+
+    uint8_t RESET_STATUS;          //if 1, SET/RESET has been pushed, else it has not
+
+    //the latched faults of the Shutdown Circuit
+
+    uint8_t IMD_FAULT;            //if 1, IMD has faulted, if 0, fault is clear
+
+    uint8_t BSPD_FAULT;           //if 1, BSPD has faulted, if 0, fault is clear
+
+    uint8_t BMS_FAULT;            //if 1, BMS has faulted, if 0, fault is clear
+
+    uint8_t TSAL_WELDED;          //if 1, TSAL is welded, if 0, then it is not                 -.....rafguevara14
+
+
+
 
     // many other faults..
 } digitalValues;
