@@ -8,7 +8,7 @@
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.TMS570LS1224.ccxml.Texas Instruments XDS110 USB Debug Probe/CortexR4" value="VCU"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_PROJECT.TMS570LS1227.ccxml.SEGGER J-Link Emulator/CortexR4" value="VCU"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.ATTR_TARGET_CONFIG" value="${target_config_active_default:VCU}"/>
-<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS570LS1224.ccxml.Texas Instruments XDS110 USB Debug Probe/CortexR4" value="C:/Users\jpaca\OneDrive - sfuca0\docs\Team Phantom\Projects\Control\github\vcu-fw\VCU\BuildConfig_Launchpad-1224\VCU.out"/>
+<stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS570LS1224.ccxml.Texas Instruments XDS110 USB Debug Probe/CortexR4" value="C:/Users\jpaca\Desktop\programming\VCU firmware\vcu-fw\VCU\BuildConfig_Launchpad-1224\VCU.out"/>
 <stringAttribute key="com.ti.ccstudio.debug.debugModel.MRU_PROGRAM.TMS570LS1227.ccxml.SEGGER J-Link Emulator/CortexR4" value="C:/Users\gabriel\Documents\Phantom\vcu-fw\VCU\BuildConfig_VCU-REV2\VCU.out"/>
 <listAttribute key="org.eclipse.debug.core.MAPPED_RESOURCE_PATHS">
 <listEntry value="/VCU"/>

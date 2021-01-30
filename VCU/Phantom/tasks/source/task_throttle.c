@@ -33,9 +33,9 @@ extern State state;
 extern adcData_t FP_data[3];
 extern adcData_t *FP_data_ptr;       // = &FP_data[0];
 extern unsigned int lightSensor;     // debugging - jaypacamarra
-extern unsigned int FP_sensor_1_sum; // = 0;
+extern unsigned int volatile FP_sensor_1_sum; // = 0;
 extern unsigned int FP_sensor_1_avg;
-extern unsigned int FP_sensor_2_sum; // = 0;
+extern unsigned int volatile FP_sensor_2_sum; // = 0;
 extern unsigned int FP_sensor_2_avg;
 
 extern unsigned int BSE_sensor_sum; //  = 0;
@@ -57,13 +57,13 @@ extern data *VCUDataPtr;
 
 extern bool THROTTLE_AVAILABLE;
 
-uint32_t fault_10DIFF_counter_ms = 0;      // hold duration of fault in milliseconds - jaypacamarra
+uint32_t volatile fault_10DIFF_counter_ms = 0;      // hold duration of fault in milliseconds - jaypacamarra
 uint32_t fault_BSE_Range_counter_ms = 0;   // hold duration of fault in milliseconds - jaypacamarra
 uint32_t fault_APPS1_Range_counter_ms = 0; // hold duration of fault in milliseconds - jaypacamarra
 uint32_t fault_APPS2_Range_counter_ms = 0; // hold duration of fault in milliseconds - jaypacamarra
 
-float Percent_APPS1_pressed; // hold percentage foot pedal1 (APPS1) is pressed, 0-1 -jaypacamarra
-float Percent_APPS2_pressed; // hold percentage foot pedal2 (APPS2) is pressed, 0-1 -jaypacamarra
+float volatile Percent_APPS1_pressed; // hold percentage foot pedal1 (APPS1) is pressed, 0-1 -jaypacamarra
+float volatile Percent_APPS2_pressed; // hold percentage foot pedal2 (APPS2) is pressed, 0-1 -jaypacamarra
 
 float alpha = 0.3;                               // Change this to tweak lowpass filter response - jaypacamarra
 float BSE_filtered_sensor_value;                 // filtered BSE sensor value - jaypacamarra
@@ -339,10 +339,10 @@ void vThrottleTask(void *pvParameters)
         //        xStatus = xQueueSendToBack(xq, &FP_sensor_2_avg, 0);
 
         // Calculate FP_sensor_diff - jaypacamarra
-        Percent_APPS1_pressed = ((float)FP_sensor_1_sum - APPS1_MIN_VALUE) / (APPS1_MAX_VALUE - APPS1_MIN_VALUE); // APPS1 % pressed compared to MAX and MIN values
+        Percent_APPS1_pressed = ((float)FP_sensor_1_sum - (float)APPS1_MIN_VALUE) / ((float)APPS1_MAX_VALUE - (float)APPS1_MIN_VALUE); // APPS1 % pressed compared to MAX and MIN values
         Percent_APPS1_pressed = (FP_sensor_1_sum <= APPS1_MIN_VALUE) ? 0 : Percent_APPS1_pressed;                 // negative values are set to 0
 
-        Percent_APPS2_pressed = ((float)FP_sensor_2_sum - APPS2_MIN_VALUE) / (APPS2_MAX_VALUE - APPS2_MIN_VALUE); // APPS2 % pressed compared to MAX and MIN values
+        Percent_APPS2_pressed = ((float)FP_sensor_2_sum - (float)APPS2_MIN_VALUE) / ((float)APPS2_MAX_VALUE - (float)APPS2_MIN_VALUE); // APPS2 % pressed compared to MAX and MIN values
         Percent_APPS2_pressed = (FP_sensor_2_sum <= APPS2_MIN_VALUE) ? 0 : Percent_APPS2_pressed;                 // negative values are set to 0
 
         FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed); // Calculate absolute difference between APPS1 and APPS2 readings
@@ -356,7 +356,7 @@ void vThrottleTask(void *pvParameters)
             // if fault occurs more than 100 ms then it's a fault
             if (fault_10DIFF_counter_ms >= 100)
             {
-            // Set fault flag
+                // Set fault flag
                 VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1;
 
                 // Send UART message

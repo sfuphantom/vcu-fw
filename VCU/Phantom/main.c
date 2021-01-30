@@ -127,9 +127,9 @@ long RTDS_RAW = 0;
  *********************************************************************************/
 adcData_t FP_data[3];
 adcData_t *FP_data_ptr = &FP_data[0];
-unsigned int FP_sensor_1_sum = 0;
+unsigned int volatile FP_sensor_1_sum = 0;
 unsigned int FP_sensor_1_avg;
-unsigned int FP_sensor_2_sum = 0;
+unsigned int volatile FP_sensor_2_sum = 0;
 unsigned int FP_sensor_2_avg;
 
 unsigned int BSE_sensor_sum  = 0;
@@ -143,7 +143,7 @@ uint16 FP_sensor_1_max = 4095; // 12-bit ADC
 uint16 FP_sensor_2_max = 4095; // 12-bit ADC
 uint16 FP_sensor_1_percentage;
 uint16 FP_sensor_2_percentage;
-float FP_sensor_diff;
+float volatile FP_sensor_diff;
 
 
 

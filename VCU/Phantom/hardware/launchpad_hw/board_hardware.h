@@ -46,10 +46,10 @@
 /* These allow for checking short to GND and 5V faults */
 #define BSE_MIN_VALUE           1229
 #define BSE_MAX_VALUE           3686
-#define APPS1_MIN_VALUE         1228
-#define APPS1_MAX_VALUE         3603
-#define APPS2_MIN_VALUE         410
-#define APPS2_MAX_VALUE         1229
+#define APPS1_MIN_VALUE         2009
+#define APPS1_MAX_VALUE         3535
+#define APPS2_MIN_VALUE         713
+#define APPS2_MAX_VALUE         1240
 
 /****************** BRAKE LIGHT *************************/
 #define BRAKING_THRESHOLD     2000 // threshold for turning on brake light
