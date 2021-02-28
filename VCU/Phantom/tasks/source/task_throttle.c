@@ -26,13 +26,13 @@
 #include "vcu_data.h"
 
 extern State state;
+extern TimerHandle_t xTimers[];   // jaypacamarra
 
 /*********************************************************************************
   ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
  *********************************************************************************/
 extern adcData_t FP_data[3];
 extern adcData_t *FP_data_ptr;       // = &FP_data[0];
-extern unsigned int lightSensor;     // debugging - jaypacamarra
 extern unsigned int volatile FP_sensor_1_sum; // = 0;
 extern unsigned int FP_sensor_1_avg;
 extern unsigned int volatile FP_sensor_2_sum; // = 0;
@@ -141,33 +141,23 @@ void vThrottleTask(void *pvParameters)
         // check for short to GND/5V on APPS sensor 1
         if (FP_sensor_1_sum < APPS1_MIN_VALUE) // APPS1 is assumed shorted to GND
         {
-            // increment fault timer
-            fault_APPS1_Range_counter_ms += xFrequency;
 
-            // if faults occurs more than 100 ms then set fault flag
-            if (fault_APPS2_Range_counter_ms >= 100)
-            {
-                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
-            }
+            xTimerStart(xTimers[3], pdMS_TO_TICKS(50)); // start software timer for apps1 range fault
+
         }
         else if (FP_sensor_1_sum > APPS1_MAX_VALUE) // APPS1 is assumed shorted to 5V
         {
-            // increment fault timer
-            fault_APPS1_Range_counter_ms += xFrequency;
 
-            // if faults occurs more than 100 ms then set fault flag
-            if (fault_APPS2_Range_counter_ms >= 100)
-            {
-                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
-            }
+            xTimerStart(xTimers[3], pdMS_TO_TICKS(50)); // start software timer for apps1 range fault
+
         }
         else
         {
-            // should be in normal range
+            // should be in normal range so no fault
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
 
             // reset fault timer
-            fault_APPS1_Range_counter_ms += 0;
+            xTimerReset(xTimers[3], portMAX_DELAY);
         }
 
         // check for short to GND/3V3 on APPS sensor 2

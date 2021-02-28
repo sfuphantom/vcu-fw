@@ -69,7 +69,7 @@
 /*********************************************************************************
  *                          SOFTWARE TIMER INITIALIZATION
  *********************************************************************************/
-#define NUMBER_OF_TIMERS   2
+#define NUMBER_OF_TIMERS   5
 
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
@@ -80,6 +80,7 @@ bool THROTTLE_AVAILABLE = false; // used to only enable throttle after the buzze
 
 void Timer_300ms(TimerHandle_t xTimers);
 void Timer_2s(TimerHandle_t xTimers);
+void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);  // prototype for APPS1 severe range fault software timer callback - jaypacamarra
 
 /*********************************************************************************
  *                          STATE ENUMERATION
@@ -193,74 +194,109 @@ int main(void)
 /*********************************************************************************
  *                          freeRTOS SOFTWARE TIMER SETUP
  *********************************************************************************/
-//    xTimers[0] = xTimerCreate
-//            ( /* Just a text name, not used by the RTOS
-//             kernel. */
-//             "RTDS_Timer",
-//             /* The timer period in ticks, must be
-//             greater than 0. */
-//             pdMS_TO_TICKS(10),
-//             /* The timers will auto-reload themselves
-//             when they expire. */
-//             pdFALSE,
-//             /* The ID is used to store a count of the
-//             number of times the timer has expired, which
-//             is initialised to 0. */
-//             ( void * ) 0,
-//             /* Callback function for when the timer expires*/
-//             Timer_300ms
-//           );
-//
-//    xTimers[1] = xTimerCreate
-//            ( /* Just a text name, not used by the RTOS
-//             kernel. */
-//             "RTDS_Timer",
-//             /* The timer period in ticks, must be
-//             greater than 0. */
-//             pdMS_TO_TICKS(2000),
-//             /* The timers will auto-reload themselves
-//             when they expire. */
-//             pdFALSE,
-//             /* The ID is used to store a count of the
-//             number of times the timer has expired, which
-//             is initialised to 0. */
-//             ( void * ) 0,
-//             /* Callback function for when the timer expires*/
-//             Timer_2s
-//           );
-//
-//
-//    // with more timers being added it's more worth it to do a for loop for initializing each one here at the start
-//
-//    if( xTimers[0] == NULL )
-//    {
-//         /* The timer was not created. */
-//        UARTSend(PC_UART, "The timer was not created.\r\n");
-//    }
+    xTimers[0] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+             kernel. */
+             "RTDS_Timer",
+             /* The timer period in ticks, must be
+             greater than 0. */
+             pdMS_TO_TICKS(10),
+             /* The timers will auto-reload themselves
+             when they expire. */
+             pdFALSE,
+             /* The ID is used to store a count of the
+             number of times the timer has expired, which
+             is initialised to 0. */
+             ( void * ) 0,
+             /* Callback function for when the timer expires*/
+             Timer_300ms
+           );
+
+    xTimers[1] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+             kernel. */
+             "RTDS_Timer",
+             /* The timer period in ticks, must be
+             greater than 0. */
+             pdMS_TO_TICKS(2000),
+             /* The timers will auto-reload themselves
+             when they expire. */
+             pdFALSE,
+             /* The ID is used to store a count of the
+             number of times the timer has expired, which
+             is initialised to 0. */
+             ( void * ) 0,
+             /* Callback function for when the timer expires*/
+             Timer_2s
+           );
+    xTimers[3] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+             kernel. */
+             "APPS1_RANGE_FAULT_Timer",
+             /* The timer period in ticks, must be
+             greater than 0. */
+             100,
+             /* The timers will auto-reload themselves
+             when they expire. */
+             pdFALSE,
+             /* The ID is used to store a count of the
+             number of times the timer has expired, which
+             is initialised to 0. */
+             ( void * ) 0,
+             /* Callback function for when the timer expires*/
+             APPS1_SEVERE_RANGE_FAULT_CALLBACK
+           );
+
+
+    // with more timers being added it's more worth it to do a for loop for initializing each one here at the start
+
+    if( xTimers[0] == NULL )
+    {
+         /* The timer was not created. */
+        UARTSend(PC_UART, "The timer was not created.\r\n");
+    }
+    else
+    {
+         /* Start the timer.  No block time is specified, and
+         even if one was it would be ignored because the RTOS
+         scheduler has not yet been started. */
+         if( xTimerStart( xTimers[0], 0 ) != pdPASS )
+         {
+             /* The timer could not be set into the Active
+             state. */
+             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
+         }
+    }
+
+    if( xTimers[1] == NULL )
+    {
+         /* The timer was not created. */
+        UARTSend(PC_UART, "The timer was not created.\r\n");
+    }
+    else
+    {
+         /* Start the timer.  No block time is specified, and
+         even if one was it would be ignored because the RTOS
+         scheduler has not yet been started. */
+         if( xTimerStart( xTimers[1], 0 ) != pdPASS )
+         {
+             /* The timer could not be set into the Active
+             state. */
+             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
+         }
+    }
+
+    if( xTimers[3] == NULL )
+    {
+         /* The timer was not created. */
+        UARTSend(PC_UART, "The timer was not created.\r\n");
+    }
 //    else
 //    {
 //         /* Start the timer.  No block time is specified, and
 //         even if one was it would be ignored because the RTOS
 //         scheduler has not yet been started. */
-//         if( xTimerStart( xTimers[0], 0 ) != pdPASS )
-//         {
-//             /* The timer could not be set into the Active
-//             state. */
-//             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
-//         }
-//    }
-//
-//    if( xTimers[1] == NULL )
-//    {
-//         /* The timer was not created. */
-//        UARTSend(PC_UART, "The timer was not created.\r\n");
-//    }
-//    else
-//    {
-//         /* Start the timer.  No block time is specified, and
-//         even if one was it would be ignored because the RTOS
-//         scheduler has not yet been started. */
-//         if( xTimerStart( xTimers[1], 0 ) != pdPASS )
+//         if( xTimerStart( xTimers[3], 0 ) != pdPASS )
 //         {
 //             /* The timer could not be set into the Active
 //             state. */
@@ -398,6 +434,12 @@ void gioNotification(gioPORT_t *port, uint32 bit)
  {
      pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
      THROTTLE_AVAILABLE = true;
+ }
+
+ /* Timer callback when APPS1 Range fault occurs for 100 ms*/
+ void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers)
+ {
+     gioSetBit(gioPORTB, 1, 1);
  }
 
 void vApplicationMallocFailedHook( void )
