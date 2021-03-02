@@ -69,7 +69,7 @@
 /*********************************************************************************
  *                          SOFTWARE TIMER INITIALIZATION
  *********************************************************************************/
-#define NUMBER_OF_TIMERS   5
+#define NUMBER_OF_TIMERS   6
 
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
@@ -77,10 +77,17 @@ TimerHandle_t xTimers[NUMBER_OF_TIMERS];
 /* This timer is used to debounce the interrupts for the RTDS and SDC signals */
 bool INTERRUPT_AVAILABLE = true;
 bool THROTTLE_AVAILABLE = false; // used to only enable throttle after the buzzer has gone for 2 seconds
+bool APPS1_RANGE_FAULT_TIMER_EXPIRED = false;   //jaypacamarra
+bool APPS2_RANGE_FAULT_TIMER_EXPIRED = false;   //jaypacamarra
+bool BSE_RANGE_FAULT_TIMER_EXPIRED   = false;   //jaypacamarra
+bool FP_DIFF_FAULT_TIMER_EXPIRED     = false;   //jaypacamarra
 
 void Timer_300ms(TimerHandle_t xTimers);
 void Timer_2s(TimerHandle_t xTimers);
 void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);  // prototype for APPS1 severe range fault software timer callback - jaypacamarra
+void APPS2_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);    // prototype for APPS2 severe range fault software timer callback - jaypacamarra
+void BSE_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);    // prototype for BSE severe range fault software timer callback - jaypacamarra
+void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers);  // prototype for FP difference by 10% fault software timer callback - jaypacamarra
 
 /*********************************************************************************
  *                          STATE ENUMERATION
@@ -229,7 +236,7 @@ int main(void)
              /* Callback function for when the timer expires*/
              Timer_2s
            );
-    xTimers[3] = xTimerCreate
+    xTimers[2] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
              kernel. */
              "APPS1_RANGE_FAULT_Timer",
@@ -247,6 +254,58 @@ int main(void)
              APPS1_SEVERE_RANGE_FAULT_CALLBACK
            );
 
+    xTimers[3] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+             kernel. */
+             "APPS2_RANGE_FAULT_Timer",
+             /* The timer period in ticks, must be
+             greater than 0. */
+             100,
+             /* The timers will auto-reload themselves
+             when they expire. */
+             pdFALSE,
+             /* The ID is used to store a count of the
+             number of times the timer has expired, which
+             is initialised to 0. */
+             ( void * ) 0,
+             /* Callback function for when the timer expires*/
+             APPS2_SEVERE_RANGE_FAULT_CALLBACK
+           );
+
+    xTimers[4] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+             kernel. */
+             "BSE_RANGE_FAULT_Timer",
+             /* The timer period in ticks, must be
+             greater than 0. */
+             100,
+             /* The timers will auto-reload themselves
+             when they expire. */
+             pdFALSE,
+             /* The ID is used to store a count of the
+             number of times the timer has expired, which
+             is initialised to 0. */
+             ( void * ) 0,
+             /* Callback function for when the timer expires*/
+             BSE_SEVERE_RANGE_FAULT_CALLBACK
+           );
+    xTimers[5] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+             kernel. */
+             "FP_DIFF_FAULT_Timer",
+             /* The timer period in ticks, must be
+             greater than 0. */
+             100,
+             /* The timers will auto-reload themselves
+             when they expire. */
+             pdFALSE,
+             /* The ID is used to store a count of the
+             number of times the timer has expired, which
+             is initialised to 0. */
+             ( void * ) 0,
+             /* Callback function for when the timer expires*/
+             FP_DIFF_SEVERE_FAULT_CALLBACK
+           );
 
     // with more timers being added it's more worth it to do a for loop for initializing each one here at the start
 
@@ -286,7 +345,7 @@ int main(void)
          }
     }
 
-    if( xTimers[3] == NULL )
+    if( xTimers[2] == NULL )
     {
          /* The timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
@@ -317,13 +376,13 @@ int main(void)
     // need to do an "if queue != NULL"
 
     // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
-    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"StateMachineTask Creation Failed.\r\n");
-        while(1);
-    }
+//    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
+//    {
+//        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
+//        // probably need a better error handler
+//        sciSend(PC_UART,23,(unsigned char*)"StateMachineTask Creation Failed.\r\n");
+//        while(1);
+//    }
 
 
     if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  240, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
@@ -334,30 +393,30 @@ int main(void)
         while(1);
     }
 
-    if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  240, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"SensorReadTask Creation Failed.\r\n");
-        while(1);
-    }
-
-
-    if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  240, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"DataLoggingTask Creation Failed.\r\n");
-        while(1);
-    }
-
-    if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  240, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"WatchdogTask Creation Failed.\r\n");
-        while(1);
-    }
+//    if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  240, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
+//    {
+//        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
+//        // probably need a better error handler
+//        sciSend(PC_UART,23,(unsigned char*)"SensorReadTask Creation Failed.\r\n");
+//        while(1);
+//    }
+//
+//
+//    if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  240, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
+//    {
+//        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
+//        // probably need a better error handler
+//        sciSend(PC_UART,23,(unsigned char*)"DataLoggingTask Creation Failed.\r\n");
+//        while(1);
+//    }
+//
+//    if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  240, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
+//    {
+//        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
+//        // probably need a better error handler
+//        sciSend(PC_UART,23,(unsigned char*)"WatchdogTask Creation Failed.\r\n");
+//        while(1);
+//    }
 
     // all tasks have been created successfully
     UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
@@ -439,9 +498,23 @@ void gioNotification(gioPORT_t *port, uint32 bit)
  /* Timer callback when APPS1 Range fault occurs for 100 ms*/
  void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers)
  {
-     gioSetBit(gioPORTB, 1, 1);
+     APPS1_RANGE_FAULT_TIMER_EXPIRED = true;
  }
-
+ /* Timer callback when APPS2 Range fault occurs for 100 ms*/
+void APPS2_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers)
+{
+    APPS2_RANGE_FAULT_TIMER_EXPIRED = true;
+}
+/* Timer callback when BSE Range fault occurs for 100 ms*/
+void BSE_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers)
+{
+    BSE_RANGE_FAULT_TIMER_EXPIRED = true;
+}
+/* Timer callback when APPS1 and APPS2 differ by 10% or more for 100 ms*/
+void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers)
+{
+    FP_DIFF_FAULT_TIMER_EXPIRED = true;
+}
 void vApplicationMallocFailedHook( void )
 {
     // Error handling if malloc fails to allocate memory properly
@@ -456,16 +529,16 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
                                     uint32_t *pulIdleTaskStackSize )
 {
 /* If the buffers to be provided to the Idle task are declared inside this
-function then they must be declared static – otherwise they will be allocated on
+function then they must be declared static ï¿½ otherwise they will be allocated on
 the stack and so not exists after this function exits. */
 static StaticTask_t xIdleTaskTCB;
 static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
 
-    /* Pass out a pointer to the StaticTask_t structure in which the Idle task’s
+    /* Pass out a pointer to the StaticTask_t structure in which the Idle taskï¿½s
     state will be stored. */
     *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
 
-    /* Pass out the array that will be used as the Idle task’s stack. */
+    /* Pass out the array that will be used as the Idle taskï¿½s stack. */
     *ppxIdleTaskStackBuffer = uxIdleTaskStack;
 
     /* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
@@ -473,7 +546,7 @@ static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
     configMINIMAL_STACK_SIZE is specified in words, not bytes. */
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
-/*———————————————————–*/
+/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 
 /* configSUPPORT_STATIC_ALLOCATION and configUSE_TIMERS are both set to 1, so the
 application must provide an implementation of vApplicationGetTimerTaskMemory()
@@ -483,16 +556,16 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,
                                      uint32_t *pulTimerTaskStackSize )
 {
 /* If the buffers to be provided to the Timer task are declared inside this
-function then they must be declared static – otherwise they will be allocated on
+function then they must be declared static ï¿½ otherwise they will be allocated on
 the stack and so not exists after this function exits. */
 static StaticTask_t xTimerTaskTCB;
 static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 
     /* Pass out a pointer to the StaticTask_t structure in which the Timer
-    task’s state will be stored. */
+    taskï¿½s state will be stored. */
     *ppxTimerTaskTCBBuffer = &xTimerTaskTCB;
 
-    /* Pass out the array that will be used as the Timer task’s stack. */
+    /* Pass out the array that will be used as the Timer taskï¿½s stack. */
     *ppxTimerTaskStackBuffer = uxTimerTaskStack;
 
     /* Pass out the size of the array pointed to by *ppxTimerTaskStackBuffer.

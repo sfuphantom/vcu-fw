@@ -27,6 +27,10 @@
 
 extern State state;
 extern TimerHandle_t xTimers[];   // jaypacamarra
+extern bool APPS1_RANGE_FAULT_TIMER_EXPIRED;   //jaypacamarra
+extern bool APPS2_RANGE_FAULT_TIMER_EXPIRED;   //jaypacamarra
+extern bool BSE_RANGE_FAULT_TIMER_EXPIRED;  //jaypacamarra
+extern bool FP_DIFF_FAULT_TIMER_EXPIRED;    //jaypacamarra
 
 /*********************************************************************************
   ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
@@ -65,7 +69,7 @@ uint32_t fault_APPS2_Range_counter_ms = 0; // hold duration of fault in millisec
 float volatile Percent_APPS1_pressed; // hold percentage foot pedal1 (APPS1) is pressed, 0-1 -jaypacamarra
 float volatile Percent_APPS2_pressed; // hold percentage foot pedal2 (APPS2) is pressed, 0-1 -jaypacamarra
 
-float alpha = 0.3;                               // Change this to tweak lowpass filter response - jaypacamarra
+float alpha = 0.5;                               // Change this to tweak lowpass filter response - jaypacamarra
 float BSE_filtered_sensor_value;                 // filtered BSE sensor value - jaypacamarra
 float BSE_previous_filtered_sensor_values = 0;   // previous BSE filtered output - jaypacamarra
 float APPS1_filtered_sensor_value;               // filtered APPS1 sensor value - jaypacamarra
@@ -95,6 +99,12 @@ void vThrottleTask(void *pvParameters)
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
 
+    // timer started is false to begin with
+    bool APPS1_range_fault_timer_started = false;
+    bool APPS2_range_fault_timer_started = false;
+    bool BSE_range_fault_timer_started   = false;
+    bool FP_diff_fault_timer_started     = false;
+
     while (true)
     {
         // Wait for the next cycle
@@ -104,10 +114,10 @@ void vThrottleTask(void *pvParameters)
         gioSetBit(hetPORT1, 5, 1);
 
         // read APPS signals
-        if (TASK_PRINT)
-        {
-            UARTSend(PC_UART, "THROTTLE CONTROL\r\n");
-        }
+//        if (TASK_PRINT)
+//        {
+//            UARTSend(PC_UART, "THROTTLE CONTROL\r\n");
+//        }
         //        UARTSend(scilinREG, xTaskGetTickCount());
 
         // how was this i from 0 to 10 selected?  //        for(i=0; i<10; i++)
@@ -142,13 +152,43 @@ void vThrottleTask(void *pvParameters)
         if (FP_sensor_1_sum < APPS1_MIN_VALUE) // APPS1 is assumed shorted to GND
         {
 
-            xTimerStart(xTimers[3], pdMS_TO_TICKS(50)); // start software timer for apps1 range fault
+            if(APPS1_range_fault_timer_started == false)
+            {
+                if(xTimerStart(xTimers[2], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+                {
+                    for(;;);
+                }
+                else
+                {
+                    APPS1_range_fault_timer_started = true;
+                }
+            }
+
+            if(APPS1_RANGE_FAULT_TIMER_EXPIRED)
+            {
+                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
+            }
 
         }
         else if (FP_sensor_1_sum > APPS1_MAX_VALUE) // APPS1 is assumed shorted to 5V
         {
 
-            xTimerStart(xTimers[3], pdMS_TO_TICKS(50)); // start software timer for apps1 range fault
+            if(APPS1_range_fault_timer_started == false)
+            {
+                if(xTimerStart(xTimers[2], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+                {
+                    for(;;);
+                }
+                else
+                {
+                    APPS1_range_fault_timer_started = true;
+                }
+            }
+
+            if(APPS1_RANGE_FAULT_TIMER_EXPIRED)
+            {
+                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
+            }
 
         }
         else
@@ -157,62 +197,96 @@ void vThrottleTask(void *pvParameters)
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
 
             // reset fault timer
-            xTimerReset(xTimers[3], portMAX_DELAY);
+            xTimerReset(xTimers[2], portMAX_DELAY);
+            APPS1_range_fault_timer_started = false;
         }
 
         // check for short to GND/3V3 on APPS sensor 2
         if (FP_sensor_2_sum < APPS2_MIN_VALUE) // APPS2 assumed shorted to GND
         {
-            // Increment fault timer
-            fault_APPS2_Range_counter_ms += xFrequency;
-
-            // if fault occurs for more than 100ms set fault flag
-            if (fault_APPS2_Range_counter_ms >= 100)
+            if(APPS2_range_fault_timer_started == false)
             {
-                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
+                if(xTimerStart(xTimers[3], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+                {
+                    for(;;);
+                }
+                else
+                {
+                    APPS2_range_fault_timer_started = true;
+                }
+            }
+
+            if(APPS2_RANGE_FAULT_TIMER_EXPIRED)
+            {
+                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
             }
         }
         else if (FP_sensor_2_sum > APPS2_MAX_VALUE) // APPS2 assumed shorted to 3.3V
         {
-            // Increment fault timer
-            fault_APPS2_Range_counter_ms += xFrequency;
-
-            // if fault occurs for more than 100ms set fault flag
-            if (fault_APPS2_Range_counter_ms >= 100)
+            if(APPS2_range_fault_timer_started == false)
             {
-                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
+                if(xTimerStart(xTimers[3], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+                {
+                    for(;;);
+                }
+                else
+                {
+                    APPS2_range_fault_timer_started = true;
+                }
+            }
+
+            if(APPS2_RANGE_FAULT_TIMER_EXPIRED)
+            {
+                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
             }
         }
         else
         {
-            // should be in normal range
+            // should be in normal range so no fault
             VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
 
             // reset fault timer
-            fault_APPS2_Range_counter_ms = 0;
+            xTimerReset(xTimers[3], portMAX_DELAY);
+            APPS2_range_fault_timer_started = false;
         }
 
         // check for short to GND/5V on BSE
         if (BSE_sensor_sum < BSE_MIN_VALUE) // BSE is assumed shorted to GND
         {
-            // Increment fault timer
-            fault_BSE_Range_counter_ms += xFrequency;
-
-            // if faults occurs for more than 100ms then set fault flag
-            if (fault_BSE_Range_counter_ms >= 100)
+            if(BSE_range_fault_timer_started == false)
             {
-                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
+                if(xTimerStart(xTimers[4], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+                {
+                    for(;;);
+                }
+                else
+                {
+                    BSE_range_fault_timer_started = true;
+                }
+            }
+
+            if(BSE_RANGE_FAULT_TIMER_EXPIRED)
+            {
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
             }
         }
         else if (BSE_sensor_sum > BSE_MAX_VALUE) // BSE is assumed shorted to 5V
         {
-            // Increment fault timer
-            fault_BSE_Range_counter_ms += xFrequency;
-
-            // if fault occurs for more than 100ms then set fault flag
-            if (fault_BSE_Range_counter_ms >= 100)
+            if(BSE_range_fault_timer_started == false)
             {
-                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
+                if(xTimerStart(xTimers[4], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+                {
+                    for(;;);
+                }
+                else
+                {
+                    BSE_range_fault_timer_started = true;
+                }
+            }
+
+            if(BSE_RANGE_FAULT_TIMER_EXPIRED)
+            {
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
             }
         }
         else
@@ -221,7 +295,8 @@ void vThrottleTask(void *pvParameters)
             VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
 
             // reset fault timer
-            fault_BSE_Range_counter_ms = 0;
+            xTimerReset(xTimers[4], portMAX_DELAY);
+            BSE_range_fault_timer_started = false;
         }
 
         // moving average signal conditioning.. worth it to graph this out and find a good filter time constant
@@ -268,61 +343,50 @@ void vThrottleTask(void *pvParameters)
             // update brake light state
             previous_brake_light_state = 0;
         }
-
-
-          // No hysteresis for brakelights - jaypacamarra
-//        if (BSE_sensor_sum > BRAKING_THRESHOLD){
-//            // turn on brake lights
-//            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
-//        }
-//        else {
-//            // turn off brake lights
-//            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
-//        }
         
 
         // What is all of this?? - jaypacamarra
-        NumberOfChars = ltoa(BSE_sensor_sum, (char *)command);
-        if (BSE_PRINT)
-        {
-            UARTSend(PC_UART, "*****BSE**** ");
-        }
-        if (BSE_PRINT)
-        {
-            sciSend(PC_UART, NumberOfChars, command);
-        }
-        if (BSE_PRINT)
-        {
-            UARTSend(PC_UART, "   ");
-        }
-
-        NumberOfChars = ltoa(FP_sensor_1_sum, (char *)command);
-        if (BSE_PRINT)
-        {
-            UARTSend(PC_UART, "*****APPS 1**** ");
-        }
-        if (BSE_PRINT)
-        {
-            sciSend(PC_UART, NumberOfChars, command);
-        }
-        if (BSE_PRINT)
-        {
-            UARTSend(PC_UART, "   ");
-        }
-
-        NumberOfChars = ltoa(FP_sensor_2_sum, (char *)command);
-        if (BSE_PRINT)
-        {
-            UARTSend(PC_UART, "*****APPS 2**** ");
-        }
-        if (BSE_PRINT)
-        {
-            sciSend(PC_UART, NumberOfChars, command);
-        }
-        if (BSE_PRINT)
-        {
-            UARTSend(PC_UART, "\r\n");
-        }
+//        NumberOfChars = ltoa(BSE_sensor_sum, (char *)command);
+//        if (BSE_PRINT)
+//        {
+//            UARTSend(PC_UART, "*****BSE**** ");
+//        }
+//        if (BSE_PRINT)
+//        {
+//            sciSend(PC_UART, NumberOfChars, command);
+//        }
+//        if (BSE_PRINT)
+//        {
+//            UARTSend(PC_UART, "   ");
+//        }
+//
+//        NumberOfChars = ltoa(FP_sensor_1_sum, (char *)command);
+//        if (BSE_PRINT)
+//        {
+//            UARTSend(PC_UART, "*****APPS 1**** ");
+//        }
+//        if (BSE_PRINT)
+//        {
+//            sciSend(PC_UART, NumberOfChars, command);
+//        }
+//        if (BSE_PRINT)
+//        {
+//            UARTSend(PC_UART, "   ");
+//        }
+//
+//        NumberOfChars = ltoa(FP_sensor_2_sum, (char *)command);
+//        if (BSE_PRINT)
+//        {
+//            UARTSend(PC_UART, "*****APPS 2**** ");
+//        }
+//        if (BSE_PRINT)
+//        {
+//            sciSend(PC_UART, NumberOfChars, command);
+//        }
+//        if (BSE_PRINT)
+//        {
+//            UARTSend(PC_UART, "\r\n");
+//        }
 
         // What does this do?? -jaypacamarra
         //        xStatus = xQueueSendToBack(xq, &FP_sensor_1_avg, 0);
@@ -340,29 +404,31 @@ void vThrottleTask(void *pvParameters)
         // 10% APPS redundancy check
         if (FP_sensor_diff > 0.10)
         {
-            // increment how long 10% Diff fault occurs - jaypacamarra
-            fault_10DIFF_counter_ms += xFrequency; // throttle task occurence frequency defined by xFrequency
-
-            // if fault occurs more than 100 ms then it's a fault
-            if (fault_10DIFF_counter_ms >= 100)
+            if(FP_diff_fault_timer_started == false)
             {
-                // Set fault flag
-                VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1;
+                if(xTimerStart(xTimers[5], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+                {
+                    for(;;);
+                }
+                else
+                {
+                    FP_diff_fault_timer_started = true;
+                }
+            }
 
-                // Send UART message
-                UARTSend(PC_UART, "APPS1 & APPS2 10% DIFFERENCE FAULT\r\n");
+            if(FP_DIFF_FAULT_TIMER_EXPIRED)
+            {
+                VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1; // Set fault flag in vcu data structure
             }
         }
         else // Added this else statement so we have a way to set APPS 10% fault to 0 - jaypacamarra
         {
-            // reset fault timer
-            fault_10DIFF_counter_ms = 0;
-
             // No fault
             VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0;
 
-            // Send UART message
-            UARTSend(PC_UART, "APPS1 & APPS2 NO FAULT\r\n");
+            // reset the fault timer
+            xTimerReset(xTimers[5], portMAX_DELAY);
+            FP_diff_fault_timer_started = false;
         }
 
         // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25% - jaypacamarra
