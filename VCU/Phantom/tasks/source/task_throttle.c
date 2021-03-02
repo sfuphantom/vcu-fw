@@ -197,7 +197,7 @@ void vThrottleTask(void *pvParameters)
             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
 
             // reset fault timer
-            xTimerReset(xTimers[2], portMAX_DELAY);
+            xTimerStop(xTimers[2], portMAX_DELAY);
             APPS1_range_fault_timer_started = false;
         }
 
@@ -246,7 +246,7 @@ void vThrottleTask(void *pvParameters)
             VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
 
             // reset fault timer
-            xTimerReset(xTimers[3], portMAX_DELAY);
+            xTimerStop(xTimers[3], portMAX_DELAY);
             APPS2_range_fault_timer_started = false;
         }
 
@@ -295,7 +295,7 @@ void vThrottleTask(void *pvParameters)
             VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
 
             // reset fault timer
-            xTimerReset(xTimers[4], portMAX_DELAY);
+            xTimerStop(xTimers[4], portMAX_DELAY);
             BSE_range_fault_timer_started = false;
         }
 
@@ -427,7 +427,7 @@ void vThrottleTask(void *pvParameters)
             VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0;
 
             // reset the fault timer
-            xTimerReset(xTimers[5], portMAX_DELAY);
+            xTimerStop(xTimers[5], portMAX_DELAY);
             FP_diff_fault_timer_started = false;
         }
 
