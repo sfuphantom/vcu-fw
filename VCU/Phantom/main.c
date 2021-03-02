@@ -347,21 +347,25 @@ int main(void)
 
     if( xTimers[2] == NULL )
     {
-         /* The timer was not created. */
+         /* The APPS1 timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
     }
-//    else
-//    {
-//         /* Start the timer.  No block time is specified, and
-//         even if one was it would be ignored because the RTOS
-//         scheduler has not yet been started. */
-//         if( xTimerStart( xTimers[3], 0 ) != pdPASS )
-//         {
-//             /* The timer could not be set into the Active
-//             state. */
-//             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
-//         }
-//    }
+    if( xTimers[3] == NULL )
+    {
+         /* The APPS2 timer was not created. */
+        UARTSend(PC_UART, "The timer was not created.\r\n");
+    }
+    if( xTimers[4] == NULL )
+    {
+         /* The BSE timer was not created. */
+        UARTSend(PC_UART, "The timer was not created.\r\n");
+    }
+    if( xTimers[5] == NULL )
+    {
+         /* The FP DIFF timer was not created. */
+        UARTSend(PC_UART, "The timer was not created.\r\n");
+    }
+
 /*********************************************************************************
  *                          freeRTOS TASK & QUEUE CREATION
  *********************************************************************************/
