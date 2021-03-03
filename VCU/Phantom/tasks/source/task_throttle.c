@@ -187,9 +187,8 @@ void vThrottleTask(void *pvParameters)
 
             if(APPS1_RANGE_FAULT_TIMER_EXPIRED)
             {
-                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
+                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1; // apps1 range fault occured
             }
-
         }
         else
         {
@@ -199,6 +198,7 @@ void vThrottleTask(void *pvParameters)
             // Stop fault timer
             xTimerStop(xTimers[2], portMAX_DELAY);
             APPS1_range_fault_timer_started = false;
+            APPS1_RANGE_FAULT_TIMER_EXPIRED = false;
         }
 
         // check for short to GND/3V3 on APPS sensor 2
@@ -248,6 +248,7 @@ void vThrottleTask(void *pvParameters)
             // Stop fault timer
             xTimerStop(xTimers[3], portMAX_DELAY);
             APPS2_range_fault_timer_started = false;
+            APPS2_RANGE_FAULT_TIMER_EXPIRED = false;
         }
 
         // check for short to GND/5V on BSE
@@ -297,6 +298,7 @@ void vThrottleTask(void *pvParameters)
             // Stop fault timer
             xTimerStop(xTimers[4], portMAX_DELAY);
             BSE_range_fault_timer_started = false;
+            BSE_RANGE_FAULT_TIMER_EXPIRED = false;
         }
 
         // moving average signal conditioning.. worth it to graph this out and find a good filter time constant
@@ -429,6 +431,7 @@ void vThrottleTask(void *pvParameters)
             // Stop the fault timer
             xTimerStop(xTimers[5], portMAX_DELAY);
             FP_diff_fault_timer_started = false;
+            FP_DIFF_FAULT_TIMER_EXPIRED = false;
         }
 
         // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25% - jaypacamarra
