@@ -166,8 +166,14 @@ void vThrottleTask(void *pvParameters)
 
             if(APPS1_RANGE_FAULT_TIMER_EXPIRED)
             {
-                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
+                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1; // apps1 range fault occured
+//                gioSetBit(gioPORTB, 1, 1);
             }
+//            else
+//            {
+//                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0; // apps1 range fault occured
+//                gioSetBit(gioPORTB, 1, 0);
+//            }
 
         }
         else if (FP_sensor_1_sum > APPS1_MAX_VALUE) // APPS1 is assumed shorted to 5V
@@ -188,7 +194,13 @@ void vThrottleTask(void *pvParameters)
             if(APPS1_RANGE_FAULT_TIMER_EXPIRED)
             {
                 VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1; // apps1 range fault occured
+//                gioSetBit(gioPORTB, 1, 1);
             }
+//            else
+//            {
+//                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0; // apps1 range fault occured
+//                gioSetBit(gioPORTB, 1, 0);
+//            }
         }
         else
         {
@@ -219,6 +231,12 @@ void vThrottleTask(void *pvParameters)
             if(APPS2_RANGE_FAULT_TIMER_EXPIRED)
             {
                 VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
+                gioSetBit(gioPORTB, 1, 0);
+            }
+            else
+            {
+                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0; // Set fault flag in vcu data structure
+                gioSetBit(gioPORTB, 1, 1);
             }
         }
         else if (FP_sensor_2_sum > APPS2_MAX_VALUE) // APPS2 assumed shorted to 3.3V
@@ -269,7 +287,13 @@ void vThrottleTask(void *pvParameters)
             if(BSE_RANGE_FAULT_TIMER_EXPIRED)
             {
                 VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
+//                gioSetBit(gioPORTB, 1, 1);
             }
+//            else
+//            {
+//                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0; // Set fault flag in vcu data structure
+//                gioSetBit(gioPORTB, 1, 0);
+//            }
         }
         else if (BSE_sensor_sum > BSE_MAX_VALUE) // BSE is assumed shorted to 5V
         {
