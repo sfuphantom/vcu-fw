@@ -2,33 +2,22 @@
  * RGB.c
  *
  *  Created on: Mar 3, 2021
- *      Author: Rafael
+ *      Author: Rafael Guevara
  */
 
 #include "RGB.h"
-
 
 void RGBinit(){
 
     hetInit();
 
     resetRGB();
-
 }
 
 void resetRGB(){
 
-    //Red pin
-    pwmSetDuty(REDhetnum,REDhetbit,0);
-
-    //Green pin
-    pwmSetDuty(GREENhetnum,GREENhetbit,0);
-
-    //Blue pin
-    pwmSetDuty(BLUEhetnum,BLUEhetbit,0);
-
+   setRGBvalue(0,0,0);
 }
-
 
 void setRGBcolor(int color){
 
@@ -36,42 +25,27 @@ void setRGBcolor(int color){
 
         case RED:
 
-            //Red pin
-            pwmSetDuty(REDhetnum,REDhetbit,75);
-
-            //Green pin
-            pwmSetDuty(GREENhetnum,GREENhetbit,0);
-
-            //Blue pin
-            pwmSetDuty(BLUEhetnum,BLUEhetbit,0);
+            setRGBvalue(75,0,0);
 
             break;
 
         case GREEN:
 
-            //Red pin
-           pwmSetDuty(REDhetnum,REDhetbit,0);
-
-           //Green pin
-           pwmSetDuty(GREENhetnum,GREENhetbit,75);
-
-           //Blue pin
-           pwmSetDuty(BLUEhetnum,BLUEhetbit,0);
+           setRGBvalue(0,75,0);
 
            break;
 
         case BLUE:
-            //Red pin
-           pwmSetDuty(REDhetnum,REDhetbit,0);
 
-           //Green pin
-           pwmSetDuty(GREENhetnum,GREENhetbit,0);
-
-           //Blue pin
-           pwmSetDuty(BLUEhetnum,BLUEhetbit,75);
+           setRGBvalue(0,0,75);
 
            break;
 
+        default:
+
+            resetRGB();
+
+            break;
 
     }//case statement
 

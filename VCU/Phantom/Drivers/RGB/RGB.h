@@ -30,12 +30,10 @@
 #define GREEN 1
 #define BLUE 2
 
-
 void RGBinit();
 
 //turn off RGB LED
 void resetRGB();
-
 
 void setRGBcolor(int);
 
