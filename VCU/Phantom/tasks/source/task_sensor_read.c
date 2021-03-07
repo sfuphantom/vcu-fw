@@ -25,7 +25,7 @@
 
 // change to better data type (move to VCU data structure)
 int lv_current = 0;
-float sensor_current = 0.0;     
+//float sensor_current = 0.0;     not sure what this is....
 
 /*********************************************************************************
  *                               SYSTEM STATE FLAGS
@@ -83,10 +83,10 @@ void vSensorReadTask(void *pvParameters){
         //HVcurrent data
 
         //get and store current values into analogInputs struct
-        VCUDataPtr->analogInputs.currentHV_A.value = getHVsensorCurrent();
+        VCUDataPtr->AnalogIn.currentHV_A.value = getHVsensorCurrent();
 
         //OUT OF RANGE ERROR
-        VCUDataPtr->digitalValues.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
+        VCUDataPtr->DigitalVal.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
         
         //add yashs HV Bus Voltage driver
   
@@ -98,20 +98,18 @@ void vSensorReadTask(void *pvParameters){
 
         IMDData_t dataIMD = getIMDData();
 
-        //determine state of all flags
-        VCUDataPtr->digitalValues.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
+        //determine state of all flags (add to vcu data structure in some format...?)
+        VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
 
-        VCUDataPtr->digitalValues.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
+        VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
 
-        VCUDataPtr->digitalValues.IMD_DEVICE_ERR_FAULT =  (dataIMD.IMDState == Device_Error);
+        VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT =  (dataIMD.IMDState == Device_Error);
 
-        VCUDataPtr->digitalValues.IMD_BAD_INFO_FAULT =  (dataIMD.IMDState == Bad_Info);
+        VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT =  (dataIMD.IMDState == Bad_Info);
 
-        VCUDataPtr->digitalValues.IMD_UNDEF_ERR =  (dataIMD.IMDState == Undefined_fault);
+        VCUDataPtr->DigitalVal.IMD_UNDEF_ERR =  (dataIMD.IMDState == Undefined_fault);
 
-        VCUDataPtr->digitalValues.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
-
-   
+        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
 
         // TSAL and Shutdown GPIO states
         storeShutdownValues();
@@ -119,9 +117,9 @@ void vSensorReadTask(void *pvParameters){
         // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
 
         // read LV voltage, current
-        lv_current = LV_reading(LV_current_register);
+        VCUDataPtr->AnalogIn.currentLV_A = LV_reading(LV_current_register);
 
-        lv_voltage = LV_reading(LV_bus_voltage_register);
+        VCUDataPtr->AnalogIn.voltageLV_V = LV_reading(LV_bus_voltage_register);
 
 
         // for timing:

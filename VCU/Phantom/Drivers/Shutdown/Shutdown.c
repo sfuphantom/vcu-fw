@@ -5,17 +5,19 @@
  *      Author: Rafael Guevara
  */
 
+//may need to add extern keyword for accessing vcu data structure?
+
 #include "Shutdown.h"
 
 static void resetSignals(){
 
-    BMS_FAULT = false;
+    VCUDataPtr->DigitalVal.BMS_FAULT = false;
 
-    BSPD_FAULT = false;
+    VCUDataPtr->DigitalVal.BSPD_FAULT = false;
 
-    TSAL_WELDED = false;
+    VCUDataPtr->DigitalVal.TSAL_WELDED = false;
 
-    IMD_FAULT = false;
+    VCUDataPtr->DigitalVal.IMD_FAULT = false;
 
 }
 
@@ -49,20 +51,20 @@ void ShutdownInit(){
 void print_Shutdownvals(){
 
     printf("\nBMSval: ");
-    printf(BMS_STATUS ? "true" : "false");
+    printf(VCUDataPtr->DigitalVal.BMS_STATUS ? "true" : "false");
 
     printf("\nBSPDval: ");
-    printf(BSPD_STATUS ? "true" : "false");
+    printf(VCUDataPtr->DigitalVal.BSPD_STATUS ? "true" : "false");
 
 
     printf("\nIMDval: ");
-    printf(IMD_STATUS ? "true" : "false");
+    printf(VCUDataPtr->DigitalVal.IMD_STATUS ? "true" : "false");
 
     printf("\nTSALval: ");
-    printf(TSAL_STATUS ? "true" : "false");
+    printf(VCUDataPtr->DigitalVal.TSAL_STATUS ? "true" : "false");
 
     printf("\nRESETval: ");
-    printf(RESETval ? "true" : "false");
+    printf(VCUDataPtr->DigitalVal.RESET_STATUS ? "true" : "false");
 
 }
 
@@ -70,28 +72,28 @@ void storeShutdownValues(){
 
     //getBit(blah blah)
 
-    BMS_STATUS = gioGetBit(BMSPin,BMSNumPin);
+    VCUDataPtr->DigitalVal.BMS_STATUS = gioGetBit(BMSPin,BMSNumPin);
 
-    IMD_STATUS = gioGetBit(IMDPin,IMDNumPin);
+    VCUDataPtr->DigitalVal.IMD_STATUS = gioGetBit(IMDPin,IMDNumPin);
 
-    TSAL_STATUS = gioGetBit(TSALPin,TSALNumPin);
+    VCUDataPtr->DigitalVal.TSAL_STATUS = gioGetBit(TSALPin,TSALNumPin);
 
-    BSPD_STATUS = gioGetBit(BSPDPin,BSPDNumPin);
+    VCUDataPtr->DigitalVal.BSPD_STATUS = gioGetBit(BSPDPin,BSPDNumPin);
 
-    RESETval = gioGetBit(RESETPort,RESETPin);
+    VCUDataPtr->DigitalVal.RESET_STATUS = gioGetBit(RESETPort,RESETPin);
 
 }
 
 void gioNotification(gioPORT_t* port,uint32 bit){
 
-    if(port == BMSPin && bit == BMSNumPin) BMS_FAULT = true;
+    if(port == BMSPin && bit == BMSNumPin) VCUDataPtr->DigitalVal.BMS_FAULT = true;
 
-    if(port == BSPDPin && bit == BSPDNumPin) BSPD_FAULT = true;
+    if(port == BSPDPin && bit == BSPDNumPin) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
 
-    if(port == IMDPin && bit == IMDNumPin) IMD_FAULT = true;
+    if(port == IMDPin && bit == IMDNumPin) VCUDataPtr->DigitalVal.IMD_FAULT = true;
 
     // (Shutdown Board SHOULD be Triggered)   &&   (TSAL_HV == ON) ----> TSAL_WELDED
-    if((BMS_FAULT || IMD_FAULT || BSPD_FAULT) && gioGetBit(TSALPin,TSALNumPin)) TSAL_WELDED = true;
+    if((BMS_FAULT || IMD_FAULT || BSPD_FAULT) && gioGetBit(TSALPin,TSALNumPin)) VCUDataPtr->DigitalVal.TSAL_WELDED = true;
 
 }
 
