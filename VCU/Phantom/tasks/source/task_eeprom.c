@@ -6,6 +6,10 @@
  */
 #include "task_eeprom.h"
 
+extern TaskHandle_t eepromHandler; // Eeprom Task handler
+extern SemaphoreHandle_t vcuKey;
+extern data VCUData;
+extern void *pVCUDataStructure;
 
 void vEeprom(void *p){
 

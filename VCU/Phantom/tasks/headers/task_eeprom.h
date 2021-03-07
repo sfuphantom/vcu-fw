@@ -21,13 +21,6 @@
 #include "board_hardware.h"
 #include "Phantom_sci.h"
 
-
-extern TaskHandle_t eepromHandler;
-extern SemaphoreHandle_t vcuKey;
-extern data VCUData;
-extern void *pVCUDataStructure;   // Need to define this in main as (void *)pVCUDataStructure = &VCUData
-
-
 void vEeprom(void *p);
 
 #endif /* PHANTOM_TASKS_HEADERS_TASK_EEPROM_H_ */
