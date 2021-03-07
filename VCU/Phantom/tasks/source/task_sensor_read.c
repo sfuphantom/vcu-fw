@@ -23,10 +23,9 @@
 
 #define TASK_PRINT  0
 
-// change to better data type
+// change to better data type (move to VCU data structure)
 int lv_current = 0;
-float sensor_current = 0.0;     // sensor measures the high current path between battery and inverter
-// will also need one for lv_voltage; we should probably keep this in the vcu data structure?
+float sensor_current = 0.0;     
 
 /*********************************************************************************
  *                               SYSTEM STATE FLAGS
@@ -66,13 +65,6 @@ void vSensorReadTask(void *pvParameters){
         // for timing:
         gioSetBit(hetPORT1, 25, 1);
 
-//        MCP48FV_Set_Value(100);
-
-//        gioToggleBit(gioPORTA, 5);
-
-        // use getter function to get this value..
-        // pass this data via a queue
-
         RTDS_RAW = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN);
 
         if ( gioGetBit(gioPORTA, 2) == 1)
@@ -90,15 +82,14 @@ void vSensorReadTask(void *pvParameters){
 
         //HVcurrent data -rafguevara14
         //get and store voltage and current values into analogInputs struct
-        VCUDataPtr->analogInputs.voltageHV_V.value = getHVsensorVoltage();
         VCUDataPtr->analogInputs.currentHV_A.value = getHVsensorCurrent();
 
         //OUT OF RANGE ERROR
         VCUDataPtr->digitalValues.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
-
-        //APPS PROPORTIONALITY ERROR
-
-            //call Jay’s function for Torque Plausibility Check and update HVflags
+        
+        //add yashs HV Bus Voltage driver
+  
+            //and update HVflags
 
             //update HV flags accordingly
 
@@ -120,21 +111,18 @@ void vSensorReadTask(void *pvParameters){
 
         VCUDataPtr->digitalValues.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
 
-        // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
+   
 
-        // TSAL state
+        // TSAL state (shutdown driver func call)
 
-        // CAN status from BMS (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
+        // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
 
         // read LV voltage, current
-
         lv_current = LV_reading(LV_current_register);
 
-        // make sure state machine signal flags are updated
-
-        // check for all errors here and update VCU data structure or state machine flags accordingly
-
-        // will also need a lookup table or data structure that has error messages and LED codes for whatever fault flags are on
+        //read lv voltage
+        
+  
 
         // for timing:
         gioSetBit(hetPORT1, 25, 0);
