@@ -10,17 +10,20 @@
 #include "gio.h"
 
 unsigned int BSE_sensor_sum  = 0;    // needs to be stored in VCU data structure and referenced from there
-
 bool INTERRUPT_AVAILABLE;
 bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has gone for 2 seconds
 
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
-
 xQueueHandle VCUDataQueue;
 
-extern data* VCUDataPtr;
-
+// ++ Added by jjkhan
+TaskHandle_t testingEepromHandler = NULL; // Eeprom Test Task Task Handler
+TaskHandle_t stateMachineHandler = NULL;  // State machine Task Handler
+TaskHandle_t eepromHandler = NULL;  // Eeprom Task Task Handler
+SemaphoreHandle_t vcuKey;        // Mutex to protect VCU data structure
+SemaphoreHandle_t powerfailureFlagKey;  // still using this? - jjkhan
+// -- Added by jjkhan
 void phantom_freeRTOSInit(void)
 {
     phantom_freeRTOStimerInit();
@@ -120,6 +123,11 @@ void phantom_freeRTOStaskInit(void)
 
      // need to do an "if queue != NULL"
 
+     // ++ Added by jjkhan
+
+     vcuKey = xSemaphoreCreateMutex(); // vcuKey to protect VCUData
+
+     // -- Added by jjkhan
 
      // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
      if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
@@ -165,6 +173,23 @@ void phantom_freeRTOStaskInit(void)
          while(1);
      }
 
+     /* ++ Added by jjkhan */
+
+        if (xTaskCreate(vEeprom, (const char*)"EepromTask",  150, NULL,  EEPROM_TASK_PRIORITY, &eepromHandler) != pdTRUE)
+        {
+                uint8 message[]="EEPROM task Creation Failed.\r\n";
+                sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
+                while(1);
+        }
+
+
+        if (xTaskCreate(testEeprom, (const char*)"testEeprom",  150, NULL,  tskIDLE_PRIORITY, &testingEepromHandler) != pdTRUE)
+        {
+                uint8 message[]="Test task Creation Failed.\r\n";
+                sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
+                while(1);
+        }
+      /* -- Added by jjkhan */
 
      // all tasks have been created successfully
      UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
