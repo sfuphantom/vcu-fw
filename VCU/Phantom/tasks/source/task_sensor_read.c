@@ -80,8 +80,9 @@ void vSensorReadTask(void *pvParameters){
         if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
 //        UARTSend(scilinREG, xTaskGetTickCount());
 
-        //HVcurrent data -rafguevara14
-        //get and store voltage and current values into analogInputs struct
+        //HVcurrent data
+
+        //get and store current values into analogInputs struct
         VCUDataPtr->analogInputs.currentHV_A.value = getHVsensorCurrent();
 
         //OUT OF RANGE ERROR
@@ -93,13 +94,12 @@ void vSensorReadTask(void *pvParameters){
 
             //update HV flags accordingly
 
-        // IMD data (maybe this needs to be a separate interrupt?)
         updateIMDData();
 
         IMDData_t dataIMD = getIMDData();
 
-        //determine state of all flags -rafguevara14
-        VCUDataPtr->digitalValues.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure);
+        //determine state of all flags
+        VCUDataPtr->digitalValues.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
 
         VCUDataPtr->digitalValues.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
 
@@ -113,16 +113,16 @@ void vSensorReadTask(void *pvParameters){
 
    
 
-        // TSAL state (shutdown driver func call)
+        // TSAL and Shutdown GPIO states
+        storeShutdownValues();
 
         // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
 
         // read LV voltage, current
         lv_current = LV_reading(LV_current_register);
 
-        //read lv voltage
-        
-  
+        lv_voltage = LV_reading(LV_bus_voltage_register);
+
 
         // for timing:
         gioSetBit(hetPORT1, 25, 0);
