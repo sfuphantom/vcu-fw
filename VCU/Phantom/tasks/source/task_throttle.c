@@ -158,11 +158,11 @@ void vThrottleTask(void *pvParameters){
         // brake light (flickers if pedal is around 2000 and is noisily jumping above and below!)
         if (BSE_sensor_sum < BRAKING_THRESHOLD)
         {
-            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
+            //gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
         }
         else
         {
-            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
+            //gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
         }
 
         NumberOfChars = ltoa(BSE_sensor_sum,(char *)command);

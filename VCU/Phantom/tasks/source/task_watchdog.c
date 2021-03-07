@@ -32,7 +32,7 @@ void vWatchdogTask(void *pvParameters){
 
     // any initialization
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 300; // task frequency in ms
+    // const TickType_t xFrequency = 300; // task frequency in ms
     // watchdog timeout is 1.6 seconds
 
     // Initialize the xLastWakeTime variable with the current time;
@@ -40,13 +40,18 @@ void vWatchdogTask(void *pvParameters){
 
     while(true)
     {
-        // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
         if (TASK_PRINT) {UARTSend(PC_UART, "------------->WATCHDOG TASK\r\n");}
 //            UARTSend(scilinREG, xTaskGetTickCount());
 
         gioToggleBit(WATCHDOG_PORT, WATCHDOG_PIN);
+
+        // ++ Moved Delay here - jjkhan
+        // Wait for the next cycle
+        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(300)); // Delay for 0.3 seconds ? - based on line 35 in this file.
+
+        // -- jjkhan
+
     }
 
 }

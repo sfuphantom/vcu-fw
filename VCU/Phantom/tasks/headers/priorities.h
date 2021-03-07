@@ -16,8 +16,9 @@
 #define THROTTLE_TASK_PRIORITY         3
 #define SENSOR_READ_TASK_PRIORITY      2
 #define STATE_MACHINE_TASK_PRIORITY    1
-#define DATA_LOGGING_TASK_PRIORITY     0 // same as idle task
-#define WATCHDOG_TASK_PRIORITY         0 // same as idle task
+#define DATA_LOGGING_TASK_PRIORITY     0    // same as idle task
+#define WATCHDOG_TASK_PRIORITY         0    // same as idle task
+#define EEPROM_TASK_PRIORITY           0
 
 // there may also be interrupt/ISR priorities for:
 // CAN messages
