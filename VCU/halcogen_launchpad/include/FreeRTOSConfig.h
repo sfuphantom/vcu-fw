@@ -100,14 +100,15 @@
 #define configCPU_CLOCK_HZ			  ( ( unsigned portLONG ) 80000000 ) /* Timer clock. */
 #define configTICK_RATE_HZ			  ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		  ( 5 )
-#define configMINIMAL_STACK_SIZE	  ( ( unsigned portSHORT ) 128 )
-#define configTOTAL_HEAP_SIZE		  ( ( size_t ) 8192 )
+#define configMINIMAL_STACK_SIZE	  ( ( unsigned portSHORT ) 256 )
+#define configTOTAL_HEAP_SIZE		  ( ( size_t ) 10000 )   // 8192 - original; We have RAM size allocated to 189184 Bytes - check linker file - need to double check - jjkhan
 #define configMAX_TASK_NAME_LEN		  ( 16 )
 #define configIDLE_SHOULD_YIELD		  1
 #define configGENERATE_RUN_TIME_STATS 0
 #define configUSE_MALLOC_FAILED_HOOK  0
 
 /* USER CODE BEGIN (1) */
+#define configUSE_TIME_SLICING        1    // Round-robin time-scheduling for same priority Tasks
 /* USER CODE END */
 
 #define configSUPPORT_STATIC_ALLOCATION			0
@@ -132,9 +133,9 @@
 
 /* Timers */
 #define configUSE_TIMERS                1
-#define configTIMER_TASK_PRIORITY		( 0 )
+#define configTIMER_TASK_PRIORITY		( 1 )
 #define configTIMER_QUEUE_LENGTH		4
-#define configTIMER_TASK_STACK_DEPTH	( 256 )
+#define configTIMER_TASK_STACK_DEPTH	(configMINIMAL_STACK_SIZE*2)
 
 /* USER CODE BEGIN (3) */
 /* USER CODE END */
