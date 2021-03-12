@@ -17,6 +17,7 @@
 
 #include "Phantom_sci.h"
 #include "LV_monitor.h"
+#include "IMD.h"
 #include "vcu_data.h"
 #include "FreeRTOS.h"
 
@@ -34,7 +35,7 @@ int lv_current = 0;
 extern data* VCUDataPtr;
 
 extern uint8_t RTDS;// = 0;
-extern long RTDS_RAW;// = 0;
+long RTDS_RAW;      // = 0;
 /***********************************************************
  * @function                - vSensorReadTask
  *
@@ -53,9 +54,6 @@ void vSensorReadTask(void *pvParameters){
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
-
-    int nchars;
-    char stbuf[64];
 
     while(true)
     {
@@ -91,6 +89,8 @@ void vSensorReadTask(void *pvParameters){
         // read HV current
 
         // IMD data (maybe this needs to be a separate interrupt?)
+        updateIMDData();
+        serialSendData();
 
         // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
 
@@ -100,7 +100,8 @@ void vSensorReadTask(void *pvParameters){
 
         // read LV voltage, current
 
-        lv_current = LV_reading(LV_current_register);
+        // this needs to be updated to not block the whole system if i2c not available
+//        lv_current = LV_reading(LV_current_register);
 
         // make sure state machine signal flags are updated
 

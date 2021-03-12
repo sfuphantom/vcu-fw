@@ -49,7 +49,7 @@
 #ifndef __REG_GIO_H__
 #define __REG_GIO_H__
 
-#include <halcogen_vcu/include/sys_common.h>
+#include "sys_common.h"
 
 
 

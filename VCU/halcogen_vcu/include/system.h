@@ -48,9 +48,9 @@
 #ifndef __SYS_SYSTEM_H__
 #define __SYS_SYSTEM_H__
 
-#include <halcogen_vcu/include/reg_flash.h>
-#include <halcogen_vcu/include/reg_system.h>
-#include <halcogen_vcu/include/reg_tcram.h>
+#include "reg_system.h"
+#include "reg_flash.h"
+#include "reg_tcram.h"
 
 #ifdef __cplusplus
 extern "C" {

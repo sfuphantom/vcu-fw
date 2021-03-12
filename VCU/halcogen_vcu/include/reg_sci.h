@@ -49,8 +49,8 @@
 #ifndef __REG_SCI_H__
 #define __REG_SCI_H__
 
-#include <halcogen_vcu/include/reg_gio.h>
-#include <halcogen_vcu/include/sys_common.h>
+#include "sys_common.h"
+#include "reg_gio.h"
 
 
 

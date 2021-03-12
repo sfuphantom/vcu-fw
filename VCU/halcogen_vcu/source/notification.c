@@ -48,15 +48,16 @@
 
 /* Include Files */
 
-#include <halcogen_vcu/include/adc.h>
-#include <halcogen_vcu/include/esm.h>
-#include <halcogen_vcu/include/gio.h>
-#include <halcogen_vcu/include/het.h>
-#include <halcogen_vcu/include/i2c.h>
-#include <halcogen_vcu/include/mibspi.h>
-#include <halcogen_vcu/include/sci.h>
-#include <halcogen_vcu/include/sys_dma.h>
-#include <halcogen_vcu/include/sys_selftest.h>
+#include "esm.h"
+#include "sys_selftest.h"
+#include "adc.h"
+#include "gio.h"
+#include "mibspi.h"
+#include "sci.h"
+#include "het.h"
+#include "rti.h"
+#include "i2c.h"
+#include "sys_dma.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
@@ -99,6 +100,16 @@ void memoryPort1TestFailNotification(uint32 groupSelect, uint32 dataSelect, uint
 }
 
 /* USER CODE BEGIN (8) */
+/* USER CODE END */
+#pragma WEAK(rtiNotification)
+void rtiNotification(uint32 notification)
+{
+/*  enter user code between the USER CODE BEGIN and USER CODE END. */
+/* USER CODE BEGIN (9) */
+/* USER CODE END */
+}
+
+/* USER CODE BEGIN (10) */
 /* USER CODE END */
 #pragma WEAK(adcNotification)
 void adcNotification(adcBASE_t *adc, uint32 group)

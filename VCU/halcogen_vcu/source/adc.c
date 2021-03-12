@@ -50,8 +50,8 @@
 
 /* Include Files */
 
-#include <halcogen_vcu/include/adc.h>
-#include <halcogen_vcu/include/sys_vim.h>
+#include "adc.h"
+#include "sys_vim.h"
 
 /* USER CODE BEGIN (1) */
 /* USER CODE END */

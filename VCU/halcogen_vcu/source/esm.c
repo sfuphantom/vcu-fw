@@ -49,8 +49,8 @@
 
 /* Include Files */
 
-#include <halcogen_vcu/include/esm.h>
-#include <halcogen_vcu/include/sys_vim.h>
+#include "esm.h"
+#include "sys_vim.h"
 
 /* USER CODE BEGIN (1) */
 /* USER CODE END */

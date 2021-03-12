@@ -39,7 +39,7 @@
 */
 
 
-#include <halcogen_vcu/include/sys_pmm.h>
+#include "sys_pmm.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */

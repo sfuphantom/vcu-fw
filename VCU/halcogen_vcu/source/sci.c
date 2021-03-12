@@ -43,8 +43,8 @@
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
-#include <halcogen_vcu/include/sci.h>
-#include <halcogen_vcu/include/sys_vim.h>
+#include "sci.h"
+#include "sys_vim.h"
 #include "math.h"
 
 /* USER CODE BEGIN (1) */

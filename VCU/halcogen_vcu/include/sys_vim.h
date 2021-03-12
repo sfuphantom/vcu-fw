@@ -48,7 +48,7 @@
 #ifndef __SYS_VIM_H__
 #define __SYS_VIM_H__
 
-#include <halcogen_vcu/include/reg_vim.h>
+#include "reg_vim.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
@@ -94,6 +94,7 @@ extern void vPortPreemptiveTick(void);
 extern void het1HighLevelInterrupt(void);
 extern void vPortYeildWithinAPI(void);
 extern void gioLowLevelInterrupt(void);
+extern void het1LowLevelInterrupt(void);
 extern void sciHighLevelInterrupt(void);
 
 /* USER CODE BEGIN (3) */
@@ -283,7 +284,7 @@ typedef struct vim_config_reg
                                     | (uint32)((uint32)1U << 21U)\
                                     | (uint32)((uint32)0U << 22U)\
                                     | (uint32)((uint32)1U << 23U)\
-                                    | (uint32)((uint32)0U << 24U)\
+                                    | (uint32)((uint32)1U << 24U)\
                                     | (uint32)((uint32)0U << 25U)\
                                     | (uint32)((uint32)0U << 26U)\
                                     | (uint32)((uint32)0U << 27U)\

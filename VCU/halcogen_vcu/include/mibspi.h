@@ -44,7 +44,7 @@
 #ifndef __MIBSPI_H__
 #define __MIBSPI_H__
 
-#include <halcogen_vcu/include/reg_mibspi.h>
+#include "reg_mibspi.h"
 
 #ifdef __cplusplus
 extern "C" {

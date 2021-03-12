@@ -46,7 +46,7 @@
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
-#include <halcogen_vcu/include/reg_eqep.h>
+#include "reg_eqep.h"
 
 #ifdef __cplusplus
 extern "C" {

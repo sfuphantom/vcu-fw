@@ -39,7 +39,7 @@
 */
 
 
-#include <halcogen_vcu/include/sys_pcr.h>
+#include "sys_pcr.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */

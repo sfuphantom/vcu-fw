@@ -43,7 +43,7 @@
 #ifndef __GIO_H__
 #define __GIO_H__
 
-#include <halcogen_vcu/include/reg_gio.h>
+#include "reg_gio.h"
 
 #ifdef __cplusplus
 extern "C" {

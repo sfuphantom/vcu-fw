@@ -43,7 +43,7 @@
 #ifndef __PINMUX_H__
 #define __PINMUX_H__
 
-#include <halcogen_vcu/include/reg_pinmux.h>
+#include "reg_pinmux.h"
 
 #ifdef __cplusplus
 extern "C" {

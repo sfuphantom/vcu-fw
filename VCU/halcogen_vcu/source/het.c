@@ -40,8 +40,8 @@
 */
 
 
-#include <halcogen_vcu/include/het.h>
-#include <halcogen_vcu/include/sys_vim.h>
+#include "het.h"
+#include "sys_vim.h"
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
@@ -367,13 +367,13 @@ static const hetINSTRUCTION_t het1PROGRAM[58U] =
     *         - Next instruction             = 18
     *         - Conditional next instruction = 18
     *         - Interrupt                    = 17
-    *         - Pin                          = 4
+    *         - Pin                          = 20
     */
     {
         /* Program */
         0x00025440U,
         /* Control */
-        (0x00024007U | (uint32)((uint32)4U << 8U) | (uint32)((uint32)3U << 4U)),
+        (0x00024007U | (uint32)((uint32)20U << 8U) | (uint32)((uint32)3U << 4U)),
         /* Data */
         0x00000000U,
         /* Reserved */
@@ -1965,4 +1965,36 @@ void het1HighLevelInterrupt(void)
     }
 }
 
+/* USER CODE BEGIN (6) */
+/* USER CODE END */
+
+/** @fn void het1LowLevelInterrupt(void)
+*   @brief Level 1 Interrupt for HET1
+*/
+#pragma CODE_STATE(het1LowLevelInterrupt, 32)
+#pragma INTERRUPT(het1LowLevelInterrupt, IRQ)
+
+/* SourceId : HET_SourceId_019 */
+/* DesignId : HET_DesignId_017 */
+/* Requirements : HL_SR371, HL_SR380, HL_SR381 */
+void het1LowLevelInterrupt(void)
+{
+    uint32 vec = hetREG1->OFF2;
+
+    if (vec < 18U)
+    {
+        if ((vec & 1U) != 0U)
+        {
+            pwmNotification(hetREG1,(vec >> 1U) - 1U, pwmEND_OF_PERIOD);
+        }
+        else
+        {
+            pwmNotification(hetREG1,(vec >> 1U) - 1U, pwmEND_OF_DUTY);
+        }
+    }
+    else
+    {
+        edgeNotification(hetREG1,vec - 18U);
+    }
+}
 

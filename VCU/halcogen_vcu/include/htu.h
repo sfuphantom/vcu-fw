@@ -44,7 +44,7 @@
 #ifndef __HTU_H__
 #define __HTU_H__
 
-#include <halcogen_vcu/include/reg_htu.h>
+#include "reg_htu.h"
 
 #ifdef __cplusplus
 extern "C" {

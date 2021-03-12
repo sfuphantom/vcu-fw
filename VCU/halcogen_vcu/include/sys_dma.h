@@ -46,7 +46,7 @@
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
-#include <halcogen_vcu/include/reg_dma.h>
+#include "reg_dma.h"
 
 #ifdef __cplusplus
 extern "C" {
