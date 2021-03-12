@@ -34,7 +34,14 @@ State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and re
 
 data VCUData;
 data* VCUDataPtr = &VCUData;
+
 void *pVCUDataStructure = &VCUData;  // Need this void pointer to read from eeprom bank - Added by jjkhan
+
+// ++ Added by jjkhan:
+     // Uncomment the following directive if the current sensor module is connected.
+    // VCU has it on-board, launchpad doesn't -> will get stuck in lv_monitorInit()
+//#define LV_MONITOR
+// -- Added by jjkhan
 
 /* USER CODE END */
 
@@ -69,7 +76,10 @@ void main(void)
     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_LED_Init();             // Initialize RGB LEDs to start off
     MCP48FV_Init();             // Initialize DAC Library
+
+#if LV_MONITOR
     lv_monitorInit();           // Initialize LV Monitor Library
+#endif
     initializeIMD();            // Initialize IMD Library
 
     /* freeRTOS Initialization */
