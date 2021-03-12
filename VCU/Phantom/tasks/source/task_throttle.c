@@ -12,7 +12,6 @@
 #include "os_semphr.h"
 #include "os_task.h"
 #include "os_timer.h"
-#include "task_throttle.h" //jaypacamarra
 
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 
@@ -21,7 +20,6 @@
 #include "MCP48FV_DAC_SPI.h"
 #include "Phantom_sci.h"
 #include "gio.h"
-#include "sys_common.h"
 
 #include "vcu_data.h"
 
@@ -35,31 +33,31 @@ extern bool FP_DIFF_FAULT_TIMER_EXPIRED;    //jaypacamarra
 /*********************************************************************************
   ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
  *********************************************************************************/
-extern adcData_t FP_data[3];
-extern adcData_t *FP_data_ptr;       // = &FP_data[0];
-extern unsigned int volatile FP_sensor_1_sum; // = 0;
-extern unsigned int FP_sensor_1_avg;
-extern unsigned int volatile FP_sensor_2_sum; // = 0;
-extern unsigned int FP_sensor_2_avg;
+adcData_t FP_data[3];
+adcData_t *FP_data_ptr = &FP_data;
+unsigned int volatile FP_sensor_1_sum; // = 0;
+unsigned int FP_sensor_1_avg;
+unsigned int volatile FP_sensor_2_sum; // = 0;
+unsigned int FP_sensor_2_avg;
 
 extern unsigned int BSE_sensor_sum; //  = 0;
-extern unsigned int BSE_sensor_avg; //  = 0;
-extern unsigned int NumberOfChars;
+unsigned int BSE_sensor_avg; //  = 0;
+unsigned int NumberOfChars;
 
-extern uint16 FP_sensor_1_min; // = 0;
-extern uint16 FP_sensor_2_min; // = 0;
+uint16 FP_sensor_1_min; // = 0;
+uint16 FP_sensor_2_min; // = 0;
 
-extern uint16 FP_sensor_1_max; // = 4095; // 12-bit ADC
-extern uint16 FP_sensor_2_max; // = 4095; // 12-bit ADC
-extern uint16 FP_sensor_1_percentage;
-extern uint16 FP_sensor_2_percentage;
-extern float FP_sensor_diff;
+uint16 FP_sensor_1_max; // = 4095; // 12-bit ADC
+uint16 FP_sensor_2_max; // = 4095; // 12-bit ADC
+uint16 FP_sensor_1_percentage;
+uint16 FP_sensor_2_percentage;
+float FP_sensor_diff;
 
-extern char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
+char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
 
 extern data *VCUDataPtr;
 
-extern bool THROTTLE_AVAILABLE;
+bool THROTTLE_AVAILABLE;
 
 uint32_t volatile fault_10DIFF_counter_ms = 0;      // hold duration of fault in milliseconds - jaypacamarra
 uint32_t fault_BSE_Range_counter_ms = 0;   // hold duration of fault in milliseconds - jaypacamarra
@@ -425,8 +423,8 @@ void vThrottleTask(void *pvParameters)
         Percent_APPS2_pressed = ((float)FP_sensor_2_sum - (float)APPS2_MIN_VALUE) / ((float)APPS2_MAX_VALUE - (float)APPS2_MIN_VALUE); // APPS2 % pressed compared to MAX and MIN values
         Percent_APPS2_pressed = (FP_sensor_2_sum <= APPS2_MIN_VALUE) ? 0 : Percent_APPS2_pressed;                 // negative values are set to 0
 
-        FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed); // Calculate absolute difference between APPS1 and APPS2 readings
-
+//        FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed); // Calculate absolute difference between APPS1 and APPS2 readings
+        FP_sensor_diff = 0.05;
         // 10% APPS redundancy check
         if (FP_sensor_diff > 0.10)
         {
