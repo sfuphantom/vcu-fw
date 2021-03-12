@@ -16,6 +16,7 @@
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
 #include "Phantom_sci.h"
+#include "priorities.h"
 
 
 //#include "task_data_logging.h"
@@ -39,7 +40,7 @@ void vDataLoggingTask(void *pvParameters){
 
     // any initialization
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 500; // task frequency in ms
+    //const TickType_t xFrequency = 500; // task frequency in ms
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
@@ -48,6 +49,7 @@ void vDataLoggingTask(void *pvParameters){
     {
         // Wait for the next cycle
         //vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        vTaskDelayUntil(&xLastWakeTime, DATA_LOGGING_TASK_PERIOD_MS);
 
         // for timing:
         gioSetBit(TASK_TIMING_PORT, 4, 1);
@@ -67,7 +69,7 @@ void vDataLoggingTask(void *pvParameters){
         // for timing:
         gioSetBit(TASK_TIMING_PORT, 4, 0);
 
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+
     }
 
 }

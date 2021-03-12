@@ -20,9 +20,9 @@
 #include "IMD.h"
 #include "vcu_data.h"
 #include "FreeRTOS.h"
+#include "priorities.h"
 
 
-#define TASK_PRINT  0
 
 // change to better data type
 int lv_current = 0;
@@ -50,7 +50,7 @@ void vSensorReadTask(void *pvParameters){
 
     // any initialization
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 100; // task frequency in ms
+    //const TickType_t xFrequency = 100; // task frequency in ms
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
@@ -58,7 +58,7 @@ void vSensorReadTask(void *pvParameters){
     while(true)
     {
         // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        vTaskDelayUntil(&xLastWakeTime, SENSOR_READ_TASK_PERIOD_MS);
 
         // for timing:
         gioSetBit(hetPORT1, 25, 1);

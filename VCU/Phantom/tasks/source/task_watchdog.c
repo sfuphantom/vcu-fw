@@ -16,6 +16,7 @@
 
 #include "Phantom_sci.h"
 #include "gio.h"
+#include "priorities.h"
 
 /***********************************************************
  * @function                - vWatchdogTask
@@ -40,17 +41,17 @@ void vWatchdogTask(void *pvParameters){
 
     while(true)
     {
+        // ++ Moved Delay here - jjkhan
+                // Wait for the next cycle
+                vTaskDelayUntil(&xLastWakeTime, WATCHDOG_TASK__PERIOD_MS); // Delay for 0.3 seconds ? - based on line 35 in this file.
+        // -- jjkhan
 
         if (TASK_PRINT) {UARTSend(PC_UART, "------------->WATCHDOG TASK\r\n");}
 //            UARTSend(scilinREG, xTaskGetTickCount());
 
         gioToggleBit(WATCHDOG_PORT, WATCHDOG_PIN);
 
-        // ++ Moved Delay here - jjkhan
-        // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(300)); // Delay for 0.3 seconds ? - based on line 35 in this file.
 
-        // -- jjkhan
 
     }
 

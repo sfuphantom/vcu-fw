@@ -66,7 +66,7 @@ void testEeprom(void *p){
             VCUDataPtr->DigitalVal.TSAL_FAULT ^= (1<<0);       // Toggle Bit-0
             xSemaphoreGive(vcuKey);
         }
-        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(1000));  // Every 1s you toggle the shutdown signal - to check if eeprom is updated or not.
+        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(10000));  // Every 1s you toggle the shutdown signal - to check if eeprom is updated or not.
 
         if(VCUDataPtr->DigitalVal.TSAL_FAULT==0){  // TSAL_FAULT
             if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(100))){
@@ -74,7 +74,7 @@ void testEeprom(void *p){
                 xSemaphoreGive(vcuKey);
             }
         }
-        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(10000));  // Every 1s you toggle the shutdown signal - to check if eeprom is updated or not.
+        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(1000));  // Every 1s you toggle the shutdown signal - to check if eeprom is updated or not.
     }
 }
 

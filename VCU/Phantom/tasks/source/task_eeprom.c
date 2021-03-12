@@ -5,6 +5,7 @@
  *      Author: junaidkhan
  */
 #include "task_eeprom.h"
+#include "priorities.h"
 
 extern TaskHandle_t eepromHandler; // Eeprom Task handler
 extern SemaphoreHandle_t vcuKey;
@@ -58,6 +59,11 @@ void vEeprom(void *p){
        uint8_t jobScheduled;      // used for Asynchronous EEPROM Jobs
 
        while(1){
+
+           vTaskDelayUntil(&mylastTickCount,EEPROM_TASK_PERIOD_MS); // 3-10 millisecond blocking time for this task - ideally for eeprom, but we can adjust
+
+           if (TASK_PRINT) {UARTSend(PC_UART, "EEPROM TASK\r\n");}
+
 
            if(!initializationOccured){
                if(eeprom_Status(EEP0)== IDLE){
@@ -250,8 +256,7 @@ void vEeprom(void *p){
                     }
            }
 
-           vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(200)); // 3-10 millisecond blocking time for this task - ideally for eeprom, but we can adjust
-       }
+        }
 
 }
 

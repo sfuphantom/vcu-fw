@@ -24,13 +24,15 @@
 
 #include "vcu_data.h"
 
+#include "priorities.h"
+
 extern State state;
 
 /*********************************************************************************
                  ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
  *********************************************************************************/
 adcData_t FP_data[3];
-adcData_t *FP_data_ptr;// = &FP_data[0];
+adcData_t *FP_data_ptr = FP_data;
 unsigned int FP_sensor_1_sum;// = 0;
 unsigned int FP_sensor_1_avg;
 unsigned int FP_sensor_2_sum;// = 0;
@@ -68,7 +70,7 @@ extern bool THROTTLE_AVAILABLE;
 void vThrottleTask(void *pvParameters){
 
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 10; // task frequency in ms
+    //const TickType_t xFrequency = 10 ; // task frequency in ms
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
@@ -77,7 +79,7 @@ void vThrottleTask(void *pvParameters){
     while(true)
     {
         // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+        vTaskDelayUntil(&xLastWakeTime, THROTTLE_TASK_PERIOD_MS);
 
         // for timing:
         gioSetBit(hetPORT1, 5, 1);

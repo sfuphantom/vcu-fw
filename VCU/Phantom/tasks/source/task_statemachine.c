@@ -86,6 +86,9 @@ void vStateMachineTask(void *pvParameters){
         // Wait for the next cycle -> By jjkhan: Call at the end, this will block the task and give CPU access to the next high priority task.
         //vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
+        /* Added by jjkhan */
+                vTaskDelayUntil(&xLastWakeTime, STATE_MACHINE_TASK_PERIOD_MS); // A delay of 0.1 seconds -  based on line 66 statement
+        /* Added by jjkhan */
         // for timing:
         gioSetBit(hetPORT1, 9, 1);
 
@@ -243,9 +246,7 @@ void vStateMachineTask(void *pvParameters){
         // for timing:
         gioSetBit(hetPORT1, 9, 0);
 
-        /* Added by jjkhan */
-        vTaskDelayUntil(&xLastWakeTime, pdMS_TO_TICKS(100)); // A delay of 0.1 seconds -  based on line 66 statement
-        /* Added by jjkhan */
+
 
     }
 }

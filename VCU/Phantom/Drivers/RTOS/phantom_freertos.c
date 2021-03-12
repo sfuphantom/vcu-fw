@@ -130,7 +130,7 @@ void phantom_freeRTOStaskInit(void)
      // -- Added by jjkhan
 
      // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
-     if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
+     if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  150, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -139,7 +139,7 @@ void phantom_freeRTOStaskInit(void)
      }
 
 
-     if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  240, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
+     if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  150, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -148,7 +148,7 @@ void phantom_freeRTOStaskInit(void)
      }
 
 
-     if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  240, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
+     if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  150, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -157,7 +157,7 @@ void phantom_freeRTOStaskInit(void)
      }
 
 
-     if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  240, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
+     if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  150, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -165,7 +165,7 @@ void phantom_freeRTOStaskInit(void)
          while(1);
      }
 
-     if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  240, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
+     if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  150, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -183,7 +183,7 @@ void phantom_freeRTOStaskInit(void)
         }
 
 
-        if (xTaskCreate(testEeprom, (const char*)"testEeprom",  150, NULL,  tskIDLE_PRIORITY, &testingEepromHandler) != pdTRUE)
+        if (xTaskCreate(testEeprom, (const char*)"testEeprom",  150, NULL,  tskIDLE_PRIORITY+2, &testingEepromHandler) != pdTRUE)
         {
                 uint8 message[]="Test task Creation Failed.\r\n";
                 sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
