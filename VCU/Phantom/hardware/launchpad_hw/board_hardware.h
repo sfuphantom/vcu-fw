@@ -22,6 +22,11 @@
 #define IMD_FAULT_PIN         6 // needs to be confirmed
 #define BSPD_FAULT_PIN        7 // needs to be confirmed
 
+#define RESETPort hetREG1 // needs to be confirmed
+#define RESETPin 20 // needs to be confirmed
+#define RESETedge 0 // needs to be confirmed
+
+
 /***************  TSAL GPIO  *********************/
 #define TSAL_PORT             hetPORT1
 #define TSAL_ACTIVE_PIN       5 // needs to be confirmed
