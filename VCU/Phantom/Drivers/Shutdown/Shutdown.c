@@ -9,6 +9,24 @@
 
 #include "Shutdown.h"
 
+extern data* VCUDataPtr;
+extern digitalValues DigitalVal;
+
+extern uint8_t IMD_FAULT;            //if 1, IMD has faulted, if 0, fault is clear
+
+extern uint8_t BSPD_FAULT;           //if 1, BSPD has faulted, if 0, fault is clear
+
+extern uint8_t BMS_FAULT;            //if 1, BMS has faulted, if 0, fault is clear
+extern uint8_t TSAL_WELDED;          //if 1, TSAL is welded, if 0, then it is not
+
+extern uint8_t BMS_STATUS;         // if 1, then BMS is healthy, if 0 then BMS fault
+extern uint8_t IMD_STATUS;         // if 1, then IMD is healthy, if 0 then IMD fault
+extern uint8_t BSPD_STATUS;        // if 1, then BSPD is healthy, if 0 then BSPD fault
+
+extern uint8_t TSAL_STATUS;
+
+
+
 static void resetSignals(){
 
     VCUDataPtr->DigitalVal.BMS_FAULT = false;

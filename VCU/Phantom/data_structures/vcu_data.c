@@ -49,6 +49,25 @@ void initData(data* VCUDataPtr)
     VCUDataPtr->DigitalVal.BSE_FAULT = 0;
     VCUDataPtr->DigitalVal.APPS_FAULT = 0;
 
+
+
+    VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR = 0; // -rafguevara14.....
+    VCUDataPtr->DigitalVal.HVCURRENT_OUT_OF_RANGE = 0;
+
+    VCUDataPtr->DigitalVal.RESET_STATUS = 0;
+    VCUDataPtr->DigitalVal.IMD_FAULT = 0;
+    VCUDataPtr->DigitalVal.BSPD_FAULT = 0;
+    VCUDataPtr->DigitalVal.BMS_FAULT = 0;
+    VCUDataPtr->DigitalVal.TSAL_WELDED = 0;         //  -.....rafguevara14
+
+
+
+
+
+
+
+
+
     VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
 }
 
