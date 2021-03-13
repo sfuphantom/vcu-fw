@@ -1,5 +1,4 @@
 #include "LV_monitor.h"
-#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
 //#include "sys_common.h"
 //#include "i2c.h"

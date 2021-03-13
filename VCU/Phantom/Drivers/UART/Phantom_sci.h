@@ -8,7 +8,7 @@
 #ifndef INCLUDE_PHANTOM_SCI_H_
 #define INCLUDE_PHANTOM_SCI_H_
 
-#include <halcogen_vcu/include/sci.h>
+#include <halcogen_launchpad/include/sci.h>
 
 #ifdef __cplusplus
 extern "C" {

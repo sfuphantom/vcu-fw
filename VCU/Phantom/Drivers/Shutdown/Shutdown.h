@@ -23,28 +23,29 @@
 #include "gio.h"
 #include "system.h"
 #include "het.h"
+#include <Phantom/hardware/launchpad_hw/board_hardware.h>
 
 //***Pins configured with launchpad***//
 
-//triggered on...falling edge
-#define BMSPin gioPORTA
-#define BMSNumPin 0
-
-//triggered on...falling edge
-#define IMDPin gioPORTA
-#define IMDNumPin 1
-
-//triggered on...falling edge
-#define BSPDPin gioPORTB
-#define BSPDNumPin 2  //(USER Button) Enable gioB_2 in special PinMuxing
-
-#define TSALPin gioPORTB
-#define TSALNumPin 3
-
-//triggered on...rising edge
-#define RESETPort hetREG1
-#define RESETPin 20
-#define RESETedge 0
+////triggered on...falling edge
+//#define BMSPin gioPORTA
+//#define BMSNumPin 0
+//
+////triggered on...falling edge
+//#define IMDPin gioPORTA
+//#define IMDNumPin 1
+//
+////triggered on...falling edge
+//#define BSPDPin gioPORTB
+//#define BSPDNumPin 2  //(USER Button) Enable gioB_2 in special PinMuxing
+//
+//#define TSALPin gioPORTB
+//#define TSALNumPin 3
+//
+////triggered on...rising edge
+//#define RESETPort hetREG1
+//#define RESETPin 20
+//#define RESETedge 0
 
 
 /*Function Headers */

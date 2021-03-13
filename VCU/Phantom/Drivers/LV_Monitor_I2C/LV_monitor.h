@@ -1,10 +1,11 @@
 
 //#include "sys_common.h"
-#include <halcogen_vcu/include/i2c.h>
+#include <halcogen_launchpad/include/i2c.h>
 //#include "het.h"
 //#include "gio.h"
 //#include "stdlib.h"
 //#include "sci.h"
+#include <Phantom/hardware/launchpad_hw/board_hardware.h>  // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
 
 

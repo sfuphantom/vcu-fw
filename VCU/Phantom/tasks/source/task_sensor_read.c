@@ -80,13 +80,13 @@ void vSensorReadTask(void *pvParameters){
         if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
 //        UARTSend(scilinREG, xTaskGetTickCount());
 
-        //HVcurrent data
+        //HVcurrent data merge with yash branch first
 
         //get and store current values into analogInputs struct
-        VCUDataPtr->AnalogIn.currentHV_A.value = getHVsensorCurrent();
-
-        //OUT OF RANGE ERROR
-        VCUDataPtr->DigitalVal.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
+//        VCUDataPtr->AnalogIn.currentHV_A.value = getHVsensorCurrent();
+//
+//        //OUT OF RANGE ERROR
+//        VCUDataPtr->DigitalVal.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
         
         //add yashs HV Bus Voltage driver
   
@@ -94,22 +94,23 @@ void vSensorReadTask(void *pvParameters){
 
             //update HV flags accordingly
 
-        updateIMDData();
-
-        IMDData_t dataIMD = getIMDData();
-
-        //determine state of all flags (add to vcu data structure in some format...?)
-        VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
-
-        VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
-
-        VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT =  (dataIMD.IMDState == Device_Error);
-
-        VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT =  (dataIMD.IMDState == Bad_Info);
-
-        VCUDataPtr->DigitalVal.IMD_UNDEF_ERR =  (dataIMD.IMDState == Undefined_fault);
-
-        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
+        //merge with develop first
+//        updateIMDData();
+//
+//        IMDData_t dataIMD = getIMDData();
+//
+//        //determine state of all flags (add to vcu data structure in some format...?)
+//        VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
+//
+//        VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
+//
+//        VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT =  (dataIMD.IMDState == Device_Error);
+//
+//        VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT =  (dataIMD.IMDState == Bad_Info);
+//
+//        VCUDataPtr->DigitalVal.IMD_UNDEF_ERR =  (dataIMD.IMDState == Undefined_fault);
+//
+//        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
 
         // TSAL and Shutdown GPIO states
         storeShutdownValues();

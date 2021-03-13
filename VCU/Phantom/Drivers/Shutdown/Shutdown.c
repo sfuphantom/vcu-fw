@@ -37,11 +37,11 @@ void ShutdownInit(){
        //Enable Interrupts
        edgeEnableNotification(RESETPort,RESETedge);
 
-       gioEnableNotification(BMSPin,BMSNumPin);
+       gioEnableNotification(SHUTDOWN_CIRCUIT_PORT,BMS_FAULT_PIN);
 
-       gioEnableNotification(BSPDPin,BSPDNumPin);
+       gioEnableNotification(SHUTDOWN_CIRCUIT_PORT,BSPD_FAULT_PIN);
 
-       gioEnableNotification(IMDPin,IMDNumPin);
+       gioEnableNotification(SHUTDOWN_CIRCUIT_PORT,IMD_FAULT_PIN);
 
        _enable_IRQ();
 
@@ -72,13 +72,13 @@ void storeShutdownValues(){
 
     //getBit(blah blah)
 
-    VCUDataPtr->DigitalVal.BMS_STATUS = gioGetBit(BMSPin,BMSNumPin);
+    VCUDataPtr->DigitalVal.BMS_STATUS = gioGetBit(SHUTDOWN_CIRCUIT_PORT,BMS_FAULT_PIN);
 
-    VCUDataPtr->DigitalVal.IMD_STATUS = gioGetBit(IMDPin,IMDNumPin);
+    VCUDataPtr->DigitalVal.IMD_STATUS = gioGetBit(SHUTDOWN_CIRCUIT_PORT,IMD_FAULT_PIN);
 
-    VCUDataPtr->DigitalVal.TSAL_STATUS = gioGetBit(TSALPin,TSALNumPin);
+    VCUDataPtr->DigitalVal.TSAL_STATUS = gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN);
 
-    VCUDataPtr->DigitalVal.BSPD_STATUS = gioGetBit(BSPDPin,BSPDNumPin);
+    VCUDataPtr->DigitalVal.BSPD_STATUS = gioGetBit(SHUTDOWN_CIRCUIT_PORT,BSPD_FAULT_PIN);
 
     VCUDataPtr->DigitalVal.RESET_STATUS = gioGetBit(RESETPort,RESETPin);
 
@@ -86,14 +86,14 @@ void storeShutdownValues(){
 
 void gioNotification(gioPORT_t* port,uint32 bit){
 
-    if(port == BMSPin && bit == BMSNumPin) VCUDataPtr->DigitalVal.BMS_FAULT = true;
+    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BMS_FAULT_PIN) VCUDataPtr->DigitalVal.BMS_FAULT = true;
 
-    if(port == BSPDPin && bit == BSPDNumPin) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
+    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BSPD_FAULT_PIN) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
 
-    if(port == IMDPin && bit == IMDNumPin) VCUDataPtr->DigitalVal.IMD_FAULT = true;
+    if(port == SHUTDOWN_CIRCUIT_PORT && bit == IMD_FAULT_PIN) VCUDataPtr->DigitalVal.IMD_FAULT = true;
 
     // (Shutdown Board SHOULD be Triggered)   &&   (TSAL_HV == ON) ----> TSAL_WELDED
-    if((BMS_FAULT || IMD_FAULT || BSPD_FAULT) && gioGetBit(TSALPin,TSALNumPin)) VCUDataPtr->DigitalVal.TSAL_WELDED = true;
+    if((BMS_FAULT || IMD_FAULT || BSPD_FAULT) && gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN)) VCUDataPtr->DigitalVal.TSAL_WELDED = true;
 
 }
 

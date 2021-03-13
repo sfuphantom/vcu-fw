@@ -1,6 +1,5 @@
 //DAC init
 #include "MCP48FV_DAC_SPI.h"
-#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 //#include "mibspi.h"
 
 #define DAC_LOWEST_VOLTAGE 0
