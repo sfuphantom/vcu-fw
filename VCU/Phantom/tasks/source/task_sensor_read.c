@@ -113,14 +113,14 @@ void vSensorReadTask(void *pvParameters){
 //        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
 
         // TSAL and Shutdown GPIO states
-        storeShutdownValues();
+//        storeShutdownValues();
 
         // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
 
         // read LV voltage, current
-        VCUDataPtr->AnalogIn.currentLV_A = LV_reading(LV_current_register);
+        VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
 
-        VCUDataPtr->AnalogIn.voltageLV_V = LV_reading(LV_bus_voltage_register);
+        VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
 
 
         // for timing:

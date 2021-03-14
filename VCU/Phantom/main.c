@@ -30,6 +30,12 @@
 #include <stdio.h>
 #include "reg_het.h"
 
+//#include <Phantom/tasks/headers/task_data_logging.h>
+//#include <Phantom/tasks/headers/task_sensor_read.h>
+//#include <Phantom/tasks/headers/task_statemachine.h>
+//#include <Phantom/tasks/headers/task_throttle.h>
+//#include <Phantom/tasks/headers/task_watchdog.h>
+
 #include "task_data_logging.h"
 #include "task_sensor_read.h"
 #include "task_statemachine.h"
@@ -38,9 +44,17 @@
 
 #include "priorities.h" // holds the task priorities
 
+//#include <Phantom/tasks/headers/priorities.h>
+
 #include "vcu_data.h" // holds VCU data structure
 
+//#include <Phantom/data_structures/vcu_data.h>
+
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
+
+//#include <Phantom/hardware/launchpad_hw/board_hardware.h>
+
+
 
 /* USER CODE END */
 
