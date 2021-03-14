@@ -12,18 +12,16 @@
 extern data* VCUDataPtr;
 extern digitalValues DigitalVal;
 
-extern uint8_t IMD_FAULT;            //if 1, IMD has faulted, if 0, fault is clear
+extern uint8_t IMD_FAULT;           //if 1, IMD has faulted, if 0, fault is clear
+extern uint8_t BSPD_FAULT;          //if 1, BSPD has faulted, if 0, fault is clear
+extern uint8_t BMS_FAULT;           //if 1, BMS has faulted, if 0, fault is clear
+extern uint8_t TSAL_WELDED;         //if 1, TSAL is welded, if 0, then it is not
 
-extern uint8_t BSPD_FAULT;           //if 1, BSPD has faulted, if 0, fault is clear
-
-extern uint8_t BMS_FAULT;            //if 1, BMS has faulted, if 0, fault is clear
-extern uint8_t TSAL_WELDED;          //if 1, TSAL is welded, if 0, then it is not
-
-extern uint8_t BMS_STATUS;         // if 1, then BMS is healthy, if 0 then BMS fault
-extern uint8_t IMD_STATUS;         // if 1, then IMD is healthy, if 0 then IMD fault
-extern uint8_t BSPD_STATUS;        // if 1, then BSPD is healthy, if 0 then BSPD fault
-
+extern uint8_t BMS_STATUS;          // if 1, then BMS is healthy, if 0 then BMS fault
+extern uint8_t IMD_STATUS;          // if 1, then IMD is healthy, if 0 then IMD fault
+extern uint8_t BSPD_STATUS;         // if 1, then BSPD is healthy, if 0 then BSPD fault
 extern uint8_t TSAL_STATUS;
+extern uint8_t RESET_STATUS;
 
 
 
@@ -102,24 +100,24 @@ void storeShutdownValues(){
 
 }
 
-void gioNotification(gioPORT_t* port,uint32 bit){
-
-    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BMS_FAULT_PIN) VCUDataPtr->DigitalVal.BMS_FAULT = true;
-
-    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BSPD_FAULT_PIN) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
-
-    if(port == SHUTDOWN_CIRCUIT_PORT && bit == IMD_FAULT_PIN) VCUDataPtr->DigitalVal.IMD_FAULT = true;
-
-    // (Shutdown Board SHOULD be Triggered)   &&   (TSAL_HV == ON) ----> TSAL_WELDED
-    if((BMS_FAULT || IMD_FAULT || BSPD_FAULT) && gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN)) VCUDataPtr->DigitalVal.TSAL_WELDED = true;
-
-}
+//void gioNotification(gioPORT_t* port,uint32 bit){
+//
+//    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BMS_FAULT_PIN) VCUDataPtr->DigitalVal.BMS_FAULT = true;
+//
+//    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BSPD_FAULT_PIN) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
+//
+//    if(port == SHUTDOWN_CIRCUIT_PORT && bit == IMD_FAULT_PIN) VCUDataPtr->DigitalVal.IMD_FAULT = true;
+//
+//    // (Shutdown Board SHOULD be Triggered)   &&   (TSAL_HV == ON) ----> TSAL_WELDED
+//    if((BMS_FAULT || IMD_FAULT || BSPD_FAULT) && gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN)) VCUDataPtr->DigitalVal.TSAL_WELDED = true;
+//
+//}
 
 //code will have to be merged with edgeNotification in IMD driver
-void edgeNotification(hetBASE_t * hetREG,uint32 edge)
-{
-    if(hetREG == RESETPort && edge == RESETedge) resetSignals();
-
-}
+//void edgeNotification(hetBASE_t * hetREG,uint32 edge)
+//{
+//    if(hetREG == RESETPort && edge == RESETedge) resetSignals();
+//
+//}
 
 
