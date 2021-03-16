@@ -44,11 +44,6 @@
 
 //#include <Phantom/tasks/headers/priorities.h>
 
-State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and referenced from there
-
-data VCUData;
-data* VCUDataPtr = &VCUData;
-
 //#include <Phantom/hardware/launchpad_hw/board_hardware.h>
 
 
@@ -62,9 +57,108 @@ data* VCUDataPtr = &VCUData;
 *   This function is called after startup.
 *   The user can use this function to implement the application.
 */
-
 /* USER CODE BEGIN (2) */
+
+/*********************************************************************************
+ *                          TASK HEADER DECLARATIONS
+ *********************************************************************************/
+//static void vStateMachineTask(void *);  // This task will evaluate the state machine and decide whether or not to change states
+//static void vSensorReadTask(void *);    // This task will read all the sensors in the vehicle (except for the APPS which requires more critical response)
+//static void vThrottleTask(void *);      // This task reads the APPS, performs signal plausibility, and controls the inverter through a DAC
+//static void vDataLoggingTask(void *);   // This task will send any important data over CAN to the dashboard for logging onto the SD card
+//static void vWatchdogTask(void *);      // This task will monitor all the threads and make sure they are all running, if not (code hangs/freezes or task doesn't get run)
+                                        // it will fail to pet the watchdog and the watchdog timer will reset the MCU
+
+// task handle creation??? shouldn't they need to be passed into the xTaskCreate function?
+
+/*********************************************************************************
+ *                          SOFTWARE TIMER INITIALIZATION
+ *********************************************************************************/
+#define NUMBER_OF_TIMERS   2
+
+/* array to hold handles to the created timers*/
+TimerHandle_t xTimers[NUMBER_OF_TIMERS];
+
+/* This timer is used to debounce the interrupts for the RTDS and SDC signals */
+bool INTERRUPT_AVAILABLE = true;
+bool THROTTLE_AVAILABLE = false; // used to only enable throttle after the buzzer has gone for 2 seconds
+
+void Timer_300ms(TimerHandle_t xTimers);
+void Timer_2s(TimerHandle_t xTimers);
+
+/*********************************************************************************
+ *                          STATE ENUMERATION
+ *********************************************************************************/
+//typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
+State state = TRACTIVE_OFF;
+
+/*********************************************************************************
+ *                          QUEUE HANDLE CREATION
+ *********************************************************************************/
+xQueueHandle VCUDataQueue;
+/*********************************************************************************
+ *                          GLOBAL VARIABLE DECLARATIONS
+ *********************************************************************************/
+
+/*********************************************************************************
+ *                          INITIALIZE DATA STRUCTURE...
+ *                          or can this be done and outputted in the init function.. hm
+ *********************************************************************************/
+
+data VCUData;
+
+data* VCUDataPtr = &VCUData;
+
+
+uint8 i;
+char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
+long xStatus;
+
+/*********************************************************************************
+ *                               SYSTEM STATE FLAGS
+ *********************************************************************************/
+//uint8_t TSAL = 0;
+//uint8_t RTDS = 0;
+long RTDS_RAW = 0;
+//uint8_t BMS  = 1;
+//uint8_t IMD = 1;
+//uint8_t BSPD = 1;
+//uint8_t BSE_FAULT = 0;
+
+// ^^^^^^^^^^^^^^^ these should all be inside the data structure now
+
+/*********************************************************************************
+                 ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
+ *********************************************************************************/
+adcData_t FP_data[3];
+adcData_t *FP_data_ptr = &FP_data[0];
+unsigned int FP_sensor_1_sum = 0;
+unsigned int FP_sensor_1_avg;
+unsigned int FP_sensor_2_sum = 0;
+unsigned int FP_sensor_2_avg;
+
+unsigned int BSE_sensor_sum  = 0;
+unsigned int BSE_sensor_avg  = 0;
+unsigned int NumberOfChars;
+
+uint16 FP_sensor_1_min = 0;
+uint16 FP_sensor_2_min = 0;
+
+uint16 FP_sensor_1_max = 4095; // 12-bit ADC
+uint16 FP_sensor_2_max = 4095; // 12-bit ADC
+uint16 FP_sensor_1_percentage;
+uint16 FP_sensor_2_percentage;
+uint16 FP_sensor_diff;
+
+
+
+// change to better data type
+//int lv_current = 0;
+
+
 /* USER CODE END */
+
+
 
 int main(void)
 {
