@@ -95,13 +95,8 @@ typedef struct gio_config_reg
 							     | (uint32)((uint32)0U << 3U) \
 							     | (uint32)((uint32)0U << 4U) \
 							     | (uint32)((uint32)1U << 5U) \
-<<<<<<< HEAD
 							     | (uint32)((uint32)1U << 6U) \
 							     | (uint32)((uint32)1U << 7U) \
-=======
-							     | (uint32)((uint32)0U << 6U) \
-							     | (uint32)((uint32)0U << 7U) \
->>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
 								 | (uint32)((uint32)0U << 8U) \
 								 | (uint32)((uint32)0U << 9U) \
 								 | (uint32)((uint32)0U << 10U)\
