@@ -1,3 +1,6 @@
+=\=\=\=\=\=\=
+<<<<<<<=HEAD
+>>>>>>>=0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
 eclipse.preferences.version=1
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/DAC_SPI/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/DAC_SPI/subdir_vars.mk=UTF-8
@@ -30,19 +33,16 @@ encoding//BuildConfig_VCU-REV2/Phantom/Drivers/IMD/subdir_rules.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/IMD/subdir_vars.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/LV_Monitor_I2C/subdir_rules.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/LV_Monitor_I2C/subdir_vars.mk=UTF-8
-<<<<<<< HEAD
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/RGB/subdir_rules.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/RGB/subdir_vars.mk=UTF-8
-encoding//BuildConfig_VCU-REV2/Phantom/Drivers/Shutdown/subdir_rules.mk=UTF-8
-encoding//BuildConfig_VCU-REV2/Phantom/Drivers/Shutdown/subdir_vars.mk=UTF-8
-=======
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/RGB_LED/subdir_rules.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/RGB_LED/subdir_vars.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/RTD_Buzzer/subdir_rules.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/RTD_Buzzer/subdir_vars.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/RTOS/subdir_rules.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/RTOS/subdir_vars.mk=UTF-8
->>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
+encoding//BuildConfig_VCU-REV2/Phantom/Drivers/Shutdown/subdir_rules.mk=UTF-8
+encoding//BuildConfig_VCU-REV2/Phantom/Drivers/Shutdown/subdir_vars.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/UART/subdir_rules.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/UART/subdir_vars.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/data_structures/subdir_rules.mk=UTF-8
@@ -64,10 +64,18 @@ encoding//Debug/Phantom/Drivers/Current_transducer/subdir_rules.mk=UTF-8
 encoding//Debug/Phantom/Drivers/Current_transducer/subdir_vars.mk=UTF-8
 encoding//Debug/Phantom/Drivers/DAC_SPI/subdir_rules.mk=UTF-8
 encoding//Debug/Phantom/Drivers/DAC_SPI/subdir_vars.mk=UTF-8
+encoding//Debug/Phantom/Drivers/IMD/subdir_rules.mk=UTF-8
+encoding//Debug/Phantom/Drivers/IMD/subdir_vars.mk=UTF-8
 encoding//Debug/Phantom/Drivers/LV_Monitor_I2C/subdir_rules.mk=UTF-8
 encoding//Debug/Phantom/Drivers/LV_Monitor_I2C/subdir_vars.mk=UTF-8
 encoding//Debug/Phantom/Drivers/RGB/subdir_rules.mk=UTF-8
 encoding//Debug/Phantom/Drivers/RGB/subdir_vars.mk=UTF-8
+encoding//Debug/Phantom/Drivers/RGB_LED/subdir_rules.mk=UTF-8
+encoding//Debug/Phantom/Drivers/RGB_LED/subdir_vars.mk=UTF-8
+encoding//Debug/Phantom/Drivers/RTD_Buzzer/subdir_rules.mk=UTF-8
+encoding//Debug/Phantom/Drivers/RTD_Buzzer/subdir_vars.mk=UTF-8
+encoding//Debug/Phantom/Drivers/RTOS/subdir_rules.mk=UTF-8
+encoding//Debug/Phantom/Drivers/RTOS/subdir_vars.mk=UTF-8
 encoding//Debug/Phantom/Drivers/Shutdown/subdir_rules.mk=UTF-8
 encoding//Debug/Phantom/Drivers/Shutdown/subdir_vars.mk=UTF-8
 encoding//Debug/Phantom/Drivers/UART/subdir_rules.mk=UTF-8
