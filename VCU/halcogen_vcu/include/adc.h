@@ -49,7 +49,7 @@
 #ifndef __ADC_H__
 #define __ADC_H__
 
-#include <halcogen_vcu/include/reg_adc.h>
+#include "reg_adc.h"
 
 #ifdef __cplusplus
 extern "C" {

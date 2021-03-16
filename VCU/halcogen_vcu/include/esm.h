@@ -48,7 +48,7 @@
 #ifndef __ESM_H__
 #define __ESM_H__
 
-#include <halcogen_vcu/include/reg_esm.h>
+#include "reg_esm.h"
 
 #ifdef __cplusplus
 extern "C" {

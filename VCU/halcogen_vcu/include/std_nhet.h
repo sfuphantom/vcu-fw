@@ -44,7 +44,7 @@
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
-#include <halcogen_vcu/include/sys_common.h>
+#include "sys_common.h"
 
 #ifdef __cplusplus
 extern "C" {

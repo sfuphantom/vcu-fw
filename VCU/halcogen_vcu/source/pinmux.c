@@ -42,7 +42,7 @@
 
 /* Include Files */
 
-#include <halcogen_vcu/include/pinmux.h>
+#include "pinmux.h"
 
 /*LDRA_INSPECTWINDOW 50 */
 /*SAFETYMCUSW 125 S MR: 19.13 REVIEWED " Needs usage of ## in the macro " */

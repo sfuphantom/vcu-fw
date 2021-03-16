@@ -49,7 +49,7 @@
 #ifndef __ECAP_H__
 #define __ECAP_H__
 
-#include <halcogen_vcu/include/reg_ecap.h>
+#include "reg_ecap.h"
 
 
 

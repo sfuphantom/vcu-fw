@@ -50,10 +50,10 @@
 
 /* Include Files */
 
-#include <halcogen_vcu/include/pinmux.h>
-#include <halcogen_vcu/include/sys_pcr.h>
-#include <halcogen_vcu/include/sys_selftest.h>
-#include <halcogen_vcu/include/system.h>
+#include "system.h"
+#include "sys_selftest.h"
+#include "sys_pcr.h"
+#include "pinmux.h"
 
 /* USER CODE BEGIN (1) */
 /* USER CODE END */

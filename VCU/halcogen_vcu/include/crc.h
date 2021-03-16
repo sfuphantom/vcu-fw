@@ -49,7 +49,7 @@
 #ifndef __CRC_H__
 #define __CRC_H__
 
-#include <halcogen_vcu/include/reg_crc.h>
+#include "reg_crc.h"
 
 #ifdef __cplusplus
 extern "C" {

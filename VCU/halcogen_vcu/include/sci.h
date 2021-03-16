@@ -44,7 +44,7 @@
 #ifndef __SCI_H__
 #define __SCI_H__
 
-#include <halcogen_vcu/include/reg_sci.h>
+#include "reg_sci.h"
 
 #ifdef __cplusplus
 extern "C" {

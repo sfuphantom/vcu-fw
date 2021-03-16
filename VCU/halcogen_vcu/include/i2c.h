@@ -43,7 +43,7 @@
 #ifndef __I2C_H__
 #define __I2C_H__
 
-#include <halcogen_vcu/include/reg_i2c.h>
+#include "reg_i2c.h"
 
 #ifdef __cplusplus
 extern "C" {

@@ -43,8 +43,8 @@
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
-#include <halcogen_vcu/include/mibspi.h>
-#include <halcogen_vcu/include/sys_vim.h>
+#include "mibspi.h"
+#include "sys_vim.h"
 /* USER CODE BEGIN (1) */
 /* USER CODE END */
 

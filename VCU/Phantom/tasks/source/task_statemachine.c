@@ -86,6 +86,7 @@ void vStateMachineTask(void *pvParameters){
 
         if (state == TRACTIVE_OFF)
         {
+            /*
 //            pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue LED
             pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED
             pwmSetDuty(RGB_LED_PORT, RED_LED, 100U); // red LED
@@ -96,6 +97,7 @@ void vStateMachineTask(void *pvParameters){
 //            = {(unsigned int)1, (double)100}; // duty cycle in %, period in us
 
             pwmSetSignal(RGB_LED_PORT, BLUE_LED, dutycycle_and_period);
+            */
 
             if (blue_duty <= 0)
             {
@@ -132,10 +134,11 @@ void vStateMachineTask(void *pvParameters){
         }
         else if (state == TRACTIVE_ON)
         {
+            /*
             pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U);
             pwmSetDuty(RGB_LED_PORT, RED_LED, 100U);
             pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue
-
+            */
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
 
@@ -149,9 +152,11 @@ void vStateMachineTask(void *pvParameters){
         }
         else if (state == RUNNING)
         {
+            /*
             pwmSetDuty(RGB_LED_PORT, BLUE_LED, 100U); // blue LED
             pwmSetDuty(RGB_LED_PORT, RED_LED, 100U); // red LED
             pwmSetDuty(RGB_LED_PORT, GREEN_LED, 50U); // green LED
+            */
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
 
@@ -169,9 +174,12 @@ void vStateMachineTask(void *pvParameters){
         }
         else if (state == FAULT)
         {
+            /*
             pwmSetDuty(RGB_LED_PORT, BLUE_LED, 100U); // blue LED
             pwmSetDuty(RGB_LED_PORT, RED_LED, 50U); // red LED
             pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED
+
+            */
 
             if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********");}
             // uhhh turn on a fault LED here??

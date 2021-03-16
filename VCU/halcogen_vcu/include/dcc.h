@@ -43,7 +43,7 @@
 #ifndef __DCC_H__
 #define __DCC_H__
 
-#include <halcogen_vcu/include/reg_dcc.h>
+#include "reg_dcc.h"
 #ifdef __cplusplus
 extern "C" {
 #endif

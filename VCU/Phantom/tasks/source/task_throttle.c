@@ -29,30 +29,27 @@ extern State state;
 /*********************************************************************************
                  ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
  *********************************************************************************/
-extern adcData_t FP_data[3];
-extern adcData_t *FP_data_ptr;// = &FP_data[0];
-extern unsigned int FP_sensor_1_sum;// = 0;
-extern unsigned int FP_sensor_1_avg;
-extern unsigned int FP_sensor_2_sum;// = 0;
-extern unsigned int FP_sensor_2_avg;
+adcData_t FP_data[3];
+adcData_t *FP_data_ptr;// = &FP_data[0];
+unsigned int FP_sensor_1_sum;// = 0;
+unsigned int FP_sensor_1_avg;
+unsigned int FP_sensor_2_sum;// = 0;
+unsigned int FP_sensor_2_avg;
 
 extern unsigned int BSE_sensor_sum;//  = 0;
-extern unsigned int BSE_sensor_avg;//  = 0;
-extern unsigned int NumberOfChars;
+unsigned int BSE_sensor_avg;//  = 0;
+unsigned int NumberOfChars;
 
-extern uint16 FP_sensor_1_min;// = 0;
-extern uint16 FP_sensor_2_min;// = 0;
+uint16 FP_sensor_1_min;// = 0;
+uint16 FP_sensor_2_min;// = 0;
 
-extern uint16 FP_sensor_1_max;// = 4095; // 12-bit ADC
-extern uint16 FP_sensor_2_max;// = 4095; // 12-bit ADC
-extern uint16 FP_sensor_1_percentage;
-extern uint16 FP_sensor_2_percentage;
-extern uint16 FP_sensor_diff;
+uint16 FP_sensor_1_max;// = 4095; // 12-bit ADC
+uint16 FP_sensor_2_max;// = 4095; // 12-bit ADC
+uint16 FP_sensor_1_percentage;
+uint16 FP_sensor_2_percentage;
+uint16 FP_sensor_diff;
 
-extern char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
-
-
-//extern uint8_t BSE_FAULT;// = 0;
+char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
 
 extern data* VCUDataPtr;
 
@@ -103,9 +100,9 @@ void vThrottleTask(void *pvParameters){
         adcStartConversion(adcREG1, adcGROUP1);
         while(!adcIsConversionComplete(adcREG1, adcGROUP1));
         adcGetData(adcREG1, 1U, FP_data_ptr);
-        BSE_sensor_sum = (unsigned int)FP_data[0].value;
-        FP_sensor_1_sum = (unsigned int)FP_data[1].value;
-        FP_sensor_2_sum = (unsigned int)FP_data[2].value;
+        BSE_sensor_sum = (unsigned int)FP_data[0].value; // ADC pin 19?
+        FP_sensor_1_sum = (unsigned int)FP_data[1].value; // ADC pin 20?
+        FP_sensor_2_sum = (unsigned int)FP_data[2].value; // ADC pin 21?
 
 
 

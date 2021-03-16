@@ -70,7 +70,7 @@
 /**********************************************************************************************************************
  * INCLUDES
  *********************************************************************************************************************/
-#include <halcogen_vcu/include/Device_header.h>
+#include "Device_header.h"
 
 #ifndef TI_Fee_None
 #define TI_Fee_None 0x00U	/*Take no action on single bit errors, (respond with corrected data), */

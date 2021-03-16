@@ -41,8 +41,8 @@
 
 
 
-#include <halcogen_vcu/include/sys_dma.h>
-#include <halcogen_vcu/include/sys_vim.h>
+#include "sys_dma.h"
+#include "sys_vim.h"
 
 /** @fn void dmaEnable(void)
 *   @brief enables DMA module

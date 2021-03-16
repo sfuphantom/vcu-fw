@@ -17,7 +17,7 @@
 // init function, responsible for initializing MiBspi
 bool MCP48FV_Init(){
     mibspiInit();
-
+    MCP48FV_Set_Value(0);        //500 = 5.00V, 250 = 2.5V
     return true;
 }
 

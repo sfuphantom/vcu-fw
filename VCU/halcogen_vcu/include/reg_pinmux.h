@@ -49,7 +49,7 @@
 #ifndef __REG_PINMUX_H__
 #define __REG_PINMUX_H__
 
-#include <halcogen_vcu/include/sys_common.h>
+#include "sys_common.h"
 
 
 /* USER CODE BEGIN (0) */

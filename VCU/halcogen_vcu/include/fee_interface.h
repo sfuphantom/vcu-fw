@@ -80,7 +80,7 @@
 #define FEE_INTERFACE_H
 
 
-#include <halcogen_vcu/include/ti_fee_cfg.h>
+#include "ti_fee_cfg.h"
 
 #if(TI_FEE_DRIVER == 0U) /* Include following macros only in Autosar Context */
 #include "fee_cfg.h"

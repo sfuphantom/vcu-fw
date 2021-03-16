@@ -54,13 +54,13 @@
 
 /* Include Files */
 
-#include <halcogen_vcu/include/esm.h>
-#include <halcogen_vcu/include/mibspi.h>
-#include <halcogen_vcu/include/sys_common.h>
-#include <halcogen_vcu/include/sys_core.h>
-#include <halcogen_vcu/include/sys_selftest.h>
-#include <halcogen_vcu/include/sys_vim.h>
-#include <halcogen_vcu/include/system.h>
+#include "sys_common.h"
+#include "system.h"
+#include "sys_vim.h"
+#include "sys_core.h"
+#include "sys_selftest.h"
+#include "esm.h"
+#include "mibspi.h"
 
 /* USER CODE BEGIN (1) */
 /* USER CODE END */

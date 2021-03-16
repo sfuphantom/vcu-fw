@@ -60,7 +60,7 @@
 #ifndef DEVICE_TYPES_H
 #define DEVICE_TYPES_H
 
-#include <halcogen_vcu/include/hal_stdtypes.h>
+#include "hal_stdtypes.h"
 
 /* Enum to describe the type of error handling on the device */
 typedef enum

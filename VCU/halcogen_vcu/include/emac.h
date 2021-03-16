@@ -47,12 +47,12 @@
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
 
-#include <halcogen_vcu/include/hw_emac.h>
-#include <halcogen_vcu/include/hw_emac_ctrl.h>
-#include <halcogen_vcu/include/hw_reg_access.h>
-#include <halcogen_vcu/include/mdio.h>
-#include <halcogen_vcu/include/phy_dp83640.h>
-#include <halcogen_vcu/include/sys_common.h>
+#include "sys_common.h"
+#include "hw_reg_access.h"
+#include "hw_emac.h"
+#include "hw_emac_ctrl.h"
+#include "mdio.h"
+#include "phy_dp83640.h"
 
 #ifdef __cplusplus
 extern "C" {

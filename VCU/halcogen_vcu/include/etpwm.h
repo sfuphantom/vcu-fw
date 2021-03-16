@@ -43,7 +43,7 @@
 #ifndef __ETPWM_H__
 #define __ETPWM_H__
 
-#include <halcogen_vcu/include/reg_etpwm.h>
+#include "reg_etpwm.h"
 
 
 #ifdef __cplusplus

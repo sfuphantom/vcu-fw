@@ -50,7 +50,7 @@
 #ifndef __RTI_H__
 #define __RTI_H__
 
-#include <halcogen_vcu/include/reg_rti.h>
+#include "reg_rti.h"
 
 #ifdef __cplusplus
 extern "C" {

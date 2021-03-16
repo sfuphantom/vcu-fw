@@ -17,6 +17,7 @@
 
 #include "Phantom_sci.h"
 #include "LV_monitor.h"
+#include "IMD.h"
 #include "vcu_data.h"
 #include "FreeRTOS.h"
 #include "Current_transducer.h"
@@ -34,7 +35,7 @@ int lv_current = 0;
 extern data* VCUDataPtr;
 
 extern uint8_t RTDS;// = 0;
-extern long RTDS_RAW;// = 0;
+long RTDS_RAW;      // = 0;
 /***********************************************************
  * @function                - vSensorReadTask
  *
@@ -53,9 +54,6 @@ void vSensorReadTask(void *pvParameters){
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
-
-    int nchars;
-    char stbuf[64];
 
     while(true)
     {
@@ -80,6 +78,7 @@ void vSensorReadTask(void *pvParameters){
         if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
 //        UARTSend(scilinREG, xTaskGetTickCount());
 
+<<<<<<< HEAD
         //HVcurrent data merge with yash branch first
 
         //get and store current values into analogInputs struct
@@ -116,11 +115,31 @@ void vSensorReadTask(void *pvParameters){
 //        storeShutdownValues();
 
         // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
+=======
+        // IMD data (maybe this needs to be a separate interrupt?)
+        updateIMDData();
+        serialSendData();
+
+        // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
+
+        // TSAL state
+
+        // CAN status from BMS (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
+>>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
 
         // read LV voltage, current
         VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
 
+<<<<<<< HEAD
         VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
+=======
+        // this needs to be updated to not block the whole system if i2c not available
+//        lv_current = LV_reading(LV_current_register);
+
+        // make sure state machine signal flags are updated
+
+        // check for all errors here and update VCU data structure or state machine flags accordingly
+>>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
 
 
         // for timing:

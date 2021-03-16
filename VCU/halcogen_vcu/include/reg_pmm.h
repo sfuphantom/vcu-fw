@@ -48,7 +48,7 @@
 #ifndef __REG_PMM_H__
 #define __REG_PMM_H__
 
-#include <halcogen_vcu/include/sys_common.h>
+#include "sys_common.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */

@@ -44,7 +44,7 @@
 #ifndef __HET_H__
 #define __HET_H__
 
-#include <halcogen_vcu/include/reg_het.h>
+#include "reg_het.h"
 #include <string.h>
 
 #ifdef __cplusplus

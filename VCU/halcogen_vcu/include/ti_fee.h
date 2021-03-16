@@ -126,10 +126,10 @@
 /**********************************************************************************************************************
  * INCLUDES
  *********************************************************************************************************************/
-#include <halcogen_vcu/include/fee_interface.h>
-#include <halcogen_vcu/include/hal_stdtypes.h>
-#include <halcogen_vcu/include/ti_fee_cfg.h>
-#include <halcogen_vcu/include/ti_fee_types.h>
+#include "hal_stdtypes.h"
+#include "fee_interface.h"
+#include "ti_fee_types.h"
+#include "ti_fee_cfg.h"
 /**********************************************************************************************************************
  *  GLOBAL CONSTANT MACROS
  *********************************************************************************************************************/

@@ -47,7 +47,7 @@
 #ifndef __SYS_COMMON_H__
 #define __SYS_COMMON_H__
 
-#include <halcogen_vcu/include/hal_stdtypes.h>
+#include "hal_stdtypes.h"
 
 #ifdef __cplusplus
 extern "C" {
