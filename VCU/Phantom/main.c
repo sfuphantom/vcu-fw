@@ -19,7 +19,6 @@
 #include <stdio.h>
 #include "reg_het.h"
 
-<<<<<<< HEAD
 //#include <Phantom/tasks/headers/task_data_logging.h>
 //#include <Phantom/tasks/headers/task_sensor_read.h>
 //#include <Phantom/tasks/headers/task_statemachine.h>
@@ -31,7 +30,7 @@
 #include "task_statemachine.h"
 #include "task_throttle.h"
 #include "task_watchdog.h"
-=======
+
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
 #include "IMD.h"             // Bender IR155 IMD Library written by Sumreen Rattan
@@ -42,23 +41,13 @@
 #include "phantom_freertos.h" // contains functions for freertos startup, timer setup, and task creation
 #include "vcu_data.h"         // holds VCU data structure
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
->>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
 
-
-<<<<<<< HEAD
 //#include <Phantom/tasks/headers/priorities.h>
 
-#include "vcu_data.h" // holds VCU data structure
-
-//#include <Phantom/data_structures/vcu_data.h>
-
-#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
-=======
 State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and referenced from there
 
 data VCUData;
 data* VCUDataPtr = &VCUData;
->>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
 
 //#include <Phantom/hardware/launchpad_hw/board_hardware.h>
 
@@ -83,12 +72,6 @@ int main(void)
 
     /* Halcogen Initialization */
 
-<<<<<<< HEAD
-    // LV monitor library
-    lv_monitorInit();
-
-    //Shutdown Driver
-    ShutdownInit();
 /*********************************************************************************
  *                          freeRTOS SOFTWARE TIMER SETUP
  *********************************************************************************/
@@ -109,13 +92,12 @@ int main(void)
              /* Callback function for when the timer expires*/
              Timer_300ms
            );
-=======
+
     _enable_IRQ();              // Enable interrupts
     sciInit();                  // Initialize UART (SCI) halcogen driver
     gioInit();                  // Initialize GPIO halcogen driver
     adcInit();                  // Initialize ADC halcogen driver
     hetInit();                  // Initialize HET (PWM) halcogen driver
->>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
 
     /* Phantom Library Initialization */
 
@@ -125,6 +107,7 @@ int main(void)
     MCP48FV_Init();             // Initialize DAC Library
     lv_monitorInit();           // Initialize LV Monitor Library
     initializeIMD();            // Initialize IMD Library
+    ShutdownInit();             // Initialize Shutdown Driver
 
     /* freeRTOS Initialization */
 
@@ -138,7 +121,6 @@ int main(void)
     return 0;
 }
 /* USER CODE BEGIN (4) */
-<<<<<<< HEAD
 
 /*********************************************************************************
  *                          freeRTOS TASK IMPLEMENTATIONS
@@ -275,6 +257,4 @@ static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
     *pulTimerTaskStackSize = configTIMER_TASK_STACK_DEPTH;
 }
 
-=======
->>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
 /* USER CODE END */
