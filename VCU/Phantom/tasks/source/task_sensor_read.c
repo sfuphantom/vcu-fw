@@ -78,7 +78,6 @@ void vSensorReadTask(void *pvParameters){
         if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
 //        UARTSend(scilinREG, xTaskGetTickCount());
 
-<<<<<<< HEAD
         //HVcurrent data merge with yash branch first
 
         //get and store current values into analogInputs struct
@@ -94,53 +93,36 @@ void vSensorReadTask(void *pvParameters){
             //update HV flags accordingly
 
         //merge with develop first
-//        updateIMDData();
-//
-//        IMDData_t dataIMD = getIMDData();
-//
-//        //determine state of all flags (add to vcu data structure in some format...?)
-//        VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
-//
-//        VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
-//
-//        VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT =  (dataIMD.IMDState == Device_Error);
-//
-//        VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT =  (dataIMD.IMDState == Bad_Info);
-//
-//        VCUDataPtr->DigitalVal.IMD_UNDEF_ERR =  (dataIMD.IMDState == Undefined_fault);
-//
-//        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
+        updateIMDData();
+
+        IMDData_t dataIMD = getIMDData();
+
+        //determine state of all flags (add to vcu data structure in some format...?)
+        VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
+
+        VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
+
+        VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT =  (dataIMD.IMDState == Device_Error);
+
+        VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT =  (dataIMD.IMDState == Bad_Info);
+
+        VCUDataPtr->DigitalVal.IMD_UNDEF_ERR =  (dataIMD.IMDState == Undefined_fault);
+
+        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
 
         // TSAL and Shutdown GPIO states
-//        storeShutdownValues();
+        storeShutdownValues();
 
         // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
-=======
+
         // IMD data (maybe this needs to be a separate interrupt?)
-        updateIMDData();
-        serialSendData();
-
-        // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
-
-        // TSAL state
-
-        // CAN status from BMS (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
->>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
+//        updateIMDData();
+//        serialSendData();
 
         // read LV voltage, current
         VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
 
-<<<<<<< HEAD
         VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
-=======
-        // this needs to be updated to not block the whole system if i2c not available
-//        lv_current = LV_reading(LV_current_register);
-
-        // make sure state machine signal flags are updated
-
-        // check for all errors here and update VCU data structure or state machine flags accordingly
->>>>>>> 0afe16f869cdcfbfaa2f256f02ee721cccb7ee98
-
 
         // for timing:
         gioSetBit(hetPORT1, 25, 0);
