@@ -95,16 +95,16 @@
 #define configUSE_FPU							1
 #define configUSE_IDLE_HOOK			  0
 #define configUSE_TICK_HOOK			  0
-#define configUSE_TRACE_FACILITY	  0
+#define configUSE_TRACE_FACILITY	  1    // Set by jjkhan -> Required for run time Stat
 #define configUSE_16_BIT_TICKS		  0
 #define configCPU_CLOCK_HZ			  ( ( unsigned portLONG ) 80000000 ) /* Timer clock. */
 #define configTICK_RATE_HZ			  ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		  ( 5 )
 #define configMINIMAL_STACK_SIZE	  ( ( unsigned portSHORT ) 256 )
-#define configTOTAL_HEAP_SIZE		  ( ( size_t ) 10000 )   // 8192 - original; We have RAM size allocated to 189184 Bytes - check linker file - need to double check - jjkhan
+#define configTOTAL_HEAP_SIZE		  ( ( size_t ) 10200 )   // 8192 - original; We have RAM size allocated to 189184 Bytes - check linker file - need to double check - jjkhan
 #define configMAX_TASK_NAME_LEN		  ( 16 )
 #define configIDLE_SHOULD_YIELD		  1
-#define configGENERATE_RUN_TIME_STATS 0
+#define configGENERATE_RUN_TIME_STATS 1    // Set by jjkhan -> Required for Run Time Stat
 #define configUSE_MALLOC_FAILED_HOOK  0
 
 /* USER CODE BEGIN (1) */
@@ -157,6 +157,19 @@
 #define INCLUDE_xTaskGetIdleTaskHandle      1
 
 /* USER CODE BEGIN (4) */
+ /* ++ Added by jjkhan */
+
+  /* The following two are required for compilation if configGENERATE_RUN_TIME_STATS is definedd  */
+extern void initializeProfiler();
+#define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()    initializeProfiler()
+
+extern uint32_t getProfilerTimerCount();
+#define portGET_RUN_TIME_COUNTER_VALUE()            getProfilerTimerCount()
+
+
+#define configUSE_STATS_FORMATTING_FUNCTIONS    1   // Need this to be able to use vTaskGetRunTimeStats
+
+/* ++ Added by jjkhan */
 /* USER CODE END */
 
 
