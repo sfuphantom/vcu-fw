@@ -45,6 +45,11 @@ void vDataLoggingTask(void *pvParameters){
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
 
+#ifdef RUN_TIME_STATS_DATA_LOGGING
+        /* Buffer to trace informations */
+       static char cTraceBuffer[300];
+       // -- Added by jjkhan For Storing RUN Time stats
+#endif
     while(true)
     {
         // Wait for the next cycle
@@ -69,7 +74,12 @@ void vDataLoggingTask(void *pvParameters){
         // for timing:
         gioSetBit(TASK_TIMING_PORT, 4, 0);
 
-
+           // ++ Added by jjkhan for task profiling
+#ifdef RUN_TIME_STATS_DATA_LOGGING
+        vTaskGetRunTimeStats(cTraceBuffer);
+        printf(cTraceBuffer);
+#endif
+        // -- Added by jjkhan for task profiling
     }
 
 }

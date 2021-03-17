@@ -81,6 +81,11 @@ void vStateMachineTask(void *pvParameters){
 
     /* -- Added by jjkhan for Notification result. */
 
+#ifdef RUN_TIME_STATS_STATE_MACHINE
+        /* Buffer to trace informations */
+       static char cTraceBuffer[1000];
+       // -- Added by jjkhan For Storing RUN Time stats
+#endif
     while(true)
     {
         // Wait for the next cycle -> By jjkhan: Call at the end, this will block the task and give CPU access to the next high priority task.
@@ -246,7 +251,12 @@ void vStateMachineTask(void *pvParameters){
         // for timing:
         gioSetBit(hetPORT1, 9, 0);
 
-
+        // ++ Added by jjkhan for task profiling
+#ifdef RUN_TIME_STATS_STATE_MACHINE
+         vTaskGetRunTimeStats(cTraceBuffer);
+         printf(cTraceBuffer);
+#endif
+         // -- Added by jjkhan for task profiling
 
     }
 }

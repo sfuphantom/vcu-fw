@@ -6,11 +6,17 @@
  */
 #include "task_eeprom.h"
 #include "priorities.h"
+#include "os_portmacro.h"
+#include "os_task.h"
+
 
 extern TaskHandle_t eepromHandler; // Eeprom Task handler
 extern SemaphoreHandle_t vcuKey;
 extern data VCUData;
 extern void *pVCUDataStructure;
+
+
+
 
 void vEeprom(void *p){
 
@@ -49,6 +55,12 @@ void vEeprom(void *p){
        //uint8 eepromVCUReceiveBuffer[72]; // Receive buffer for data read from eeprom
 
 
+       //++ Added by jjkhan: For Storing RUN Time stats
+#ifdef RUN_TIME_STATS_EEPROM
+        /* Buffer to trace informations */
+       static char cTraceBuffer[300];
+       // -- Added by jjkhan For Storing RUN Time stats
+#endif
        TickType_t mylastTickCount;
        mylastTickCount = xTaskGetTickCount();  // For an accurate Task Blocking Time
 
@@ -256,6 +268,12 @@ void vEeprom(void *p){
                     }
            }
 
+           // ++ Added by jjkhan for task profiling
+#ifdef RUN_TIME_STATS_EEPROM
+           vTaskGetRunTimeStats(cTraceBuffer);
+           printf(cTraceBuffer);
+#endif
+           // -- Added by jjkhan for task profiling
         }
 
 }

@@ -69,13 +69,18 @@ extern bool THROTTLE_AVAILABLE;
  ***********************************************************/
 void vThrottleTask(void *pvParameters){
 
+
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
     //const TickType_t xFrequency = 10 ; // task frequency in ms
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
 
-
+#ifdef RUN_TIME_STATS_THROTTLE
+        /* Buffer to trace informations */
+       static char cTraceBuffer[300];
+       // -- Added by jjkhan For Storing RUN Time stats
+#endif
     while(true)
     {
         // Wait for the next cycle
@@ -221,6 +226,11 @@ void vThrottleTask(void *pvParameters){
 
         // for timing:
         gioSetBit(hetPORT1, 5, 0);
-
+        // ++ Added by jjkhan for task profiling
+#ifdef RUN_TIME_STATS_THROTTLE
+         vTaskGetRunTimeStats(cTraceBuffer);
+         printf(cTraceBuffer);
+#endif
+         // -- Added by jjkhan for task profiling
     }
 }
