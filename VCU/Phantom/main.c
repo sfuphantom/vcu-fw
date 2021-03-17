@@ -74,17 +74,7 @@
 /*********************************************************************************
  *                          SOFTWARE TIMER INITIALIZATION
  *********************************************************************************/
-#define NUMBER_OF_TIMERS   2
-
-/* array to hold handles to the created timers*/
-TimerHandle_t xTimers[NUMBER_OF_TIMERS];
-
-/* This timer is used to debounce the interrupts for the RTDS and SDC signals */
-bool INTERRUPT_AVAILABLE = true;
-bool THROTTLE_AVAILABLE = false; // used to only enable throttle after the buzzer has gone for 2 seconds
-
-void Timer_300ms(TimerHandle_t xTimers);
-void Timer_2s(TimerHandle_t xTimers);
+//moved to phantom_freertos.c -rafguevara14
 
 /*********************************************************************************
  *                          STATE ENUMERATION
@@ -95,7 +85,7 @@ State state = TRACTIVE_OFF;
 /*********************************************************************************
  *                          QUEUE HANDLE CREATION
  *********************************************************************************/
-xQueueHandle VCUDataQueue;
+//moved to phantom_freertos.c -rafguevara14
 /*********************************************************************************
  *                          GLOBAL VARIABLE DECLARATIONS
  *********************************************************************************/
@@ -119,7 +109,7 @@ long xStatus;
  *********************************************************************************/
 //uint8_t TSAL = 0;
 //uint8_t RTDS = 0;
-long RTDS_RAW = 0;
+//long RTDS_RAW = 0; //moved to phantom_freertos.c - rafguevara14
 //uint8_t BMS  = 1;
 //uint8_t IMD = 1;
 //uint8_t BSPD = 1;
@@ -137,8 +127,8 @@ unsigned int FP_sensor_1_avg;
 unsigned int FP_sensor_2_sum = 0;
 unsigned int FP_sensor_2_avg;
 
-unsigned int BSE_sensor_sum  = 0;
-unsigned int BSE_sensor_avg  = 0;
+//unsigned int BSE_sensor_sum  = 0; //moved to phantom_freertos.c - rafguevara14
+//unsigned int BSE_sensor_avg  = 0; //moved to phantom_freertos.c - rafguevara14
 unsigned int NumberOfChars;
 
 uint16 FP_sensor_1_min = 0;
@@ -169,23 +159,7 @@ int main(void)
 /*********************************************************************************
  *                          freeRTOS SOFTWARE TIMER SETUP
  *********************************************************************************/
-    xTimers[0] = xTimerCreate
-            ( /* Just a text name, not used by the RTOS
-             kernel. */
-             "RTDS_Timer",
-             /* The timer period in ticks, must be
-             greater than 0. */
-             pdMS_TO_TICKS(10),
-             /* The timers will auto-reload themselves
-             when they expire. */
-             pdFALSE,
-             /* The ID is used to store a count of the
-             number of times the timer has expired, which
-             is initialised to 0. */
-             ( void * ) 0,
-             /* Callback function for when the timer expires*/
-             Timer_300ms
-           );
+    phantom_freeRTOStimerInit();
 
     _enable_IRQ();              // Enable interrupts
     sciInit();                  // Initialize UART (SCI) halcogen driver
@@ -219,79 +193,6 @@ int main(void)
 /*********************************************************************************
  *                          freeRTOS TASK IMPLEMENTATIONS
  *********************************************************************************/
-void gioNotification(gioPORT_t *port, uint32 bit)
-{
-/*  enter user code between the USER CODE BEGIN and USER CODE END. */
-/* USER CODE BEGIN (19) */
-
-    /*********************************** SHUTDOWN SIGNALS ***************************************/
-    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BMS_FAULT_PIN) VCUDataPtr->DigitalVal.BMS_FAULT = true;
-
-    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BSPD_FAULT_PIN) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
-
-    if(port == SHUTDOWN_CIRCUIT_PORT && bit == IMD_FAULT_PIN) VCUDataPtr->DigitalVal.IMD_FAULT = true;
-
-    //      (Shutdown Board SHOULD be Triggered)  &&  (TSAL_HV == ON) ----> TSAL_WELDED
-    if((VCUDataPtr->DigitalVal.BMS_FAULT || VCUDataPtr->DigitalVal.IMD_FAULT || VCUDataPtr->DigitalVal.BSPD_FAULT) && gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN))
-
-        VCUDataPtr->DigitalVal.TSAL_WELDED = true;
-
-
-
-
-//    UARTSend(PC_UART, "---------Interrupt Request-------\r\n");
-    if (port == gioPORTA && bit == 2 && INTERRUPT_AVAILABLE)
-    {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        // RTDS switch
-        UARTSend(PC_UART, "---------Interrupt Active\r\n");
-        if (VCUDataPtr->DigitalVal.RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
-        {
-            if (BSE_sensor_sum < 2000)
-            {
-                gioSetBit(gioPORTA, 6, 1);
-                VCUDataPtr->DigitalVal.RTDS = 1; // CHANGE STATE TO RUNNING
-                UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
-
-                // ready to drive buzzer, need to start a 2 second timer here
-                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
-
-                // reset the 2 second timer to let the buzzer ring for 2 seconds
-                if (xTimerResetFromISR(xTimers[1], xHigherPriorityTaskWoken) != pdPASS)// after 2s the timer will allow the interrupt to toggle the signal again
-                {
-                    // timer reset failed
-                    UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
-                }
-            }
-        }
-//        else
-//        {
-//            UARTSend(PC_UART, "---------RTDS set to 0 in interrupt\r\n");
-//            RTDS = 0;
-//        }
-
-        INTERRUPT_AVAILABLE = false;
-        if (xTimerResetFromISR(xTimers[0], xHigherPriorityTaskWoken) != pdPASS)// after 300ms the timer will allow the interrupt to toggle the signal again
-        {
-            // timer reset failed
-            UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
-        }
-    }
-}
-
-/* Timer callback when it expires */
- void Timer_300ms(TimerHandle_t xTimers)
- {
-     INTERRUPT_AVAILABLE = true;
- }
-
- /* Timer callback when it expires for the ready to drive sound */
- void Timer_2s(TimerHandle_t xTimers)
- {
-     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
-     THROTTLE_AVAILABLE = true;
- }
-
 void vApplicationMallocFailedHook( void )
 {
     // Error handling if malloc fails to allocate memory properly

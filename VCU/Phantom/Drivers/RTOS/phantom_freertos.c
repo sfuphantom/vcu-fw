@@ -193,6 +193,21 @@ void phantom_freeRTOStaskInit(void)
  {
  /*  enter user code between the USER CODE BEGIN and USER CODE END. */
  /* USER CODE BEGIN (19) */
+
+
+     /*********************************** SHUTDOWN SIGNALS ***************************************/
+         if(port == SHUTDOWN_CIRCUIT_PORT && bit == BMS_FAULT_PIN) VCUDataPtr->DigitalVal.BMS_FAULT = true;
+
+         if(port == SHUTDOWN_CIRCUIT_PORT && bit == BSPD_FAULT_PIN) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
+
+         if(port == SHUTDOWN_CIRCUIT_PORT && bit == IMD_FAULT_PIN) VCUDataPtr->DigitalVal.IMD_FAULT = true;
+
+         //      (Shutdown Board SHOULD be Triggered)  &&  (TSAL_HV == ON) ----> TSAL_WELDED
+         if((VCUDataPtr->DigitalVal.BMS_FAULT || VCUDataPtr->DigitalVal.IMD_FAULT || VCUDataPtr->DigitalVal.BSPD_FAULT) && gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN))
+
+             VCUDataPtr->DigitalVal.TSAL_WELDED = true;
+
+
  //    UARTSend(PC_UART, "---------Interrupt Request-------\r\n");
      if (port == gioPORTA && bit == 2 && INTERRUPT_AVAILABLE)
      {
