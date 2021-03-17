@@ -120,31 +120,7 @@ long xStatus;
 /*********************************************************************************
                  ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
  *********************************************************************************/
-adcData_t FP_data[3];
-adcData_t *FP_data_ptr = &FP_data[0];
-unsigned int FP_sensor_1_sum = 0;
-unsigned int FP_sensor_1_avg;
-unsigned int FP_sensor_2_sum = 0;
-unsigned int FP_sensor_2_avg;
-
-//unsigned int BSE_sensor_sum  = 0; //moved to phantom_freertos.c - rafguevara14
-//unsigned int BSE_sensor_avg  = 0; //moved to phantom_freertos.c - rafguevara14
-unsigned int NumberOfChars;
-
-uint16 FP_sensor_1_min = 0;
-uint16 FP_sensor_2_min = 0;
-
-uint16 FP_sensor_1_max = 4095; // 12-bit ADC
-uint16 FP_sensor_2_max = 4095; // 12-bit ADC
-uint16 FP_sensor_1_percentage;
-uint16 FP_sensor_2_percentage;
-uint16 FP_sensor_diff;
-
-
-
-// change to better data type
-//int lv_current = 0;
-
+//moved to phantom_freertos.c - rafguevara14
 
 /* USER CODE END */
 
