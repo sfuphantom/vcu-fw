@@ -24,17 +24,17 @@
 #include "vcu_data.h"
 
 extern State state;
-extern TimerHandle_t xTimers[];   // jaypacamarra
-extern bool APPS1_RANGE_FAULT_TIMER_EXPIRED;   //jaypacamarra
-extern bool APPS2_RANGE_FAULT_TIMER_EXPIRED;   //jaypacamarra
-extern bool BSE_RANGE_FAULT_TIMER_EXPIRED;  //jaypacamarra
-extern bool FP_DIFF_FAULT_TIMER_EXPIRED;    //jaypacamarra
+extern TimerHandle_t xTimers[];                 // jaypacamarra
+extern bool APPS1_RANGE_FAULT_TIMER_EXPIRED;    //jaypacamarra
+extern bool APPS2_RANGE_FAULT_TIMER_EXPIRED;    //jaypacamarra
+extern bool BSE_RANGE_FAULT_TIMER_EXPIRED;      //jaypacamarra
+extern bool FP_DIFF_FAULT_TIMER_EXPIRED;        //jaypacamarra
 
 /*********************************************************************************
   ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
  *********************************************************************************/
 adcData_t FP_data[3];
-adcData_t *FP_data_ptr = &FP_data;
+adcData_t *FP_data_ptr = FP_data;
 unsigned int volatile FP_sensor_1_sum; // = 0;
 unsigned int FP_sensor_1_avg;
 unsigned int volatile FP_sensor_2_sum; // = 0;
@@ -60,9 +60,9 @@ extern data *VCUDataPtr;
 bool THROTTLE_AVAILABLE;
 
 uint32_t volatile fault_10DIFF_counter_ms = 0;      // hold duration of fault in milliseconds - jaypacamarra
-uint32_t fault_BSE_Range_counter_ms = 0;   // hold duration of fault in milliseconds - jaypacamarra
-uint32_t fault_APPS1_Range_counter_ms = 0; // hold duration of fault in milliseconds - jaypacamarra
-uint32_t fault_APPS2_Range_counter_ms = 0; // hold duration of fault in milliseconds - jaypacamarra
+uint32_t fault_BSE_Range_counter_ms = 0;            // hold duration of fault in milliseconds - jaypacamarra
+uint32_t fault_APPS1_Range_counter_ms = 0;          // hold duration of fault in milliseconds - jaypacamarra
+uint32_t fault_APPS2_Range_counter_ms = 0;          // hold duration of fault in milliseconds - jaypacamarra
 
 float volatile Percent_APPS1_pressed; // hold percentage foot pedal1 (APPS1) is pressed, 0-1 -jaypacamarra
 float volatile Percent_APPS2_pressed; // hold percentage foot pedal2 (APPS2) is pressed, 0-1 -jaypacamarra
@@ -369,53 +369,6 @@ void vThrottleTask(void *pvParameters)
         }
         
 
-        // What is all of this?? - jaypacamarra
-//        NumberOfChars = ltoa(BSE_sensor_sum, (char *)command);
-//        if (BSE_PRINT)
-//        {
-//            UARTSend(PC_UART, "*****BSE**** ");
-//        }
-//        if (BSE_PRINT)
-//        {
-//            sciSend(PC_UART, NumberOfChars, command);
-//        }
-//        if (BSE_PRINT)
-//        {
-//            UARTSend(PC_UART, "   ");
-//        }
-//
-//        NumberOfChars = ltoa(FP_sensor_1_sum, (char *)command);
-//        if (BSE_PRINT)
-//        {
-//            UARTSend(PC_UART, "*****APPS 1**** ");
-//        }
-//        if (BSE_PRINT)
-//        {
-//            sciSend(PC_UART, NumberOfChars, command);
-//        }
-//        if (BSE_PRINT)
-//        {
-//            UARTSend(PC_UART, "   ");
-//        }
-//
-//        NumberOfChars = ltoa(FP_sensor_2_sum, (char *)command);
-//        if (BSE_PRINT)
-//        {
-//            UARTSend(PC_UART, "*****APPS 2**** ");
-//        }
-//        if (BSE_PRINT)
-//        {
-//            sciSend(PC_UART, NumberOfChars, command);
-//        }
-//        if (BSE_PRINT)
-//        {
-//            UARTSend(PC_UART, "\r\n");
-//        }
-
-        // What does this do?? -jaypacamarra
-        //        xStatus = xQueueSendToBack(xq, &FP_sensor_1_avg, 0);
-        //        xStatus = xQueueSendToBack(xq, &FP_sensor_2_avg, 0);
-
         // Calculate FP_sensor_diff - jaypacamarra
         Percent_APPS1_pressed = ((float)FP_sensor_1_sum - (float)APPS1_MIN_VALUE) / ((float)APPS1_MAX_VALUE - (float)APPS1_MIN_VALUE); // APPS1 % pressed compared to MAX and MIN values
         Percent_APPS1_pressed = (FP_sensor_1_sum <= APPS1_MIN_VALUE) ? 0 : Percent_APPS1_pressed;                 // negative values are set to 0
@@ -423,8 +376,8 @@ void vThrottleTask(void *pvParameters)
         Percent_APPS2_pressed = ((float)FP_sensor_2_sum - (float)APPS2_MIN_VALUE) / ((float)APPS2_MAX_VALUE - (float)APPS2_MIN_VALUE); // APPS2 % pressed compared to MAX and MIN values
         Percent_APPS2_pressed = (FP_sensor_2_sum <= APPS2_MIN_VALUE) ? 0 : Percent_APPS2_pressed;                 // negative values are set to 0
 
-//        FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed); // Calculate absolute difference between APPS1 and APPS2 readings
-        FP_sensor_diff = 0.05;
+        FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed); // Calculate absolute difference between APPS1 and APPS2 readings
+
         // 10% APPS redundancy check
         if (FP_sensor_diff > 0.10)
         {
@@ -456,6 +409,8 @@ void vThrottleTask(void *pvParameters)
             FP_DIFF_FAULT_TIMER_EXPIRED = false;
         }
 
+
+
         // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25% - jaypacamarra
         if (BSE_sensor_sum >= BRAKING_THRESHOLD &&
             FP_sensor_1_sum >= APPS1_MIN_VALUE + 0.25 * (APPS1_MAX_VALUE - APPS1_MIN_VALUE) &&
@@ -476,7 +431,7 @@ void vThrottleTask(void *pvParameters)
             }
         }
 
-        // What is this?
+
         if (state == RUNNING && THROTTLE_AVAILABLE)
         {
             // send DAC to inverter
