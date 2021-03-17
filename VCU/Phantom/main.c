@@ -99,9 +99,7 @@ data VCUData;
 
 data* VCUDataPtr = &VCUData;
 
-
-uint8 i;
-char command[8]; // used for ADC printing.. this is an array of 8 chars, each char is 8 bits
+uint8 i;//what the hell is this tho -rafguevara14
 long xStatus;
 
 /*********************************************************************************
