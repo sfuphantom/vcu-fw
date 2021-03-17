@@ -19,6 +19,10 @@
 #include <stdio.h>
 #include "reg_het.h"
 
+// ++ Added by jjkhan - PMU module functions are defined here. Need it for Task Profiling.
+#include "sys_pmu.h"
+// -- Added by jjkhan
+
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
 #include "IMD.h"             // Bender IR155 IMD Library written by Sumreen Rattan
@@ -29,6 +33,20 @@
 #include "phantom_freertos.h" // contains functions for freertos startup, timer setup, and task creation
 #include "vcu_data.h"         // holds VCU data structure
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
+
+// ++ Added by jjkhan - this has the function call to switch between user and system mode - i.e. raising privileges- need it for task profiling.
+        // Will move the swiSwitchToMode ( uint32 mode ) to a central location once task profiling works.
+#include "eeprom_driver.h"
+
+#define RUN_TIME_STATS                 1         // For compiling Timer Configuration and getting timer value in vTaskScheduler for task profiling with vTaskGetRunTimeStats
+#define RUN_TIME_STATS_EEPROM          0         // Using FreeRTOS Run Time Stats inside eeprom task
+#define RUN_TIME_STATS_THROTTLE        0         // Using FreeRTOS Run Time Stats inside throttle task
+#define RUN_TIME_STATS_SENSOR_READ        0         // Using FreeRTOS Run Time Stats inside sensor read task
+#define RUN_TIME_STATS_STATE_MACHINE        1        // Using FreeRTOS Run Time Stats inside state machine task
+#define RUN_TIME_STATS_DATA_LOGGING        0        // Using FreeRTOS Run Time Stats inside Data logging task
+
+
+// -- Added by jjkhan
 
 State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and referenced from there
 
@@ -54,7 +72,6 @@ void *pVCUDataStructure = &VCUData;  // Need this void pointer to read from eepr
 */
 
 /* USER CODE BEGIN (2) */
-
 /* USER CODE END */
 
 void main(void)
@@ -93,4 +110,31 @@ void main(void)
 /* USER CODE END */
 }
 /* USER CODE BEGIN (4) */
+
+/* ++ Added by jjkhan - will move it once task profiling works. */
+
+#ifdef RUN_TIME_STATS
+// Configure a Timer that will be used by FreeRTOS to create runtime stats
+// This function will be called by the vTaskStartScheduler() -> Application layer provides the definition.
+void initializeProfiler(){
+    /* Enable PMU Cycle Counter for Profiling */
+    swiSwitchToMode(SYSTEM_MODE);
+    _pmuInit_();
+    _pmuEnableCountersGlobal_();
+    _pmuResetCycleCounter_();
+    _pmuStartCounters_(pmuCYCLE_COUNTER);
+    swiSwitchToMode(USER_MODE);
+}
+
+// This function called by vTaskGetRunTimeStats() to create an ASCII table of all Task stat -> Application layer provides the definition.
+
+uint32_t getProfilerTimerCount(){
+    uint32_t cycleCount;
+    swiSwitchToMode(SYSTEM_MODE);
+    cycleCount = _pmuGetCycleCount_();
+    swiSwitchToMode(USER_MODE);
+    return cycleCount;
+}
+#endif
+/* -- Added by jjkhan - will move it once task profiling works. */
 /* USER CODE END */
