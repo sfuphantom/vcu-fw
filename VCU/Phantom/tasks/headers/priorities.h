@@ -10,10 +10,10 @@
 
 //++ Added by jjkhan - For readability - use these MACROS with pdMS_TO_TICKS(MillisecondTime)
 
-#define THROTTLE_TASK_PERIOD_MS         pdMS_TO_TICKS(150)
-#define SENSOR_READ_TASK_PERIOD_MS      pdMS_TO_TICKS(80)
-#define STATE_MACHINE_TASK_PERIOD_MS    pdMS_TO_TICKS(50)
-#define EEPROM_TASK_PERIOD_MS           pdMS_TO_TICKS(25)
+#define THROTTLE_TASK_PERIOD_MS         pdMS_TO_TICKS(10)
+#define SENSOR_READ_TASK_PERIOD_MS      pdMS_TO_TICKS(10)
+#define STATE_MACHINE_TASK_PERIOD_MS    pdMS_TO_TICKS(10)
+#define EEPROM_TASK_PERIOD_MS           pdMS_TO_TICKS(10)
 #define DATA_LOGGING_TASK_PERIOD_MS     pdMS_TO_TICKS(10)
 #define WATCHDOG_TASK__PERIOD_MS        pdMS_TO_TICKS(10)
 
@@ -25,7 +25,7 @@
 #define THROTTLE_TASK_PRIORITY         4
 #define SENSOR_READ_TASK_PRIORITY      3
 #define STATE_MACHINE_TASK_PRIORITY    2
-#define EEPROM_TASK_PRIORITY           1
+#define EEPROM_TASK_PRIORITY           2
 #define DATA_LOGGING_TASK_PRIORITY     0    // same as idle task
 #define WATCHDOG_TASK_PRIORITY         0    // same as idle task
 
