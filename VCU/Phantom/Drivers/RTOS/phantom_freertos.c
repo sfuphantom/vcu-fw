@@ -24,6 +24,7 @@ TaskHandle_t eepromHandler = NULL;  // Eeprom Task Task Handler
 SemaphoreHandle_t vcuKey;        // Mutex to protect VCU data structure
 SemaphoreHandle_t powerfailureFlagKey;  // still using this? - jjkhan
 // -- Added by jjkhan
+
 void phantom_freeRTOSInit(void)
 {
     phantom_freeRTOStimerInit();
