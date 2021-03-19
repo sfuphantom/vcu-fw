@@ -19,9 +19,6 @@
 #include <stdio.h>
 #include "reg_het.h"
 
-// ++ Added by jjkhan - PMU module functions are defined here. Need it for Task Profiling.
-#include "sys_pmu.h"
-// -- Added by jjkhan
 
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
@@ -38,13 +35,12 @@
         // Will move the swiSwitchToMode ( uint32 mode ) to a central location once task profiling works.
 #include "eeprom_driver.h"
 
-#define RUN_TIME_STATS                 1         // For compiling Timer Configuration and getting timer value in vTaskScheduler for task profiling with vTaskGetRunTimeStats
-#define RUN_TIME_STATS_EEPROM          0         // Using FreeRTOS Run Time Stats inside eeprom task
-#define RUN_TIME_STATS_THROTTLE        0         // Using FreeRTOS Run Time Stats inside throttle task
-#define RUN_TIME_STATS_SENSOR_READ        0         // Using FreeRTOS Run Time Stats inside sensor read task
-#define RUN_TIME_STATS_STATE_MACHINE        1        // Using FreeRTOS Run Time Stats inside state machine task
-#define RUN_TIME_STATS_DATA_LOGGING        0        // Using FreeRTOS Run Time Stats inside Data logging task
-
+#define RUN_TIME_STATS                      0        // For compiling Timer Configuration and getting timer value in vTaskScheduler for task profiling with vTaskGetRunTimeStats
+#define RUN_TIME_STATS_EEPROM               0         // Using FreeRTOS Run Time Stats inside eeprom task
+#define RUN_TIME_STATS_THROTTLE             0         // Using FreeRTOS Run Time Stats inside throttle task
+#define RUN_TIME_STATS_SENSOR_READ          0         // Using FreeRTOS Run Time Stats inside sensor read task
+#define RUN_TIME_STATS_STATE_MACHINE        0        // Using FreeRTOS Run Time Stats inside state machine task
+#define RUN_TIME_STATS_DATA_LOGGING         0        // Using FreeRTOS Run Time Stats inside Data logging task
 
 // -- Added by jjkhan
 
@@ -72,12 +68,38 @@ void *pVCUDataStructure = &VCUData;  // Need this void pointer to read from eepr
 */
 
 /* USER CODE BEGIN (2) */
+
+//++ Added by jjkhan for Code execution Time counter using the PMU module
+#define PMU_CYCLE
+
+#ifdef PMU_CYCLE
+
+#include "execution_timer.h"
+#define CPU_CLOCK_MHz (float) 80.0
+
+volatile unsigned long cycles_PMU_start; // CPU cycle count at start
+volatile float time_PMU_code_uSecond; // the calculated time in uSecond.
+
+#endif
+
+//-- Added by jjkhan
+
+
 /* USER CODE END */
 
 void main(void)
 {
 /* USER CODE BEGIN (3) */
 
+#ifdef PMU_CYCLE
+       // Initialize code timer.
+       timer_Init();
+#endif
+
+#ifdef PMU_CYCLE_1
+       // Start timer.
+       cycles_PMU_start = timer_Start();
+#endif
     /* Halcogen Initialization */
 
     _enable_IRQ();              // Enable interrupts
@@ -103,6 +125,9 @@ void main(void)
 
     phantom_freeRTOSInit();     // Initialize freeRTOS timers, queues, and tasks
 
+#ifdef PMU_CYCLE_1
+    time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
+#endif
     vTaskStartScheduler();      // start freeRTOS task scheduler
    
     // infinite loop to prevent code from ending. The scheduler will now pre-emptively switch between tasks.

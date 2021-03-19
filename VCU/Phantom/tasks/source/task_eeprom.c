@@ -16,6 +16,15 @@ extern data VCUData;
 extern void *pVCUDataStructure;
 
 
+//++ Added by jjkhan for execution time measurement
+
+#include "../../execution_timer.h"
+
+#define CPU_CLOCK_MHz (float) 80.0
+volatile unsigned long cycles_PMU_start; // CPU cycle count at start
+volatile float time_PMU_code_uSecond; // the calculated time in uSecond.
+
+//-- Added by jjkhan for execution time measurement
 
 
 void vEeprom(void *p){
@@ -27,7 +36,6 @@ void vEeprom(void *p){
        uint8 message4[] ="VCU data structure initialized with default values.\r\n";
        uint8 message5[] ="Garbage Data in Data Block 1.\r\n";
        uint8 message6[] ="Eeprom Data Block 1 Read unsuccessfull.\r\n";
-
 
 
        uint8 message7[] ="EEPROM is uninitialized.\r\n";
@@ -61,6 +69,7 @@ void vEeprom(void *p){
        static char cTraceBuffer[300];
        // -- Added by jjkhan For Storing RUN Time stats
 #endif
+
        TickType_t mylastTickCount;
        mylastTickCount = xTaskGetTickCount();  // For an accurate Task Blocking Time
 
@@ -70,9 +79,13 @@ void vEeprom(void *p){
        uint8_t jobCompletedFlag;  // used for Synchronous EEPROM Jobs
        uint8_t jobScheduled;      // used for Asynchronous EEPROM Jobs
 
+
+
        while(1){
 
            vTaskDelayUntil(&mylastTickCount,EEPROM_TASK_PERIOD_MS); // 3-10 millisecond blocking time for this task - ideally for eeprom, but we can adjust
+
+           cycles_PMU_start = timer_Start();// Start timer
 
            if (TASK_PRINT) {UARTSend(PC_UART, "EEPROM TASK\r\n");}
 
@@ -268,6 +281,8 @@ void vEeprom(void *p){
                     }
            }
 
+
+           time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
            // ++ Added by jjkhan for task profiling
 #ifdef RUN_TIME_STATS_EEPROM
            vTaskGetRunTimeStats(cTraceBuffer);
