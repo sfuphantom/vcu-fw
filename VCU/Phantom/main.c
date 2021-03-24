@@ -37,6 +37,7 @@
 #include "RTD_Buzzer.h"      // Ready to Drive buzzer wrapper written by Gabriel Soares
 #include "RGB_LED.h"         // RGB LED wrapper
 #include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
+#include "Shutdown.h"        // Shutdown Interrupt Initializer written by Rafael Guevara
 
 
 //#define LV_MONITOR
