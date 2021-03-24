@@ -25,6 +25,7 @@
 #include "het.h"
 #include "board_hardware.h"
 #include "vcu_data.h"
+#include "Phantom_sci.h"
 
 //***Pins configured with launchpad***//
 

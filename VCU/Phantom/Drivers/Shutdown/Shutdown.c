@@ -61,26 +61,47 @@ void ShutdownInit(){
 
        _enable_IRQ();
 
-       printf("Shutdown Driver initialized\n");
+//       printf("Shutdown Driver initialized\n");
 }
 
 void print_Shutdownvals(){
 
-    printf("\nBMSval: ");
-    printf(VCUDataPtr->DigitalVal.BMS_STATUS ? "true" : "false");
 
-    printf("\nBSPDval: ");
-    printf(VCUDataPtr->DigitalVal.BSPD_STATUS ? "true" : "false");
+    if(!VCUDataPtr->DigitalVal.BMS_STATUS)
 
+        UARTSend(PC_UART, "BMS FAULT\r\n");
 
-    printf("\nIMDval: ");
-    printf(VCUDataPtr->DigitalVal.IMD_STATUS ? "true" : "false");
+    if(!VCUDataPtr->DigitalVal.BSPD_STATUS)
 
-    printf("\nTSALval: ");
-    printf(VCUDataPtr->DigitalVal.TSAL_STATUS ? "true" : "false");
+        UARTSend(PC_UART, "BSPD FAULT\r\n");
 
-    printf("\nRESETval: ");
-    printf(VCUDataPtr->DigitalVal.RESET_STATUS ? "true" : "false");
+    if(!VCUDataPtr->DigitalVal.IMD_STATUS)
+
+        UARTSend(PC_UART, "IMD FAULT\r\n");
+
+    if(!VCUDataPtr->DigitalVal.TSAL_STATUS)
+
+        UARTSend(PC_UART, "TSAL FAULT\r\n");
+
+    if(!VCUDataPtr->DigitalVal.RESET_STATUS)
+
+        UARTSend(PC_UART, "RESET SIGNAL HIGH\r\n");
+
+//    printf("\nBMSval: ");
+//    printf(VCUDataPtr->DigitalVal.BMS_STATUS ? "true" : "false");
+//
+//    printf("\nBSPDval: ");
+//    printf(VCUDataPtr->DigitalVal.BSPD_STATUS ? "true" : "false");
+//
+//
+//    printf("\nIMDval: ");
+//    printf(VCUDataPtr->DigitalVal.IMD_STATUS ? "true" : "false");
+//
+//    printf("\nTSALval: ");
+//    printf(VCUDataPtr->DigitalVal.TSAL_STATUS ? "true" : "false");
+//
+//    printf("\nRESETval: ");
+//    printf(VCUDataPtr->DigitalVal.RESET_STATUS ? "true" : "false");
 
 }
 
