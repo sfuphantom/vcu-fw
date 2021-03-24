@@ -38,6 +38,10 @@
 #include "RGB_LED.h"         // RGB LED wrapper
 #include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
 
+
+//#define LV_MONITOR
+
+
 #include "phantom_freertos.h" // contains functions for freertos startup, timer setup, and task creation
 #include "vcu_data.h"         // holds VCU data structure
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
@@ -147,7 +151,12 @@ int main(void)
     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_LED_Init();             // Initialize RGB LEDs to start off
     MCP48FV_Init();             // Initialize DAC Library
+
+#if LV_MONITOR
     lv_monitorInit();           // Initialize LV Monitor Library
+#endif
+
+
     initializeIMD();            // Initialize IMD Library
     ShutdownInit();             // Initialize Shutdown Driver
 
