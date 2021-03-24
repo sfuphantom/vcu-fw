@@ -76,7 +76,7 @@ void vSensorReadTask(void *pvParameters){
         }
 
         if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
-//        UARTSend(scilinREG, xTaskGetTickCount());
+        UARTSend(scilinREG, xTaskGetTickCount());
 
         //HVcurrent data merge with yash branch first
 
@@ -116,13 +116,23 @@ void vSensorReadTask(void *pvParameters){
         // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
 
         // IMD data (maybe this needs to be a separate interrupt?)
-//        updateIMDData();
-//        serialSendData();
+        updateIMDData();
+        serialSendData();
 
         // read LV voltage, current
         VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
 
         VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
+
+
+
+        #ifdef SENSOR_PRINT
+
+//        print_Shutdownvals();
+        UARTSend(PC_UART, "SENSOR READING TASK\r\n");
+
+
+        #endif
 
         // for timing:
         gioSetBit(hetPORT1, 25, 0);
