@@ -30,7 +30,7 @@ extern State state;
                  ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
  *********************************************************************************/
 adcData_t FP_data[3];
-adcData_t *FP_data_ptr;// = &FP_data[0];
+adcData_t *FP_data_ptr = &FP_data;// = &FP_data[0];
 unsigned int FP_sensor_1_sum;// = 0;
 unsigned int FP_sensor_1_avg;
 unsigned int FP_sensor_2_sum;// = 0;
