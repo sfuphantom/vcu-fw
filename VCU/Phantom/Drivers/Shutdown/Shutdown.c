@@ -25,7 +25,7 @@ extern uint8_t RESET_STATUS;
 
 
 
-static void resetSignals(){
+void resetShutdownSignals(){
 
     VCUDataPtr->DigitalVal.BMS_FAULT = false;
 
@@ -48,7 +48,7 @@ void ShutdownInit(){
        //set hetPORT1 as inputs
        gioSetDirection(hetPORT1, 0x00000000);
 
-       resetSignals();
+       resetShutdownSignals();
 
        //Enable Interrupts
        edgeEnableNotification(RESETPort,RESETedge);
@@ -124,6 +124,9 @@ void storeShutdownValues(){
 
 }
 
+//moved to
+//#include "phantom_freertos.h"
+
 //void gioNotification(gioPORT_t* port,uint32 bit){
 //
 //    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BMS_FAULT_PIN) VCUDataPtr->DigitalVal.BMS_FAULT = true;
@@ -136,12 +139,13 @@ void storeShutdownValues(){
 //
 //}
 
-//code will have to be merged with edgeNotification in IMD driver
+//moved to
+//#include "IMD.h"
 //void edgeNotification(hetBASE_t * hetREG,uint32 edge)
 //{
-//    if(hetREG == RESETPort && edge == RESETedge) resetSignals();
+//    if(hetREG == RESETPort && edge == RESETedge) resetShutdownSignals();
 
-//      if(hetREG == BSPD_FAULT_PORT && edge == BSPDedge) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
+//    if(hetREG == BSPD_FAULT_PORT && edge == BSPDedge) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
 //
 //}
 

@@ -6,6 +6,15 @@
 #include "board_hardware.h"
 #define SERIAL_SEND
 
+
+
+//VCU data structure for Shutdown Interrrupts
+extern data* VCUDataPtr;
+extern digitalValues DigitalVal;
+
+extern uint8_t BSPD_STATUS;
+extern uint8_t RESET_STATUS;
+
 // Global Variables
 static const float FREQ_RUNNING_COUNTER = 10000000.00; // 10Mhz
 static const uint32_t UINT32_MAX_ = 4294967295;
@@ -142,6 +151,17 @@ float getIMDResistance(){
 */
 void edgeNotification(hetBASE_t * hetREG,uint32 edge)
 {
+
+
+    /*********************************** SHUTDOWN SIGNALS ***************************************/
+
+    if(hetREG == RESETPort && edge == RESETedge) resetShutdownSignals();
+
+    if(hetREG == BSPD_FAULT_PORT && edge == BSPDedge) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
+
+
+
+
     // if rising edge
     if(hetREG == hetREG1 && edge == 0)
     {

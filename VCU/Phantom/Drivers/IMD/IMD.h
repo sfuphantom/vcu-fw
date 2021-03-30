@@ -16,6 +16,10 @@
 #include "stdlib.h" // contains ltoa
 #include "sys_common.h"
 
+#include "vcu_data.h"
+#include <Phantom/hardware/vcu_hw/board_hardware.h>
+
+
 // ENUMS FOR IMD MESSAGE MAPPING
 
 // IMD State Enum

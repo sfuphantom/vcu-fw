@@ -23,7 +23,8 @@
 #include "gio.h"
 #include "system.h"
 #include "het.h"
-#include "board_hardware.h"
+//#include "board_hardware.h"
+#include <Phantom/hardware/vcu_hw/board_hardware.h>
 #include "vcu_data.h"
 #include "Phantom_sci.h"
 
@@ -52,7 +53,7 @@
 
 /*Function Headers */
 
-static void resetSignals();
+void resetShutdownSignals();
 
 void ShutdownInit();
 
