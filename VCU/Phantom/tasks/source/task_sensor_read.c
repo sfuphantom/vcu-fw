@@ -77,7 +77,7 @@ void vSensorReadTask(void *pvParameters){
         }
 
         if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
-        UARTSend(scilinREG, xTaskGetTickCount());
+//        UARTSend(scilinREG, xTaskGetTickCount());
 
         //HVcurrent data merge with yash branch first
 

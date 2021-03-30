@@ -19,10 +19,12 @@
 
 /*********   SHUTDOWN CIRCUIT GPIO   ****************/
 #define SHUTDOWN_CIRCUIT_PORT gioPORTA
-#define BMS_FAULT_PIN         5 // needs to be confirmed
-#define IMD_FAULT_PIN         6 // needs to be confirmed
-#define BSPD_FAULT_PIN        7 // needs to be confirmed
+#define IMD_FAULT_PIN         5 // needs to be confirmed
+#define BMS_FAULT_PIN         6 // needs to be confirmed
 
+#define BSPD_FAULT_PORT       hetPORT1       // needs to be confirmed
+#define BSPD_FAULT_PIN        20
+#define BSPDedge
 //#define RESETPort // needs to be confirmed
 //#define RESETPin  // needs to be confirmed
 //#define RESETedge  // needs to be confirmed
