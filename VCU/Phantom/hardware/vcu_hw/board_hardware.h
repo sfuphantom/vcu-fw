@@ -19,15 +19,15 @@
 
 /*********   SHUTDOWN CIRCUIT GPIO   ****************/
 #define SHUTDOWN_CIRCUIT_PORT gioPORTA
-#define IMD_FAULT_PIN         5 // needs to be confirmed
-#define BMS_FAULT_PIN         6 // needs to be confirmed
+#define IMD_FAULT_PIN         5
+#define BMS_FAULT_PIN         6
 
-#define BSPD_FAULT_PORT       hetPORT1       // needs to be confirmed
+#define BSPD_FAULT_PORT       hetPORT1
 #define BSPD_FAULT_PIN        20
-#define BSPDedge
-//#define RESETPort // needs to be confirmed
-//#define RESETPin  // needs to be confirmed
-//#define RESETedge  // needs to be confirmed
+#define BSPDedge              0
+#define RESETPort             hetPORT1// needs to be confirmed
+#define RESETPin              18// needs to be confirmed
+#define RESETedge             1// needs to be confirmed
 
 
 /***************  TSAL GPIO  *********************/

@@ -1,12 +1,12 @@
 /** @file het.c
 *   @brief HET Driver Implementation File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -373,7 +373,7 @@ static const hetINSTRUCTION_t het1PROGRAM[58U] =
         /* Program */
         0x00025440U,
         /* Control */
-        (0x00024007U | (uint32)((uint32)20U << 8U) | (uint32)((uint32)3U << 4U)),
+        (0x00024007U | (uint32)((uint32)20U << 8U) | (uint32)((uint32)1U << 4U)),
         /* Data */
         0x00000000U,
         /* Reserved */
@@ -384,13 +384,13 @@ static const hetINSTRUCTION_t het1PROGRAM[58U] =
     *         - Next instruction             = 19
     *         - Conditional next instruction = 19
     *         - Interrupt                    = 18
-    *         - Pin                          = 11
+    *         - Pin                          = 18
     */
     {
         /* Program */
         0x00027440U,
         /* Control */
-        (0x00026007U | (uint32)((uint32)11U << 8U) | (uint32)((uint32)1U << 4U)),
+        (0x00026007U | (uint32)((uint32)18U << 8U) | (uint32)((uint32)2U << 4U)),
         /* Data */
         0x00000000U,
         /* Reserved */
@@ -1419,7 +1419,7 @@ void hetInit(void)
                      | (uint32) 0x00000000U
                      | (uint32) 0x00000000U
                      | (uint32) 0x00020000U
-                     | (uint32) 0x00000000U
+                     | (uint32) 0x00040000U
                      | (uint32) 0x00000000U
                      | (uint32) 0x00000000U
                      | (uint32) 0x00000000U

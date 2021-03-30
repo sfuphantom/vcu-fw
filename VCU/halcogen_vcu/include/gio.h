@@ -1,12 +1,12 @@
 /** @file gio.h
 *   @brief GIO Driver Definition File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -94,8 +94,8 @@ typedef struct gio_config_reg
 							     | (uint32)((uint32)1U << 2U) \
 							     | (uint32)((uint32)0U << 3U) \
 							     | (uint32)((uint32)0U << 4U) \
-							     | (uint32)((uint32)0U << 5U) \
-							     | (uint32)((uint32)0U << 6U) \
+							     | (uint32)((uint32)1U << 5U) \
+							     | (uint32)((uint32)1U << 6U) \
 							     | (uint32)((uint32)0U << 7U) \
 								 | (uint32)((uint32)0U << 8U) \
 								 | (uint32)((uint32)0U << 9U) \
@@ -111,8 +111,8 @@ typedef struct gio_config_reg
 								 | (uint32)((uint32)0U << 2U) \
 								 | (uint32)((uint32)0U << 3U) \
 								 | (uint32)((uint32)0U << 4U) \
-								 | (uint32)((uint32)0U << 5U) \
-								 | (uint32)((uint32)0U << 6U) \
+								 | (uint32)((uint32)1U << 5U) \
+								 | (uint32)((uint32)1U << 6U) \
 								 | (uint32)((uint32)0U << 7U) \
 								 | (uint32)((uint32)0U << 8U) \
 								 | (uint32)((uint32)0U << 9U) \
