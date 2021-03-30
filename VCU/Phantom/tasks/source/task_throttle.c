@@ -431,7 +431,7 @@ void vThrottleTask(void *pvParameters)
             }
         }
 
-
+        THROTTLE_AVAILABLE = true;
         if (state == RUNNING && THROTTLE_AVAILABLE)
         {
             // send DAC to inverter
@@ -452,7 +452,7 @@ void vThrottleTask(void *pvParameters)
         else
         {
             // send 0 to DAC
-            MCP48FV_Set_Value(0);
+            MCP48FV_Set_Value(450);
             THROTTLE_AVAILABLE = false;
         }
 
