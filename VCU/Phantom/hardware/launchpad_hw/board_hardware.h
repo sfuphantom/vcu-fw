@@ -78,10 +78,10 @@
 /*********************************************************************************
  *                          DEBUG PRINTING DEFINES
  *********************************************************************************/
-#define TASK_PRINT  1
-#define STATE_PRINT 1
-#define APPS_PRINT  1 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
-#define BSE_PRINT   1 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
+#define TASK_PRINT  0
+#define STATE_PRINT 0
+#define APPS_PRINT  0 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
+#define BSE_PRINT   0 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
 #define SENSOR_PRINT
 
 
