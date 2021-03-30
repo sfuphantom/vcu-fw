@@ -20,7 +20,8 @@
 #include "IMD.h"
 #include "vcu_data.h"
 #include "FreeRTOS.h"
-#include "Current_transducer.h"
+//#include "Current_transducer.h" //merge with yash branch first
+#include "Shutdown.h"
 
 #define TASK_PRINT  0
 
@@ -82,7 +83,7 @@ void vSensorReadTask(void *pvParameters){
 
         //get and store current values into analogInputs struct
 //        VCUDataPtr->AnalogIn.currentHV_A.value = getHVsensorCurrent();
-//
+
 //        //OUT OF RANGE ERROR
 //        VCUDataPtr->DigitalVal.HVCURRENT_OUT_OF_RANGE = isHVcurrent_inRange();
         
@@ -120,9 +121,9 @@ void vSensorReadTask(void *pvParameters){
         serialSendData();
 
         // read LV voltage, current
-        VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
+//        VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
 
-        VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
+//        VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
 
 
 
