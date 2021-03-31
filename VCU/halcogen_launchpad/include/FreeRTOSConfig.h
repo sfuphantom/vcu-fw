@@ -160,15 +160,15 @@
  /* ++ Added by jjkhan */
 
   /* The following two are required for compilation if configGENERATE_RUN_TIME_STATS is definedd  */
+/*
 extern void initializeProfiler();
 #define portCONFIGURE_TIMER_FOR_RUN_TIME_STATS()    initializeProfiler()
 
 extern uint32_t getProfilerTimerCount();
 #define portGET_RUN_TIME_COUNTER_VALUE()            getProfilerTimerCount()
 
-
 #define configUSE_STATS_FORMATTING_FUNCTIONS    1   // Need this to be able to use vTaskGetRunTimeStats
-
+*/
 /* ++ Added by jjkhan */
 /* USER CODE END */
 
