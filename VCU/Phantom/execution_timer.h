@@ -8,10 +8,11 @@
 #ifndef PHANTOM_EXECUTION_TIMER_H_
 #define PHANTOM_EXECUTION_TIMER_H_
 
-
-
 #include "sys_pmu.h"
+#include "../Drivers/EEPROM/eeprom_driver.h"
 
+
+#define PMU_CYCLE
 
 
 extern void swiSwitchToMode(uint32 mode);
@@ -44,7 +45,6 @@ inline unsigned long timer_Start(void){
 inline float timer_Stop(unsigned long cycles_START, float CPU_CLOCK_MHz)
 {
     /* ++ stop Execution Time Counter. */
-
 
     unsigned long  cycles_END, cycles_PMU_measure, cycles_PMU_end, cycles_PMU_start, cycles_PMU_compensation, corrected_cycles;
     float time_uSECOND;
