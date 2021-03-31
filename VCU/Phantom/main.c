@@ -70,17 +70,19 @@ void *pVCUDataStructure = &VCUData;  // Need this void pointer to read from eepr
 /* USER CODE BEGIN (2) */
 
 //++ Added by jjkhan for Code execution Time counter using the PMU module
-#define PMU_CYCLE
-
+//#define PMU_CYCLE
+#include "execution_timer.h"
+/*
 #ifdef PMU_CYCLE
 
 #include "execution_timer.h"
-#define CPU_CLOCK_MHz (float) 80.0
+#define CPU_CLOCK_MHz (float) 160.0
 
 volatile unsigned long cycles_PMU_start; // CPU cycle count at start
 volatile float time_PMU_code_uSecond; // the calculated time in uSecond.
 
 #endif
+*/
 
 //-- Added by jjkhan
 
@@ -92,14 +94,11 @@ void main(void)
 /* USER CODE BEGIN (3) */
 
 #ifdef PMU_CYCLE
-       // Initialize code timer.
+       // Initialize code t screimer.
        timer_Init();
+       gioSetDirection(gioPORTA, 32);
 #endif
 
-#ifdef PMU_CYCLE_1
-       // Start timer.
-       cycles_PMU_start = timer_Start();
-#endif
     /* Halcogen Initialization */
 
     _enable_IRQ();              // Enable interrupts
@@ -109,6 +108,16 @@ void main(void)
     hetInit();                  // Initialize HET (PWM) halcogen driver
     eepromBlocking_Init();      // Initialization EEPROM Memory - added by jjkhan
 
+#ifdef PMU_CYCLE
+       gioSetDirection(gioPORTA, 32); // Set Port GIO_PORTA_5 as output pin
+#endif
+#ifdef PMU_CYCLE_1
+       // Start timer.
+       gioSetDirection(gioPORTA, 32);
+       cycles_PMU_start = timer_Start();
+       gioToggleBit(gioPORTA, 5);
+
+#endif
     /* Phantom Library Initialization */
 
     initData(VCUDataPtr);       // Initialize VCU Data Structure
@@ -126,7 +135,10 @@ void main(void)
     phantom_freeRTOSInit();     // Initialize freeRTOS timers, queues, and tasks
 
 #ifdef PMU_CYCLE_1
+    //gioToggleBit(gioPORTA, 5);
+    //gioSetBit(gioPORTA, 5, 0);
     time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
+    gioToggleBit(gioPORTA, 5);
 #endif
     vTaskStartScheduler();      // start freeRTOS task scheduler
    
@@ -138,11 +150,12 @@ void main(void)
 
 /* ++ Added by jjkhan - will move it once task profiling works. */
 
+/*
 #ifdef RUN_TIME_STATS
 // Configure a Timer that will be used by FreeRTOS to create runtime stats
 // This function will be called by the vTaskStartScheduler() -> Application layer provides the definition.
 void initializeProfiler(){
-    /* Enable PMU Cycle Counter for Profiling */
+    /* Enable PMU Cycle Counter for Profiling
     swiSwitchToMode(SYSTEM_MODE);
     _pmuInit_();
     _pmuEnableCountersGlobal_();
@@ -161,5 +174,6 @@ uint32_t getProfilerTimerCount(){
     return cycleCount;
 }
 #endif
+*/
 /* -- Added by jjkhan - will move it once task profiling works. */
 /* USER CODE END */
