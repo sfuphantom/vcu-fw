@@ -17,15 +17,15 @@ extern void *pVCUDataStructure;
 
 
 //++ Added by jjkhan for execution time measurement
-
+/*
 #include "../../execution_timer.h"
 
-#define CPU_CLOCK_MHz (float) 80.0
+#define CPU_CLOCK_MHz (float) 160.0  // System clock is 180 MHz, RTI Clock is 80MHz
 volatile unsigned long cycles_PMU_start; // CPU cycle count at start
 volatile float time_PMU_code_uSecond; // the calculated time in uSecond.
 
 //-- Added by jjkhan for execution time measurement
-
+*/
 
 void vEeprom(void *p){
 
@@ -85,7 +85,7 @@ void vEeprom(void *p){
 
            vTaskDelayUntil(&mylastTickCount,EEPROM_TASK_PERIOD_MS); // 3-10 millisecond blocking time for this task - ideally for eeprom, but we can adjust
 
-           cycles_PMU_start = timer_Start();// Start timer
+           //cycles_PMU_start = timer_Start();// Start timer
 
            if (TASK_PRINT) {UARTSend(PC_UART, "EEPROM TASK\r\n");}
 
@@ -282,7 +282,7 @@ void vEeprom(void *p){
            }
 
 
-           time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
+           //time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
            // ++ Added by jjkhan for task profiling
 #ifdef RUN_TIME_STATS_EEPROM
            vTaskGetRunTimeStats(cTraceBuffer);

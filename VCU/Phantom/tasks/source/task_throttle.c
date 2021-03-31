@@ -112,8 +112,6 @@ void vThrottleTask(void *pvParameters){
         FP_sensor_2_sum = (unsigned int)FP_data[2].value; // ADC pin 21?
 
 
-
-
         // check for short to GND/5V on sensor 1
         // thresholds
 
@@ -223,6 +221,7 @@ void vThrottleTask(void *pvParameters){
             MCP48FV_Set_Value(0);
             THROTTLE_AVAILABLE = false;
         }
+
 
         // for timing:
         gioSetBit(hetPORT1, 5, 0);
