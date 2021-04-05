@@ -130,6 +130,7 @@ void phantom_freeRTOStaskInit(void)
 
      // -- Added by jjkhan
 
+
      // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
      if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  150, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
      {
@@ -183,13 +184,15 @@ void phantom_freeRTOStaskInit(void)
                 while(1);
         }
 
-
-        if (xTaskCreate(testEeprom, (const char*)"testEeprom",  150, NULL,  tskIDLE_PRIORITY+2, &testingEepromHandler) != pdTRUE)
+// TEST_EEPROM is defined in phantom_freertos.h, change it to 0 to skip the following task creation
+#if TEST_EEPROM == 1
+        if (xTaskCreate(testEeprom, (const char*)"testEeprom",  150, NULL,  tskIDLE_PRIORITY+1, &testingEepromHandler) != pdTRUE)
         {
                 uint8 message[]="Test task Creation Failed.\r\n";
                 sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
                 while(1);
         }
+#endif
       /* -- Added by jjkhan */
 
      // all tasks have been created successfully

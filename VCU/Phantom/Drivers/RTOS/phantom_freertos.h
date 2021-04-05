@@ -30,6 +30,8 @@
 #include "vcu_data.h"
 
 //++ Added by jjkhan
+
+#define TEST_EEPROM     1
 #include "../test_eeprom/testEeprom.h" // Included for testing eeprom -> should remove later.
 //-- Added by jjkhan
 
