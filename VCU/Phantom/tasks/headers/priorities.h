@@ -10,22 +10,24 @@
 
 //++ Added by jjkhan - For readability - use these MACROS with pdMS_TO_TICKS(MillisecondTime)
 
-#define THROTTLE_TASK_PERIOD_MS         pdMS_TO_TICKS(10)
-#define SENSOR_READ_TASK_PERIOD_MS      pdMS_TO_TICKS(10)
-#define STATE_MACHINE_TASK_PERIOD_MS    pdMS_TO_TICKS(40)
-#define EEPROM_TASK_PERIOD_MS           pdMS_TO_TICKS(30)
-#define DATA_LOGGING_TASK_PERIOD_MS     pdMS_TO_TICKS(160)
-#define WATCHDOG_TASK__PERIOD_MS        pdMS_TO_TICKS(160)
+#define THROTTLE_TASK_PERIOD_MS         pdMS_TO_TICKS(10)    // 10ms
+#define SENSOR_READ_TASK_PERIOD_MS      pdMS_TO_TICKS(100)   // 100ms
+#define STATE_MACHINE_TASK_PERIOD_MS    pdMS_TO_TICKS(100)
+
+#define EEPROM_TASK_PERIOD_MS           pdMS_TO_TICKS(10)
+
+#define WATCHDOG_TASK__PERIOD_MS        pdMS_TO_TICKS(300)  // 300ms
+#define DATA_LOGGING_TASK_PERIOD_MS     pdMS_TO_TICKS(500)  // 500ms
 
 // -- Added by jjkhan
 /*********************************************************************************
  *                              TASK PRIORITIES
  *********************************************************************************/
 
-#define THROTTLE_TASK_PRIORITY         3
-#define SENSOR_READ_TASK_PRIORITY      4
+#define THROTTLE_TASK_PRIORITY         4
+#define SENSOR_READ_TASK_PRIORITY      3
 #define STATE_MACHINE_TASK_PRIORITY    2
-#define EEPROM_TASK_PRIORITY           1
+#define EEPROM_TASK_PRIORITY           0
 #define DATA_LOGGING_TASK_PRIORITY     0    // same as idle task
 #define WATCHDOG_TASK_PRIORITY         0    // same as idle task
 
