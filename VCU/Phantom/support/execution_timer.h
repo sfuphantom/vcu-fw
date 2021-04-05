@@ -5,8 +5,8 @@
  *      Author: junaidkhan
  */
 
-#ifndef PHANTOM_EXECUTION_TIMER_H_
-#define PHANTOM_EXECUTION_TIMER_H_
+#ifndef PHANTOM_SUPPORT_EXECUTION_TIMER_H_
+#define PHANTOM_SUPPORT_EXECUTION_TIMER_H_
 
 #include "sys_pmu.h"
 #include "../Drivers/EEPROM/eeprom_driver.h"
@@ -78,4 +78,4 @@ inline float timer_Stop(unsigned long cycles_START, float CPU_CLOCK_MHz)
 }
 
 
-#endif /* PHANTOM_EXECUTION_TIMER_H_ */
+#endif /* PHANTOM_SUPPORT_EXECUTION_TIMER_H_ */
