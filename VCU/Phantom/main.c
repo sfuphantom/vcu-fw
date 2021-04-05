@@ -9,6 +9,7 @@
 
 /* Include Files */
 
+#include <Phantom/support/execution_timer.h>  // Code Execution Timer Module written Junaid Khan
 #include "adc.h"
 #include "gio.h"
 #include "het.h"
@@ -31,25 +32,12 @@
 #include "vcu_data.h"         // holds VCU data structure
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
-// ++ Added by jjkhan - this has the function call to switch between user and system mode - i.e. raising privileges- need it for task profiling.
-        // Will move the swiSwitchToMode ( uint32 mode ) to a central location once task profiling works.
-#include "eeprom_driver.h"
-
-#define RUN_TIME_STATS                      0        // For compiling Timer Configuration and getting timer value in vTaskScheduler for task profiling with vTaskGetRunTimeStats
-#define RUN_TIME_STATS_EEPROM               0         // Using FreeRTOS Run Time Stats inside eeprom task
-#define RUN_TIME_STATS_THROTTLE             0         // Using FreeRTOS Run Time Stats inside throttle task
-#define RUN_TIME_STATS_SENSOR_READ          0         // Using FreeRTOS Run Time Stats inside sensor read task
-#define RUN_TIME_STATS_STATE_MACHINE        0        // Using FreeRTOS Run Time Stats inside state machine task
-#define RUN_TIME_STATS_DATA_LOGGING         0        // Using FreeRTOS Run Time Stats inside Data logging task
-
-// -- Added by jjkhan
+#include "execution_timer.h"
 
 State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and referenced from there
-
 data VCUData;
 data* VCUDataPtr = &VCUData;
 
-void *pVCUDataStructure = &VCUData;  // Need this void pointer to read from eeprom bank - Added by jjkhan
 
 // ++ Added by jjkhan:
      // Uncomment the following directive if the current sensor module is connected.
@@ -68,25 +56,6 @@ void *pVCUDataStructure = &VCUData;  // Need this void pointer to read from eepr
 */
 
 /* USER CODE BEGIN (2) */
-
-//++ Added by jjkhan for Code execution Time counter using the PMU module
-//#define PMU_CYCLE
-#include "execution_timer.h"
-/*
-#ifdef PMU_CYCLE
-
-#include "execution_timer.h"
-#define CPU_CLOCK_MHz (float) 160.0
-
-volatile unsigned long cycles_PMU_start; // CPU cycle count at start
-volatile float time_PMU_code_uSecond; // the calculated time in uSecond.
-
-#endif
-*/
-
-//-- Added by jjkhan
-
-
 /* USER CODE END */
 
 void main(void)
@@ -94,11 +63,9 @@ void main(void)
 /* USER CODE BEGIN (3) */
 
 #ifdef PMU_CYCLE
-       // Initialize code t screimer.
+       // Initialize code execution timer
        timer_Init();
-       gioSetDirection(gioPORTA, 32);
 #endif
-
     /* Halcogen Initialization */
 
     _enable_IRQ();              // Enable interrupts
@@ -109,14 +76,8 @@ void main(void)
     eepromBlocking_Init();      // Initialization EEPROM Memory - added by jjkhan
 
 #ifdef PMU_CYCLE
-       gioSetDirection(gioPORTA, 32); // Set Port GIO_PORTA_5 as output pin
-#endif
-#ifdef PMU_CYCLE_1
-       // Start timer.
+        // Set Port GIO_PORTA_5 as output pin - using it to confirm PMU timer value is in range of I/O toggle
        gioSetDirection(gioPORTA, 32);
-       cycles_PMU_start = timer_Start();
-       gioToggleBit(gioPORTA, 5);
-
 #endif
     /* Phantom Library Initialization */
 
@@ -131,15 +92,7 @@ void main(void)
     initializeIMD();            // Initialize IMD Library
 
     /* freeRTOS Initialization */
-
     phantom_freeRTOSInit();     // Initialize freeRTOS timers, queues, and tasks
-
-#ifdef PMU_CYCLE_1
-    //gioToggleBit(gioPORTA, 5);
-    //gioSetBit(gioPORTA, 5, 0);
-    time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
-    gioToggleBit(gioPORTA, 5);
-#endif
     vTaskStartScheduler();      // start freeRTOS task scheduler
    
     // infinite loop to prevent code from ending. The scheduler will now pre-emptively switch between tasks.
@@ -148,32 +101,4 @@ void main(void)
 }
 /* USER CODE BEGIN (4) */
 
-/* ++ Added by jjkhan - will move it once task profiling works. */
-
-/*
-#ifdef RUN_TIME_STATS
-// Configure a Timer that will be used by FreeRTOS to create runtime stats
-// This function will be called by the vTaskStartScheduler() -> Application layer provides the definition.
-void initializeProfiler(){
-    /* Enable PMU Cycle Counter for Profiling
-    swiSwitchToMode(SYSTEM_MODE);
-    _pmuInit_();
-    _pmuEnableCountersGlobal_();
-    _pmuResetCycleCounter_();
-    _pmuStartCounters_(pmuCYCLE_COUNTER);
-    swiSwitchToMode(USER_MODE);
-}
-
-// This function called by vTaskGetRunTimeStats() to create an ASCII table of all Task stat -> Application layer provides the definition.
-
-uint32_t getProfilerTimerCount(){
-    uint32_t cycleCount;
-    swiSwitchToMode(SYSTEM_MODE);
-    cycleCount = _pmuGetCycleCount_();
-    swiSwitchToMode(USER_MODE);
-    return cycleCount;
-}
-#endif
-*/
-/* -- Added by jjkhan - will move it once task profiling works. */
 /* USER CODE END */
