@@ -71,21 +71,6 @@ void vStateMachineTask(void *pvParameters){
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
 
-    /*
-     * ++ Added by jjkhan for Notification result.
-     *
-     * Notification value is 32-bits wide. We're using Bit 0 to send notification to task_eeprom to update Data Block 1.
-     * Data block 1 will store a flag used for deciding load VCUData with default or eeprom.
-     *
-     * */
-
-    /* -- Added by jjkhan for Notification result. */
-
-#ifdef RUN_TIME_STATS_STATE_MACHINE
-        /* Buffer to trace informations */
-       static char cTraceBuffer[1000];
-       // -- Added by jjkhan For Storing RUN Time stats
-#endif
     while(true)
     {
         // Wait for the next cycle -> By jjkhan: Call at the end, this will block the task and give CPU access to the next high priority task.
@@ -233,7 +218,7 @@ void vStateMachineTask(void *pvParameters){
             // how will we reset out of this?
 
             //++ Added by jjkhan
-               if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(200))){ // Wait for 10 milliseconds if the key not available, come back later
+               if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(100))){ // Wait for 10 milliseconds if the key not available, come back later
                    VCUDataPtr->DigitalVal.POWER_FAILURE_FLAG = 0xFF;  // Update powerFailureFlag
                    xSemaphoreGive(vcuKey);
                }
@@ -250,13 +235,5 @@ void vStateMachineTask(void *pvParameters){
 
         // for timing:
         gioSetBit(hetPORT1, 9, 0);
-
-        // ++ Added by jjkhan for task profiling
-#ifdef RUN_TIME_STATS_STATE_MACHINE
-         vTaskGetRunTimeStats(cTraceBuffer);
-         printf(cTraceBuffer);
-#endif
-         // -- Added by jjkhan for task profiling
-
     }
 }

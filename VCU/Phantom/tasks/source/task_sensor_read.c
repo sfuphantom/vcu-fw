@@ -22,17 +22,6 @@
 #include "FreeRTOS.h"
 #include "priorities.h"
 
-// ++ Added by jjkhan
-
-#include  "../execution_timer.h"
-
-#define CPU_CLOCK_MHz (float) 160.0
-
-volatile unsigned long cycles_PMU_start; // CPU cycle count at start
-volatile float time_PMU_code_uSecond; // the calculated time in uSecond.
-
-// -- Added by jjkhan
-
 
 // change to better data type
 int lv_current = 0;
@@ -64,19 +53,9 @@ void vSensorReadTask(void *pvParameters){
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
-#ifdef RUN_TIME_STATS_SENSOR_READ
-        /* Buffer to trace informations */
-       static char cTraceBuffer[300];
-       // -- Added by jjkhan For Storing RUN Time stats
-#endif
     while(true)
     {
-#ifdef PMU_CYCLE
-       // Start timer.
-       cycles_PMU_start = timer_Start();
-       gioToggleBit(gioPORTA, 5);
 
-#endif
         // Wait for the next cycle
         vTaskDelayUntil(&xLastWakeTime, SENSOR_READ_TASK_PERIOD_MS);
 
@@ -129,19 +108,9 @@ void vSensorReadTask(void *pvParameters){
 
         // will also need a lookup table or data structure that has error messages and LED codes for whatever fault flags are on
 
-#ifdef PMU_CYCLE
-    //gioToggleBit(gioPORTA, 5);
-    //gioSetBit(gioPORTA, 5, 0);
-    time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
-    gioToggleBit(gioPORTA, 5);
-#endif
+
         // for timing:
        gioSetBit(hetPORT1, 25, 0);
-        // ++ Added by jjkhan for task profiling
-#ifdef RUN_TIME_STATS_SENSOR_READ
-         vTaskGetRunTimeStats(cTraceBuffer);
-         printf(cTraceBuffer);
-#endif
-         // -- Added by jjkhan for task profiling
+
     }
 }
