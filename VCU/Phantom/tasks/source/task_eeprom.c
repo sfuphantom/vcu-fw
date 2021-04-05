@@ -8,24 +8,25 @@
 #include "priorities.h"
 #include "os_portmacro.h"
 #include "os_task.h"
+#include "gio.h"
 
 
 extern TaskHandle_t eepromHandler; // Eeprom Task handler
 extern SemaphoreHandle_t vcuKey;
 extern data VCUData;
-extern void *pVCUDataStructure;
 
+void *pVCUDataStructure = &VCUData;  // Need this void pointer to read from eeprom bank - Added by jjkhan
 
 //++ Added by jjkhan for execution time measurement
-/*
-#include "../../execution_timer.h"
+
+#include <Phantom/support/execution_timer.h>
 
 #define CPU_CLOCK_MHz (float) 160.0  // System clock is 180 MHz, RTI Clock is 80MHz
 volatile unsigned long cycles_PMU_start; // CPU cycle count at start
 volatile float time_PMU_code_uSecond; // the calculated time in uSecond.
 
 //-- Added by jjkhan for execution time measurement
-*/
+
 
 void vEeprom(void *p){
 
@@ -63,13 +64,6 @@ void vEeprom(void *p){
        //uint8 eepromVCUReceiveBuffer[72]; // Receive buffer for data read from eeprom
 
 
-       //++ Added by jjkhan: For Storing RUN Time stats
-#ifdef RUN_TIME_STATS_EEPROM
-        /* Buffer to trace informations */
-       static char cTraceBuffer[300];
-       // -- Added by jjkhan For Storing RUN Time stats
-#endif
-
        TickType_t mylastTickCount;
        mylastTickCount = xTaskGetTickCount();  // For an accurate Task Blocking Time
 
@@ -80,13 +74,16 @@ void vEeprom(void *p){
        uint8_t jobScheduled;      // used for Asynchronous EEPROM Jobs
 
 
-
        while(1){
 
            vTaskDelayUntil(&mylastTickCount,EEPROM_TASK_PERIOD_MS); // 3-10 millisecond blocking time for this task - ideally for eeprom, but we can adjust
 
-           //cycles_PMU_start = timer_Start();// Start timer
-
+#ifdef PMU_CYCLE
+       // Start timer.
+       cycles_PMU_start = timer_Start();
+       gioSetBit(gioPORTA, 5 , 1);
+       //gioToggleBit(gioPORTA, 5);
+#endif
            if (TASK_PRINT) {UARTSend(PC_UART, "EEPROM TASK\r\n");}
 
 
@@ -99,7 +96,7 @@ void vEeprom(void *p){
                          //sciSend(scilinREG, (uint32_t) sizeof(message1), &message1[0]);
                              if(lastShutDownFlag == 0xFF){ // Last shutdown was due to a Fault
                                           /**************************************** Critical Section of this Task ****************************************/
-                                     if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(100))==1){ // Protect vcuStructure & wait for 10 milliseconds, if key not available, skip
+                                     if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(10))==1){ // Protect vcuStructure & wait for 10 milliseconds, if key not available, skip
                                                if(eeprom_Status(EEP0)== IDLE){
 
                                                    jobCompletedFlag = eeprom_Read(EEP0, DATA_BLOCK_2, 0, (uint8_t *)pVCUDataStructure, UNKNOWN_BLOCK_LENGTH, SYNC);
@@ -125,7 +122,7 @@ void vEeprom(void *p){
                                      }
                              }else if(lastShutDownFlag == 0){  // Last shutdown was graceful
                                          /**************************************** Critical Section of this Task ****************************************/
-                                      if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(100))==1){ // Protect vcuStructure & wait for 10 milliseconds
+                                      if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(10))==1){ // Protect vcuStructure & wait for 10 milliseconds
                                           initData(&VCUData);
                                           // Print VCU data structure initialized with default values.
                                           //sciSend(scilinREG, (uint32_t) sizeof(message4), &message4[0]);
@@ -158,7 +155,7 @@ void vEeprom(void *p){
 
                                          // Data Block Invalidated or Inconsistent, either way, we lost the previous power cycle shutdown flag, re-initialized VCU data structure with default values.
                                                 /**************************************** Critical Section of this Task ****************************************/
-                                           if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(100))==1){ // Protect vcuStructure & wait for 10 milliseconds, if key not available, come back later.
+                                           if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(10))==1){ // Protect vcuStructure & wait for 10 milliseconds, if key not available, come back later.
                                                initData(&VCUData);
                                                // Print VCU data structure initialized with default values.
                                                //sciSend(scilinREG, (uint32_t) sizeof(message4), &message4[0]);
@@ -193,7 +190,7 @@ void vEeprom(void *p){
 
                                    // Data Block Invalidated or Inconsistent, either way, we lost the previous power cycle shutdown flag, re-initialized VCU data structure with default values.
                                           /**************************************** Critical Section of this Task ****************************************/
-                                     if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(100))==1){ // Protect vcuStructure & wait for 10 milliseconds, if key not available, come back later.
+                                     if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(10))==1){ // Protect vcuStructure & wait for 10 milliseconds, if key not available, come back later.
                                           initData(&VCUData);
                                          // Print VCU data structure initialized with default values.
                                          //sciSend(scilinREG, (uint32_t) sizeof(message4), &message4[0]);
@@ -229,8 +226,8 @@ void vEeprom(void *p){
                }else if(eeprom_Status(EEP0) == BUSY_INTERNAL){
                    //sciSend(scilinREG, (uint32_t) sizeof(message10), &message10[0]);
                }
-           }else if(initializationOccured){
 
+           }else if(initializationOccured){
                     if (eeprom_Status(EEP0)==UNINIT){
                         //sciSend(scilinREG, (uint32_t) sizeof(message7), &message7[0]);
 
@@ -258,6 +255,7 @@ void vEeprom(void *p){
                                         //sciSend(scilinREG, (uint32_t) sizeof(message13), &message13[0]);
                                     }
 
+
                         }else if(eeprom_lastJobStatus(EEP0)==JOB_FAILED){
                             //sciSend(scilinREG, (uint32_t) sizeof(message14), &message14[0]);
 
@@ -280,15 +278,12 @@ void vEeprom(void *p){
 
                     }
            }
-
-
-           //time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
-           // ++ Added by jjkhan for task profiling
-#ifdef RUN_TIME_STATS_EEPROM
-           vTaskGetRunTimeStats(cTraceBuffer);
-           printf(cTraceBuffer);
+#ifdef PMU_CYCLE
+       // Start timer.
+       time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
+       gioSetBit(gioPORTA, 5 , 0);
+       //gioToggleBit(gioPORTA, 5);
 #endif
-           // -- Added by jjkhan for task profiling
         }
 
 }
