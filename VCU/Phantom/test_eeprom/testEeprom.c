@@ -14,7 +14,7 @@
  * Note: Some of the fault conventions are not intuitive, i.e. some places '1' means healthy/no-fault and some places '1' means 'flag set' - Will fix this later.
  *
  *   The following Task is introducing a software fault by toggling one of the FAULT flags available
- *      I'm toggling the TSAL line, which is a flag set when the AIRs are opened due to a fault, resulting in deactivation of tractive system;
+ *      I'm toggling the TSAL line, which is a flag set when the AIRs are opened due to a fault, resulting in de-activation of tractive system;
  *          For TSAL_FAULT, '1' means TSAL healthy, i.e. no fault, if '0' -> there is a fault, state = tractive system off
  *
  *
@@ -62,11 +62,11 @@ void testEeprom(void *p){
     TickType_t mylastTickCount;
     mylastTickCount = xTaskGetTickCount();
     while(1){
-        if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(100))){
+        if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(10))){
             VCUDataPtr->DigitalVal.TSAL_FAULT ^= (1<<0);       // Toggle Bit-0
             xSemaphoreGive(vcuKey);
         }
-        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(10000));  // Every 1s you toggle the shutdown signal - to check if eeprom is updated or not.
+        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(500));  // Every 500ms you toggle the shutdown signal - to check if eeprom is updated or not.
 
         if(VCUDataPtr->DigitalVal.TSAL_FAULT==0){  // TSAL_FAULT
             if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(100))){
@@ -74,11 +74,11 @@ void testEeprom(void *p){
                 xSemaphoreGive(vcuKey);
             }
         }
-        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(1000));  // Every 1s you toggle the shutdown signal - to check if eeprom is updated or not.
+        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(10000));  // Every 500ms you toggle the shutdown signal - to check if eeprom is updated or not.
     }
 }
 
-//-- For testing Purposes - simulating vehicle state change and testing eeprom task.
+//-- For testing Purposes - simulating vehicle state change and testing Eeprom task.
 
 
 
