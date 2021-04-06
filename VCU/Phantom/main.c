@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include "reg_het.h"
 
+#include "test_interface.h"
+
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
 #include "IMD.h"             // Bender IR155 IMD Library written by Sumreen Rattan
