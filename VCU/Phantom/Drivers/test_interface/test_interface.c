@@ -12,16 +12,18 @@
 #include "string.h"
 #include "stdbool.h"
 //#include "sys_main.h"
-#include "pl455.h"
+//#include "pl455.h"
 #include <stdio.h>
 #include "stdlib.h"
-//#include "thermistor.h"
-#include "hwConfig.h"
+#include <Phantom/hardware/vcu_hw/board_hardware.h>
 
+//#include "thermistor.h"
+//#include "hwConfig.h"
+//typedef unsigned char BYTE;
 static unsigned char chr;
 static unsigned char charbuf[BUFFER_SIZE];
 static unsigned char command[BUFFER_SIZE];
-static BYTE BMSArray[BMSByteArraySize*(TOTALBOARDS)];
+//static BYTE BMSArray[BMSByteArraySize*(TOTALBOARDS)];
 static unsigned char getcmp[] = {'g', 'e', 't', '\0'};
 
 //------TEST COMMANDS----------
@@ -113,45 +115,45 @@ void displayPrompt(void)
 
 //--------AUX COMMANDS----------
 // Gets all BMS readings
-void getAllReadings(void)
-{
-    getCurrentReadings();
-}
+//void getAllReadings(void)
+//{
+//    getCurrentReadings();
+//}
 
 // Gets all temperature readings
-void getAllTemperatures(void)
-{
-    uint8_t input;
-    for(input=0;input<8;input++)
-    {
-        printThermistorReadings(input);
-        UARTprintf("\n\r");
-    }
-
-    sciReceive(PC_UART, 1,(unsigned char *)&chr);
-}
+//void getAllTemperatures(void)
+//{
+//    uint8_t input;
+//    for(input=0;input<8;input++)
+//    {
+//        printThermistorReadings(input);
+//        UARTprintf("\n\r");
+//    }
+//
+//    sciReceive(PC_UART, 1,(unsigned char *)&chr);
+//}
 
 //--------GET COMMANDS----------
 // Get a specific cell voltage from BMS
-void getSingleVoltageReading(uint8_t cell)
-{
-    char buf[50];
-
-    getBMSSlaveArray(BMSArray);
-
-
-    uint32 tempVal = BMSArray[cell + cell-1]*16*16 + BMSArray[cell + cell];
-    double div = tempVal/65535.0; //FFFF
-    double fin = div * 5.0;
-
-    UARTprintf("\n\rCell %d Voltage: %fV \n\r", cell, fin);
-}
-
-// Get a specific cell temperature
-void getSingleTemperature(uint8_t cell)
-{
-    UARTprintf("Read cell temperature\n\r");
-}
+//void getSingleVoltageReading(uint8_t cell)
+//{
+//    char buf[50];
+//
+//    getBMSSlaveArray(BMSArray);
+//
+//
+//    uint32 tempVal = BMSArray[cell + cell-1]*16*16 + BMSArray[cell + cell];
+//    double div = tempVal/65535.0; //FFFF
+//    double fin = div * 5.0;
+//
+//    UARTprintf("\n\rCell %d Voltage: %fV \n\r", cell, fin);
+//}
+//
+//// Get a specific cell temperature
+//void getSingleTemperature(uint8_t cell)
+//{
+//    UARTprintf("Read cell temperature\n\r");
+//}
 
 //---------ARGUMENT PARSING-----------
 // Determines whether the input is a get function or an aux function. If it's a get function,
