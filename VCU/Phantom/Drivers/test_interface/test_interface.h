@@ -23,10 +23,9 @@ typedef struct {
 } testBuffer;
 
 typedef enum {
-    voltage,
-    temperature,
-
-    MAX_SIGNAL
+    HV_V,
+    shutdown,
+    IMD
 } signalIndex;
 
 typedef struct {
@@ -39,12 +38,12 @@ typedef struct {
     signalIndex sensor;
 } getcmd;
 
-typedef enum {
-    allvoltages,
-    alltemperatures,
-
-    MAX_AUX
-} auxIndex;
+//typedef enum {
+//    allvoltages,
+//    alltemperatures,
+//
+//    MAX_AUX
+//} auxIndex;
 
 
 void echoChar(void);

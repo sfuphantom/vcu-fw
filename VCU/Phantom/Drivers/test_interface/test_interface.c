@@ -17,6 +17,8 @@
 #include "stdlib.h"
 #include <Phantom/hardware/vcu_hw/board_hardware.h>
 
+#include "IMD.h"
+
 //#include "thermistor.h"
 //#include "hwConfig.h"
 //typedef unsigned char BYTE;
@@ -41,17 +43,18 @@ static volatile testBuffer testbuf = {
 };
 
 // String input and command that is called for that input
-auxcmd testAUXCommands[] =
-{
- { .str = "allvoltages", .cmd = getAllReadings},
- { .str = "alltemperatures", .cmd = getAllTemperatures},
-};
+//auxcmd testAUXCommands[] =
+//{
+// { .str = "allvoltages", .cmd = getAllReadings},
+// { .str = "alltemperatures", .cmd = getAllTemperatures},
+//};
 
 // For getting specific readings eg. "get voltage 4"
 getcmd testGETCommands[] =
 {
- { .str = "voltage", .sensor = voltage},
- { .str = "temperature", .sensor = temperature},
+ { .str = "HV_V", .sensor = HV_V},
+ { .str = "shutdown", .sensor = shutdown},
+ { .str = "IMD", .sensor = IMD}
 };
 
 // Receives input character from serial terminal
@@ -134,6 +137,11 @@ void displayPrompt(void)
 //}
 
 //--------GET COMMANDS----------
+
+
+
+
+
 // Get a specific cell voltage from BMS
 //void getSingleVoltageReading(uint8_t cell)
 //{
@@ -150,10 +158,14 @@ void displayPrompt(void)
 //}
 //
 //// Get a specific cell temperature
-//void getSingleTemperature(uint8_t cell)
-//{
-//    UARTprintf("Read cell temperature\n\r");
-//}
+void getIMD()
+{
+    UARTprintf("Reading IMD...\n\r");
+
+    serialSendData();
+
+
+}
 
 //---------ARGUMENT PARSING-----------
 // Determines whether the input is a get function or an aux function. If it's a get function,
@@ -237,13 +249,23 @@ void executeGETCommand(unsigned char command[], uint16_t argument)
         }
     }
 
+
+    .str = "HV_V", .sensor = HV_V},
+    { .str = "shutdown", .sensor = shutdown},
+    { .str = "IMD", .sensor = IMD}
+   };
     switch(signalRequest)
     {
-        case voltage:
+        case HV_V:
             getSingleVoltageReading(argument);
             break;
-        case temperature:
+        case shutdown:
             getSingleTemperature(argument);
+            break;
+
+        case IMD:
+            getIMD();
+
             break;
         default:
             break;
