@@ -101,7 +101,7 @@
 #define configTICK_RATE_HZ			  ( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		  ( 5 )
 #define configMINIMAL_STACK_SIZE	  ( ( unsigned portSHORT ) 256 )
-#define configTOTAL_HEAP_SIZE		  ( ( size_t ) 10200 )   // 8192 - original; We have RAM size allocated to 189184 Bytes - check linker file - need to double check - jjkhan
+#define configTOTAL_HEAP_SIZE		  ( ( size_t ) 12000 )   // 8192 - original; We have RAM size allocated to 189184 Bytes - check linker file - need to double check - jjkhan
 #define configMAX_TASK_NAME_LEN		  ( 16 )
 #define configIDLE_SHOULD_YIELD		  1
 #define configGENERATE_RUN_TIME_STATS 0    // Set by jjkhan -> Required for Run Time Stat
