@@ -57,7 +57,7 @@ char command[8]; // used for ADC printing.. this is an array of 8 chars, each ch
 
 extern data *VCUDataPtr;
 
-bool THROTTLE_AVAILABLE;
+extern bool THROTTLE_AVAILABLE;
 
 uint32_t volatile fault_10DIFF_counter_ms = 0;      // hold duration of fault in milliseconds - jaypacamarra
 uint32_t fault_BSE_Range_counter_ms = 0;            // hold duration of fault in milliseconds - jaypacamarra
@@ -131,9 +131,9 @@ void vThrottleTask(void *pvParameters)
         adcStartConversion(adcREG1, adcGROUP1);
         while (!adcIsConversionComplete(adcREG1, adcGROUP1));
         adcGetData(adcREG1, adcGROUP1, FP_data_ptr);
-        BSE_sensor_sum = (unsigned int)FP_data[0].value;  // AD1IN[0] -jaypacamarra
-        FP_sensor_1_sum = (unsigned int)FP_data[1].value; // AD1IN[1] -jaypacamarra
-        FP_sensor_2_sum = (unsigned int)FP_data[2].value; // AD1IN[2] -jaypacamarra
+        BSE_sensor_sum = (unsigned int)FP_data[0].value;   // BSE
+        FP_sensor_1_sum = (unsigned int)FP_data[1].value;   // APPS1
+        FP_sensor_2_sum = (unsigned int)FP_data[2].value;    // APPS2
 
         /******** Signal conditioning - lowpass filter - jaypacamarra *********/
         // Filter the raw BSE,APPS1, and APPS2 sensor values
@@ -281,17 +281,6 @@ void vThrottleTask(void *pvParameters)
                     BSE_range_fault_timer_started = true;
                 }
             }
-
-            if(BSE_RANGE_FAULT_TIMER_EXPIRED)
-            {
-                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
-//                gioSetBit(gioPORTB, 1, 1);
-            }
-//            else
-//            {
-//                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0; // Set fault flag in vcu data structure
-//                gioSetBit(gioPORTB, 1, 0);
-//            }
         }
         else if (BSE_sensor_sum > BSE_MAX_VALUE) // BSE is assumed shorted to 5V
         {
@@ -321,6 +310,18 @@ void vThrottleTask(void *pvParameters)
             xTimerStop(xTimers[4], portMAX_DELAY);
             BSE_range_fault_timer_started = false;
             BSE_RANGE_FAULT_TIMER_EXPIRED = false;
+        }
+
+        /* *** Check Range Faults Timer if Expired *** */
+        if(BSE_RANGE_FAULT_TIMER_EXPIRED)
+        {
+            VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1; // Set fault flag in vcu data structure
+            gioSetBit(gioPORTB, 1, 1);
+        }
+        else
+        {
+            VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0; // Set fault flag in vcu data structure
+            gioSetBit(gioPORTB, 1, 0);
         }
 
         // moving average signal conditioning.. worth it to graph this out and find a good filter time constant
@@ -431,7 +432,11 @@ void vThrottleTask(void *pvParameters)
             }
         }
 
+        // debugging - jaypacamarra
+        // manually setting state to RUNNING and setting THROTTLE_AVAILABLE to true to test DAC - jaypacamarra
+        state = RUNNING;
         THROTTLE_AVAILABLE = true;
+
         if (state == RUNNING && THROTTLE_AVAILABLE)
         {
             // send DAC to inverter
