@@ -35,6 +35,10 @@ extern data* VCUDataPtr;
 
 extern uint8_t RTDS;// = 0;
 long RTDS_RAW;      // = 0;
+
+
+extern volatile uint8_t initializationOccured;
+
 /***********************************************************
  * @function                - vSensorReadTask
  *
@@ -56,61 +60,67 @@ void vSensorReadTask(void *pvParameters){
     while(true)
     {
 
-        // Wait for the next cycle
-        vTaskDelayUntil(&xLastWakeTime, SENSOR_READ_TASK_PERIOD_MS);
+       if(initializationOccured){
 
-        // for timing:
-        gioSetBit(hetPORT1, 25, 1);
 
-//        MCP48FV_Set_Value(100);
+            // Wait for the next cycle
+            vTaskDelayUntil(&xLastWakeTime, SENSOR_READ_TASK_PERIOD_MS);
 
-//        gioToggleBit(gioPORTA, 5);
+            // for timing:
+            gioSetBit(hetPORT1, 25, 1);
 
-        // use getter function to get this value..
-        // pass this data via a queue
+    //        MCP48FV_Set_Value(100);
 
-        RTDS_RAW = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN);
+    //        gioToggleBit(gioPORTA, 5);
 
-        if ( gioGetBit(gioPORTA, 2) == 1)
-        {
-            VCUDataPtr->DigitalVal.RTDS = 0;
-//            UARTSend(PC_UART, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
+            // use getter function to get this value..
+            // pass this data via a queue
+
+            RTDS_RAW = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN);
+
+            if ( gioGetBit(gioPORTA, 2) == 1)
+            {
+                VCUDataPtr->DigitalVal.RTDS = 0;
+    //            UARTSend(PC_UART, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
+            }
+            else
+            {
+    //            UARTSend(PC_UART, "RTDS RAW IS READ AS 0, RESETTING RTDS SIGNAL\r\n");
+            }
+
+            if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
+    //        UARTSend(scilinREG, xTaskGetTickCount());
+            // read high voltage
+
+            // read HV current
+
+            // IMD data (maybe this needs to be a separate interrupt?)
+            updateIMDData();
+            serialSendData();
+
+            // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
+
+            // TSAL state
+
+            // CAN status from BMS (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
+
+            // read LV voltage, current
+
+            // this needs to be updated to not block the whole system if i2c not available
+    //        lv_current = LV_reading(LV_current_register);
+
+            // make sure state machine signal flags are updated
+
+            // check for all errors here and update VCU data structure or state machine flags accordingly
+
+            // will also need a lookup table or data structure that has error messages and LED codes for whatever fault flags are on
+
+
+            // for timing:
+           gioSetBit(hetPORT1, 25, 0);
+
+        }else{
+            vTaskDelayUntil(&xLastWakeTime, SENSOR_READ_TASK_PERIOD_MS);
         }
-        else
-        {
-//            UARTSend(PC_UART, "RTDS RAW IS READ AS 0, RESETTING RTDS SIGNAL\r\n");
-        }
-
-        if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
-//        UARTSend(scilinREG, xTaskGetTickCount());
-        // read high voltage
-
-        // read HV current
-
-        // IMD data (maybe this needs to be a separate interrupt?)
-        updateIMDData();
-        serialSendData();
-
-        // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
-
-        // TSAL state
-
-        // CAN status from BMS (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
-
-        // read LV voltage, current
-
-        // this needs to be updated to not block the whole system if i2c not available
-//        lv_current = LV_reading(LV_current_register);
-
-        // make sure state machine signal flags are updated
-
-        // check for all errors here and update VCU data structure or state machine flags accordingly
-
-        // will also need a lookup table or data structure that has error messages and LED codes for whatever fault flags are on
-
-
-        // for timing:
-       gioSetBit(hetPORT1, 25, 0);
-
     }
 }
