@@ -414,8 +414,8 @@ void vThrottleTask(void *pvParameters)
 
         // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25% - jaypacamarra
         if (BSE_sensor_sum >= BRAKING_THRESHOLD &&
-            FP_sensor_1_sum >= APPS1_MIN_VALUE + 0.25 * (APPS1_MAX_VALUE - APPS1_MIN_VALUE) &&
-            FP_sensor_2_sum >= APPS2_MIN_VALUE + 0.25 * (APPS2_MAX_VALUE - APPS2_MIN_VALUE))
+            Percent_APPS1_pressed >= 0.25 &&
+            Percent_APPS2_pressed >= 0.25)
         {
             // Set fault
             VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 1;
@@ -424,8 +424,8 @@ void vThrottleTask(void *pvParameters)
         {
             // APPS/Brake plausibility fault only clears if APPS returns to less than 5% pedal position
             // with or without brake operation (see EV.5.7.2) - jaypacamarra
-            if (FP_sensor_1_sum < APPS1_MIN_VALUE + 0.05 * (APPS1_MAX_VALUE - APPS1_MIN_VALUE) &&
-                FP_sensor_2_sum < APPS2_MIN_VALUE + 0.05 * (APPS2_MAX_VALUE - APPS2_MIN_VALUE))
+            if (Percent_APPS1_pressed < 0.05 &&
+                Percent_APPS2_pressed < 0.05)
             {
                 // No fault
                 VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
