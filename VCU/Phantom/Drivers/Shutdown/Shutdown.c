@@ -70,23 +70,23 @@ void print_Shutdownvals(){
 
 //means no fault if fault is displayed if statements inverted
 
-    if(!VCUDataPtr->DigitalVal.BMS_STATUS)
+    if(VCUDataPtr->DigitalVal.BMS_STATUS)
 
         UARTSend(PC_UART, "BMS FAULT\r\n");
 
-    if(!VCUDataPtr->DigitalVal.BSPD_STATUS)
+    if(VCUDataPtr->DigitalVal.BSPD_STATUS)
 
         UARTSend(PC_UART, "BSPD FAULT\r\n");
 
-    if(!VCUDataPtr->DigitalVal.IMD_STATUS)
+    if(VCUDataPtr->DigitalVal.IMD_STATUS)
 
         UARTSend(PC_UART, "IMD FAULT\r\n");
 
-    if(!VCUDataPtr->DigitalVal.TSAL_STATUS)
+    if(VCUDataPtr->DigitalVal.TSAL_STATUS)
 
         UARTSend(PC_UART, "TSAL FAULT\r\n");
 
-    if(!VCUDataPtr->DigitalVal.RESET_STATUS)
+    if(VCUDataPtr->DigitalVal.RESET_STATUS)
 
         UARTSend(PC_UART, "RESET SIGNAL HIGH\r\n");
 

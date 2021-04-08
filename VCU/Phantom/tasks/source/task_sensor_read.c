@@ -24,7 +24,7 @@
 //#include "Current_transducer.h" //merge with yash branch first
 #include "Shutdown.h"
 
-#define TASK_PRINT  0
+//#define TASK_PRINT
 
 // change to better data type (move to VCU data structure)
 int lv_current = 0;
@@ -119,7 +119,7 @@ void vSensorReadTask(void *pvParameters){
 
         // IMD data (maybe this needs to be a separate interrupt?)
         updateIMDData();
-        serialSendData();
+
 
         // read LV voltage, current
 //        VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
@@ -130,9 +130,13 @@ void vSensorReadTask(void *pvParameters){
 
         #ifdef SENSOR_PRINT
 
-//        print_Shutdownvals();
         UARTSend(PC_UART, "SENSOR READING TASK\r\n");
 
+        serialSendData();
+
+        UARTSend(PC_UART, "\r\n\n\n");
+
+        print_Shutdownvals();
 
         #endif
 
