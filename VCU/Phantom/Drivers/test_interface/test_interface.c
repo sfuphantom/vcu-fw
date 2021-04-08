@@ -118,23 +118,23 @@ void displayPrompt(void)
 
 //--------AUX COMMANDS----------
 // Gets all BMS readings
-//void getAllReadings(void)
-//{
+void getAllReadings(void)
+{
 //    getCurrentReadings();
-//}
+}
 
 // Gets all temperature readings
-//void getAllTemperatures(void)
-//{
-//    uint8_t input;
-//    for(input=0;input<8;input++)
-//    {
-//        printThermistorReadings(input);
-//        UARTprintf("\n\r");
-//    }
-//
-//    sciReceive(PC_UART, 1,(unsigned char *)&chr);
-//}
+void getAllTemperatures(void)
+{
+    uint8_t input;
+    for(input=0;input<8;input++)
+    {
+        printThermistorReadings(input);
+        UARTprintf("\n\r");
+    }
+
+    sciReceive(PC_UART, 1,(unsigned char *)&chr);
+}
 
 //--------GET COMMANDS----------
 
@@ -156,7 +156,7 @@ void displayPrompt(void)
 //
 //    UARTprintf("\n\rCell %d Voltage: %fV \n\r", cell, fin);
 //}
-//
+
 //// Get a specific cell temperature
 void getIMD()
 {
@@ -187,8 +187,8 @@ void argumentParse(unsigned char charArray[])
 
     if(strcmp(&command[0], getcmp) == 0)
     {
-        uint8_t j = 0;
-        for(; charArray[i+1] != ' '; i++)
+        uint8_t j;
+        for(j = 0; charArray[i+1] != ' '; i++)
         {
             arg[j] = charArray[i+1];
             j++;
@@ -196,9 +196,7 @@ void argumentParse(unsigned char charArray[])
 
         arg[j] = '\0';
 
-        j = 0;
-
-        for(; charArray[i+1] != '\0'; i++)
+        for(j = 0; charArray[i+1] != '\0'; i++)
         {
             argnum[j] = charArray[i+1];
             j++;
@@ -215,63 +213,59 @@ void argumentParse(unsigned char charArray[])
 }
 
 // Compares input with predefined aux functions and executes
-void executeAUXCommand(unsigned char command[])
-{
-    uint8_t i;
-
-    for(i=0; i<MAX_AUX; i++)
-    {
-        if(strcmp(&command[0], testAUXCommands[i].str) == 0)
-        {
-            testAUXCommands[i].cmd();
-        }
-    }
-
-    if(strcmp(&command[0], "hotdog") == 0)
-    {
-        UARTprintf("\n\rMMMMmmmmm");
-    }
-
-    arrayCleanup();
-}
+//void executeAUXCommand(unsigned char command[])
+//{
+//    uint8_t i;
+//
+//    for(i=0; i<MAX_AUX; i++)
+//    {
+//        if(strcmp(&command[0], testAUXCommands[i].str) == 0)
+//        {
+//            testAUXCommands[i].cmd();
+//        }
+//    }
+//
+//    if(strcmp(&command[0], "hotdog") == 0)
+//    {
+//        UARTprintf("\n\rMMMMmmmmm");
+//    }
+//
+//    arrayCleanup();
+//}
 
 // Compares input with predefined get functions and executes
 void executeGETCommand(unsigned char command[], uint16_t argument)
 {
+
     uint8_t i;
-    signalIndex signalRequest;
+        signalIndex signalRequest;
 
-    for(i=0; i<MAX_AUX; i++)
-    {
-        if(strcmp(&command[0], testGETCommands[i].str) == 0)
+        for(i=0; i<MAX_AUX; i++)
         {
-            signalRequest = testGETCommands[i].sensor;
+            if(strcmp(&command[0], testGETCommands[i].str) == 0)
+            {
+                signalRequest = testGETCommands[i].sensor;
+            }
         }
-    }
 
+        switch(signalRequest)
+        {
+            case HV_V:
+                getSingleVoltageReading(argument);
+                break;
+            case shutdown:
+                getSingleTemperature(argument);
+                break;
 
-    .str = "HV_V", .sensor = HV_V},
-    { .str = "shutdown", .sensor = shutdown},
-    { .str = "IMD", .sensor = IMD}
-   };
-    switch(signalRequest)
-    {
-        case HV_V:
-            getSingleVoltageReading(argument);
-            break;
-        case shutdown:
-            getSingleTemperature(argument);
-            break;
+            case IMD:
+                getIMD();
+                break;
+            default:
+                break;
+        }
 
-        case IMD:
-            getIMD();
+        arrayCleanup();
 
-            break;
-        default:
-            break;
-    }
-
-    arrayCleanup();
 }
 
 // Cleans up arrays by setting them back to 0

@@ -90,7 +90,7 @@ void vSensorReadTask(void *pvParameters){
 
         // IMD data (maybe this needs to be a separate interrupt?)
         updateIMDData();
-        serialSendData();
+//        serialSendData();
 
         // Shutdown GPIOs (will probably start with these non-interrupt and see if we need to later..)
 

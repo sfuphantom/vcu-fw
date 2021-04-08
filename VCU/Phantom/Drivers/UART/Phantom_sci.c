@@ -1,6 +1,10 @@
 
 #include <halcogen_vcu/include/sci.h>
 #include "string.h"
+#include "stdio.h"
+#include "stdarg.h"
+#include <Phantom/hardware/vcu_hw/board_hardware.h>
+
 
 void UARTSend(sciBASE_t *sci, char data[])
 {
