@@ -43,11 +43,11 @@ static volatile testBuffer testbuf = {
 };
 
 // String input and command that is called for that input
-//auxcmd testAUXCommands[] =
-//{
-// { .str = "allvoltages", .cmd = getAllReadings},
-// { .str = "alltemperatures", .cmd = getAllTemperatures},
-//};
+auxcmd testAUXCommands[] =
+{
+ { .str = "allvoltages", .cmd = getAllReadings},
+ { .str = "alltemperatures", .cmd = getAllTemperatures},
+};
 
 // For getting specific readings eg. "get voltage 4"
 getcmd testGETCommands[] =
@@ -129,7 +129,7 @@ void getAllTemperatures(void)
     uint8_t input;
     for(input=0;input<8;input++)
     {
-        printThermistorReadings(input);
+//        printThermistorReadings(input);
         UARTprintf("\n\r");
     }
 
@@ -213,25 +213,25 @@ void argumentParse(unsigned char charArray[])
 }
 
 // Compares input with predefined aux functions and executes
-//void executeAUXCommand(unsigned char command[])
-//{
-//    uint8_t i;
-//
-//    for(i=0; i<MAX_AUX; i++)
-//    {
-//        if(strcmp(&command[0], testAUXCommands[i].str) == 0)
-//        {
-//            testAUXCommands[i].cmd();
-//        }
-//    }
-//
-//    if(strcmp(&command[0], "hotdog") == 0)
-//    {
-//        UARTprintf("\n\rMMMMmmmmm");
-//    }
-//
-//    arrayCleanup();
-//}
+void executeAUXCommand(unsigned char command[])
+{
+    uint8_t i;
+
+    for(i=0; i<MAX_AUX; i++)
+    {
+        if(strcmp(&command[0], testAUXCommands[i].str) == 0)
+        {
+            testAUXCommands[i].cmd();
+        }
+    }
+
+    if(strcmp(&command[0], "hotdog") == 0)
+    {
+        UARTprintf("\n\rMMMMmmmmm");
+    }
+
+    arrayCleanup();
+}
 
 // Compares input with predefined get functions and executes
 void executeGETCommand(unsigned char command[], uint16_t argument)
@@ -251,10 +251,10 @@ void executeGETCommand(unsigned char command[], uint16_t argument)
         switch(signalRequest)
         {
             case HV_V:
-                getSingleVoltageReading(argument);
+//                getSingleVoltageReading(argument);
                 break;
             case shutdown:
-                getSingleTemperature(argument);
+//                getSingleTemperature(argument);
                 break;
 
             case IMD:

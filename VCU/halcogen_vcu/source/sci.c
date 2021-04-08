@@ -1,12 +1,12 @@
 /** @file sci.c 
 *   @brief SCI Driver Implementation File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com 
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com 
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -90,13 +90,13 @@ void sciInit(void)
     sciREG->GCR1 =  (uint32)((uint32)1U << 25U)  /* enable transmit */
                   | (uint32)((uint32)1U << 24U)  /* enable receive */
                   | (uint32)((uint32)1U << 5U)   /* internal clock (device has no clock pin) */
-                  | (uint32)((uint32)(2U-1U) << 4U)  /* number of stop bits */
+                  | (uint32)((uint32)(1U-1U) << 4U)  /* number of stop bits */
                   | (uint32)((uint32)0U << 3U)  /* even parity, otherwise odd */
                   | (uint32)((uint32)0U << 2U)  /* enable parity */
                   | (uint32)((uint32)1U << 1U);  /* asynchronous timing mode */
 
     /** - set baudrate */
-    sciREG->BRS = 520U;  /* baudrate */
+    sciREG->BRS = 42U;  /* baudrate */
 
     /** - transmission length */
     sciREG->FORMAT = 8U - 1U;  /* length */
@@ -129,7 +129,7 @@ void sciInit(void)
     sciREG->SETINTLVL = (uint32)((uint32)0U << 26U)  /* Framing error */
                       | (uint32)((uint32)0U << 25U)  /* Overrun error */
                       | (uint32)((uint32)0U << 24U)  /* Parity error */
-                      | (uint32)((uint32)0U << 9U)  /* Receive */
+                      | (uint32)((uint32)1U << 9U)  /* Receive */
                       | (uint32)((uint32)0U << 8U)  /* Transmit */
                       | (uint32)((uint32)0U << 1U)  /* Wakeup */
                       | (uint32)((uint32)0U << 0U);  /* Break detect */
@@ -743,7 +743,90 @@ void sciHighLevelInterrupt(void)
 /* USER CODE END */
 }
 
+/* USER CODE BEGIN (30) */
+/* USER CODE END */
+
+/** @fn void sciLowLevelInterrupt(void)
+*   @brief Level 1 Interrupt for SCI
+*/
+#pragma CODE_STATE(sciLowLevelInterrupt, 32)
+#pragma INTERRUPT(sciLowLevelInterrupt, IRQ)
+
+/* SourceId : SCI_SourceId_019 */
+/* DesignId : SCI_DesignId_017 */
+/* Requirements : HL_SR245, HL_SR246 */
+void sciLowLevelInterrupt(void)
+{
+    uint32 vec = sciREG->INTVECT1;
+	uint8 byte;
+/* USER CODE BEGIN (31) */
+/* USER CODE END */
+
+    switch (vec)
+    {
+    case 1U:
+        sciNotification(sciREG, (uint32)SCI_WAKE_INT);
+        break;
+    case 3U:
+        sciNotification(sciREG, (uint32)SCI_PE_INT);
+        break;
+    case 6U:
+        sciNotification(sciREG, (uint32)SCI_FE_INT);
+        break;
+    case 7U:
+        sciNotification(sciREG, (uint32)SCI_BREAK_INT);
+        break;
+    case 9U:
+        sciNotification(sciREG, (uint32)SCI_OE_INT);
+        break;
+
+    case 11U:
+        /* receive */
+			byte = (uint8)(sciREG->RD & 0x000000FFU);
+
+            if (g_sciTransfer_t[0U].rx_length > 0U)
+            {
+                *g_sciTransfer_t[0U].rx_data = byte;
+                /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+				g_sciTransfer_t[0U].rx_data++;
+                
+                g_sciTransfer_t[0U].rx_length--;
+                if (g_sciTransfer_t[0U].rx_length == 0U)
+                {
+                    sciNotification(sciREG, (uint32)SCI_RX_INT);
+                }
+            }
+        break;
+
+    case 12U:
+        /* transmit */
+		/*SAFETYMCUSW 30 S MR:12.2,12.3 <APPROVED> "Used for data count in Transmit/Receive polling and Interrupt mode" */
+		--g_sciTransfer_t[0U].tx_length;
+        if (g_sciTransfer_t[0U].tx_length > 0U)
+        {
+			uint8 txdata = *g_sciTransfer_t[0U].tx_data;
+            sciREG->TD = (uint32)(txdata);
+			/*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+            g_sciTransfer_t[0U].tx_data++;
+        }
+        else
+        {
+            sciREG->CLEARINT = (uint32)SCI_TX_INT;
+            sciNotification(sciREG, (uint32)SCI_TX_INT);
+        }
+        break;
+
+    default:
+        /* phantom interrupt, clear flags and return */
+        sciREG->FLR = sciREG->SETINTLVL & 0x07000303U;
+         break;
+    }
+/* USER CODE BEGIN (32) */
+/* USER CODE END */
+}
 
 /* USER CODE BEGIN (37) */
+
+/* USER CODE BEGIN (33) */
 /* USER CODE END */
 

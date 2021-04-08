@@ -1,7 +1,7 @@
 /** @file sys_vim.h
 *   @brief Vectored Interrupt Module Header File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *   
 *   This file contains:
 *   - VIM Type Definitions
@@ -11,7 +11,7 @@
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -96,6 +96,7 @@ extern void vPortYeildWithinAPI(void);
 extern void gioLowLevelInterrupt(void);
 extern void het1LowLevelInterrupt(void);
 extern void sciHighLevelInterrupt(void);
+extern void sciLowLevelInterrupt(void);
 
 /* USER CODE BEGIN (3) */
 /* USER CODE END */
@@ -336,7 +337,7 @@ typedef struct vim_config_reg
                                     | (uint32)((uint32)0U << 7U)\
                                     | (uint32)((uint32)0U << 8U)\
                                     | (uint32)((uint32)0U << 9U)\
-                                    | (uint32)((uint32)0U << 10U)\
+                                    | (uint32)((uint32)1U << 10U)\
                                     | (uint32)((uint32)0U << 11U)\
                                     | (uint32)((uint32)0U << 12U)\
                                     | (uint32)((uint32)0U << 13U)\

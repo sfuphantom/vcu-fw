@@ -1,12 +1,12 @@
 /** @file sys_vim.c 
 *   @brief VIM Driver Implementation File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -143,7 +143,7 @@ static const t_isrFuncPTR s_vim_init[128U] =
     &phantomInterrupt,            /* Channel 71 */
     &phantomInterrupt,            /* Channel 72 */
     &phantomInterrupt,            /* Channel 73 */
-    &phantomInterrupt,            /* Channel 74 */
+    &sciLowLevelInterrupt,            /* Channel 74 */
     &phantomInterrupt,            /* Channel 75 */
     &phantomInterrupt,            /* Channel 76 */
     &phantomInterrupt,            /* Channel 77 */
@@ -438,7 +438,7 @@ void vimInit(void)
                         | (uint32)((uint32)0U << 7U)
                         | (uint32)((uint32)0U << 8U)
                         | (uint32)((uint32)0U << 9U)
-                        | (uint32)((uint32)0U << 10U)
+                        | (uint32)((uint32)1U << 10U)
                         | (uint32)((uint32)0U << 11U)
                         | (uint32)((uint32)0U << 12U)
                         | (uint32)((uint32)0U << 13U)

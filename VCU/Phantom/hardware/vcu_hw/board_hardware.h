@@ -54,7 +54,7 @@
 #define BRAKE_LIGHT_PIN       6
 
 /*********   UART PORTS   ****************/
-#define PC_UART               sciREG
+#define PC_UART               sciREG //switched sci REGs
 #define BMS_UART              scilinREG
 
 /*********   SPI PORTS   ****************/
@@ -78,7 +78,7 @@
 #define STATE_PRINT 0
 #define APPS_PRINT  0 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
 #define BSE_PRINT   0 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
-
+#define CLI_ENABLE true
 
 
 

@@ -1,7 +1,7 @@
 /** @file notification.c 
 *   @brief User Notification Definition File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *
 *   This file  defines  empty  notification  routines to avoid
 *   linker errors, Driver expects user to define the notification. 
@@ -12,7 +12,7 @@
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com 
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com 
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -60,6 +60,12 @@
 #include "sys_dma.h"
 
 /* USER CODE BEGIN (0) */
+
+#include "board_hardware.h"
+
+#include "test_interface.h"
+
+
 /* USER CODE END */
 #pragma WEAK(esmGroup1Notification)
 void esmGroup1Notification(uint32 channel)
@@ -166,6 +172,13 @@ void sciNotification(sciBASE_t *sci, uint32 flags)
 {
 /*  enter user code between the USER CODE BEGIN and USER CODE END. */
 /* USER CODE BEGIN (29) */
+
+    if(sci == PC_UART && CLI_ENABLE == true)
+    {
+        echoChar();
+    }
+
+
 /* USER CODE END */
 }
 
