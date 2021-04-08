@@ -6,9 +6,80 @@
  */
 #include "phantom_freertos.h"
 #include "testEeprom.h"
+#include "os_queue.h"
+#include "vcu_data.h"
+
+extern QueueHandle_t eepromMessages;
+extern volatile uint8_t initializationOccured;
+void testEeprom(void *p){
+
+    uint8_t forBreakPoint =0; // Create a variable to be able to set a breakpoint to read rxBuffer Message each time in Memory Browser
+    char rxBuffer[60];        // A buffer that will hold messages received from eepromTask - Don't need to print it.
+
+    TickType_t mylastTickCount;
+    mylastTickCount = xTaskGetTickCount();
+
+    while(1){
+
+        if(initializationOccured){
+
+            unsigned long numberOfMessages = uxQueueMessagesWaiting(eepromMessages);
+            if(numberOfMessages){
+
+                if (xQueueReceive(eepromMessages,rxBuffer,pdMS_TO_TICKS(0))==pdPASS){ // Don't block if no message in the Queue
+                    forBreakPoint =1;
+                }
+            }
+            // Block for 500ms
+            vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(100));
+
+        }else{
+
+            // Block for 500ms
+            vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(100));
+        }
+    }
+}
+
+/* This will test if the eeprom bank is being updated.
+void testEeprom(void *p){
+    TickType_t mylastTickCount;
+    mylastTickCount = xTaskGetTickCount();
+    while(1){
+        if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(10))){
+            VCUDataPtr->DigitalVal.TSAL_FAULT ^= (1<<0);       // Toggle Bit-0
+            xSemaphoreGive(vcuKey);
+        }
+        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(500));
+    }
+}
+*/
+
+/*
+        if(VCUDataPtr->DigitalVal.TSAL_FAULT==0){  // TSAL_FAULT
+            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(100))){
+                VCUDataPtr->DigitalVal.BSE_FAULT = 1;  // Send BSE fault
+                xSemaphoreGive(vcuKey);
+            }
+        }
+        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(500));  // Every 500ms you toggle the shutdown signal - to check if eeprom is updated or not.
+        */
+
+
+        /* Introduce a fault in the VCU Data Structure if the VCU key is available
+            if(!faultIntroduced && numberOfMessages==0){
+                if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(0))){
+                    VCUDataPtr->DigitalVal.POWER_FAILURE_FLAG = 1;       // Toggle Bit-0
+                    VCUDataPtr->DigitalVal.BSE_FAULT = 1;
+                    faultIntroduced = true;
+                    xSemaphoreGive(vcuKey);
+                }
+            }
+        */
+
+
+
 //++ For testing Purposes - simulating vehicle state change and testing eeprom task.
-
-
 /*
  *
  * Note: Some of the fault conventions are not intuitive, i.e. some places '1' means healthy/no-fault and some places '1' means 'flag set' - Will fix this later.
@@ -58,26 +129,6 @@
 *
  *
  */
-void testEeprom(void *p){
-    TickType_t mylastTickCount;
-    mylastTickCount = xTaskGetTickCount();
-    while(1){
-        if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(10))){
-            VCUDataPtr->DigitalVal.TSAL_FAULT ^= (1<<0);       // Toggle Bit-0
-            xSemaphoreGive(vcuKey);
-        }
-        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(500));  // Every 500ms you toggle the shutdown signal - to check if eeprom is updated or not.
-
-        if(VCUDataPtr->DigitalVal.TSAL_FAULT==0){  // TSAL_FAULT
-            if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(100))){
-                VCUDataPtr->DigitalVal.BSE_FAULT = 1;  // Send BSE fault
-                xSemaphoreGive(vcuKey);
-            }
-        }
-        vTaskDelayUntil(&mylastTickCount,pdMS_TO_TICKS(10000));  // Every 500ms you toggle the shutdown signal - to check if eeprom is updated or not.
-    }
-}
-
 //-- For testing Purposes - simulating vehicle state change and testing Eeprom task.
 
 
