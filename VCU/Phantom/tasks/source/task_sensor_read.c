@@ -132,9 +132,9 @@ void vSensorReadTask(void *pvParameters){
 
         UARTSend(PC_UART, "SENSOR READING TASK\r\n");
 
-        serialSendData();
+//        serialSendData();
 
-        UARTSend(PC_UART, "\r\n\n\n");
+//        UARTSend(PC_UART, "\r\n\n\n");
 
         print_Shutdownvals();
 
