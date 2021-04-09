@@ -66,6 +66,10 @@
 #include "test_interface.h"
 
 
+static unsigned char command;
+
+
+
 /* USER CODE END */
 #pragma WEAK(esmGroup1Notification)
 void esmGroup1Notification(uint32 channel)
@@ -173,10 +177,17 @@ void sciNotification(sciBASE_t *sci, uint32 flags)
 /*  enter user code between the USER CODE BEGIN and USER CODE END. */
 /* USER CODE BEGIN (29) */
 
-    if(sci == PC_UART && CLI_ENABLE == true)
-    {
-        echoChar();
+
+    if(sci == PC_UART){
+
+        sciSend(PC_UART,1,(unsigned char*)&command);
+
+        sciReceive(PC_UART,1,(unsigned char*)&command);
     }
+//    if(sci == PC_UART && CLI_ENABLE == true)
+//    {
+//        echoChar();
+//    }
 
 
 /* USER CODE END */
