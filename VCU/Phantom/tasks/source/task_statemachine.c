@@ -30,14 +30,18 @@ uint32_t blue_flag = 0;
 
 extern State state;
 
-/* ++ Added by jjkhan - All declarations should be in header file. - move the following declarations to task_statemachine.h */
-/*extern TaskHandle_t eepromHandler;
-extern uint8_t powerFailureFlag;
-extern SemaphoreHandle_t powerfailureFlagKey; */
-
+/*
+ *  task_eeprom.c initializes the VCUData structure based on last stored VCU state in eeprom.
+ *      Task can't should not execute its body until initialization has occurred.
+ */
+// ++ Added by jjkhan
+extern volatile uint8_t initializationOccured;
 extern SemaphoreHandle_t vcuKey;
+extern data* VCUDataPtr;
+// -- Added by jjkhan
 
-/*  Added by jjkhan */
+
+
 /*********************************************************************************
  *                               SYSTEM STATE FLAGS
  *********************************************************************************/
@@ -49,8 +53,8 @@ extern SemaphoreHandle_t vcuKey;
 //extern uint8_t BSPD;// = 1;
 //extern uint8_t BSE_FAULT;// = 0;
 
-extern data* VCUDataPtr;
-extern volatile uint8_t initializationOccured;
+
+
 /***********************************************************
  * @function                - vStateMachineTask
  *
@@ -150,7 +154,7 @@ void vStateMachineTask(void *pvParameters){
                         state = TRACTIVE_ON;
                         //++ Added by jjkhan
                         if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(10))){ // Wait for 10 milliseconds if the key not available, come back later
-                            VCUDataPtr->DigitalVal.POWER_FAILURE_FLAG = 0;  // Update powerFailureFlag
+                            VCUDataPtr->vcuState = state;  // Update VCU state in the Data structure
                             xSemaphoreGive(vcuKey);
                         }
                         //-- Added by jjkhan
@@ -181,7 +185,7 @@ void vStateMachineTask(void *pvParameters){
 
                         //++ Added by jjkhan
                         if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(10))){ // Wait for 10 milliseconds if the key not available, come back later
-                            VCUDataPtr->DigitalVal.POWER_FAILURE_FLAG = 0;  // Update powerFailureFlag
+                            VCUDataPtr->vcuState = state;  // Update VCU state in the Data structure
                             xSemaphoreGive(vcuKey);
                         }
                         //-- Added by jjkhan
@@ -229,16 +233,17 @@ void vStateMachineTask(void *pvParameters){
 
                 //++ Added by jjkhan
                if(xSemaphoreTake(vcuKey, pdMS_TO_TICKS(10))){ // Wait for 10 milliseconds if the key not available, come back later
-                   VCUDataPtr->DigitalVal.POWER_FAILURE_FLAG = 1;  // Update powerFailureFlag
+                   VCUDataPtr->vcuState = state;  // Update VCU state in the Data structure
                    xSemaphoreGive(vcuKey);
                }
                 //-- Added by jjkhan
 
-                if (VCUDataPtr->DigitalVal.BSE_FAULT == 0)
+                if (VCUDataPtr->DigitalVal.BSE_FAULT == 0 && VCUDataPtr->DigitalVal.IMD_FAULT == 0 )
                 {
                     state = TRACTIVE_OFF;
 
                 }
+
 
             }
 

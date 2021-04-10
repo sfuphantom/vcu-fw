@@ -37,7 +37,13 @@ extern uint8_t RTDS;// = 0;
 long RTDS_RAW;      // = 0;
 
 
+/*
+ *  task_eeprom.c initializes the VCUData structure based on last stored VCU state in eeprom.
+ *      Task can't should not execute its body until initialization has occured.
+ */
+// ++ Added by jjkhan
 extern volatile uint8_t initializationOccured;
+// ++ Added by jjkhan
 
 /***********************************************************
  * @function                - vSensorReadTask

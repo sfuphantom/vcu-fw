@@ -57,9 +57,13 @@ extern data* VCUDataPtr;
 
 extern bool THROTTLE_AVAILABLE;
 
-
+/*
+ *  task_eeprom.c initializes the VCUData structure based on last stored VCU state in eeprom.
+ *      Task can't should not execute its body until initialization has occured.
+ */
+// ++ Added by jjkhan
 extern volatile uint8_t initializationOccured;
-
+// ++ Added by jjkhan
 
 /***********************************************************
  * @function                - vThrottleTask
