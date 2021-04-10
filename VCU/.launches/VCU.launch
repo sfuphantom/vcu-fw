@@ -3,7 +3,7 @@
 <mapAttribute key="ccs.memoryview.format">
 <mapEntry key="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser.PIN_CLONE_VIEW_1@#$Texas Instruments XDS110 USB Debug Probe/CortexR4@#$0" value="32-Bit Hex - TI Style"/>
 <mapEntry key="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser.PIN_CLONE_VIEW_2@#$Texas Instruments XDS110 USB Debug Probe/CortexR4@#$0" value="32-Bit Hex - TI Style"/>
-<mapEntry key="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser.PIN_CLONE_VIEW_3@#$Texas Instruments XDS110 USB Debug Probe/CortexR4@#$0" value="32-Bit Hex - TI Style"/>
+<mapEntry key="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser.PIN_CLONE_VIEW_3@#$Texas Instruments XDS110 USB Debug Probe/CortexR4@#$0" value="Character"/>
 <mapEntry key="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser@#$SEGGER J-Link Emulator/CortexR4@#$0" value="32-Bit Hex - TI Style"/>
 <mapEntry key="org.eclipse.cdt.debug.ui.memory.memorybrowser.MemoryBrowser@#$Texas Instruments XDS110 USB Debug Probe/CortexR4@#$0" value="Character"/>
 </mapAttribute>
