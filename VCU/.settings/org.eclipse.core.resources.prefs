@@ -1,6 +1,8 @@
 eclipse.preferences.version=1
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/DAC_SPI/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/DAC_SPI/subdir_vars.mk=UTF-8
+encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/Driver_controls/subdir_rules.mk=UTF-8
+encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/Driver_controls/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/IMD/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/IMD/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/LV_Monitor_I2C/subdir_rules.mk=UTF-8
@@ -30,6 +32,8 @@ encoding//BuildConfig_Launchpad-1224/vcu_halcogen/source/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/vcu_halcogen/source/subdir_vars.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/DAC_SPI/subdir_rules.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/DAC_SPI/subdir_vars.mk=UTF-8
+encoding//BuildConfig_VCU-REV2/Phantom/Drivers/Driver_controls/subdir_rules.mk=UTF-8
+encoding//BuildConfig_VCU-REV2/Phantom/Drivers/Driver_controls/subdir_vars.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/IMD/subdir_rules.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/IMD/subdir_vars.mk=UTF-8
 encoding//BuildConfig_VCU-REV2/Phantom/Drivers/LV_Monitor_I2C/subdir_rules.mk=UTF-8

@@ -5,7 +5,7 @@
  *      Author: jaypacamarra
  */
 
-#include "throttle.h"
+#include <Phantom/Drivers/Driver_controls/throttle.h>
 
 
 
@@ -71,7 +71,10 @@ void getPedalReadings() {
 }
 
 /** @fn void applyLowPassFilter(void)
-*   @brief Applies a software low pass filter to the pedal signals
+*   @brief Applies a software low pass filter to the pedal signals.
+*   @note  alpha must be between 0 and 1.
+*           - smaller alpha means smoother signal but slower
+*           - bigger alpha means less smooth signal but faster
 *   @Return This function does not return anything, it only
 *           updates the variables:
 *               - BSE_sensor_sum

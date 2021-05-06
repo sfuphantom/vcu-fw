@@ -5,6 +5,7 @@
  *      Author: gabriel
  */
 
+#include <Phantom/Drivers/Driver_controls/throttle.h>   // Added THROTTLE DRIVER - jaypacamarra (5/5/2021)
 #include "adc.h"
 #include "FreeRTOS.h"
 #include "os_queue.h"
@@ -23,7 +24,6 @@
 
 #include "vcu_data.h"
 
-#include "throttle.h"   // Added THROTTLE DRIVER - jaypacamarra (5/5/2021)
 
 extern State state;
 extern TimerHandle_t xTimers[];                 //jaypacamarra
