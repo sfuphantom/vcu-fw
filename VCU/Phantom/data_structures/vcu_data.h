@@ -23,14 +23,14 @@ typedef struct analogInputs
     analogData voltageHV_V;
     analogData currentLV_A;
     analogData voltageLV_V;
-    analogData BSE_percentage;
-    analogData APPS1_percentage;
-    analogData APPS2_percentage;
+    analogData BSE_percentage;          // if 0, means 0% pressed, if 1.0 means 100% pressed - jaypacamarra
+    analogData APPS1_percentage;        // if 0, means 0% pressed, if 1.0 means 100% pressed - jaypacamarra
+    analogData APPS2_percentage;        // if 0, means 0% pressed, if 1.0 means 100% pressed - jaypacamarra
 } analogInputs;
 
 typedef struct analogOutputs
 {
-    analogData throttle_percentage;
+    analogData throttle_percentage;     // if 0, means 0% pressed, if 1.0 means 100% pressed - jaypacamarra
 } analogOutputs;
 
 typedef struct digitalValues
