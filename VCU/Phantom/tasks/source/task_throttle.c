@@ -42,12 +42,21 @@ extern bool APPS2_range_fault_timer_started = false;
 extern bool BSE_range_fault_timer_started   = false;
 extern bool FP_diff_fault_timer_started     = false;
 
+// To store percent pressed of foot pedals
+extern float Percent_APPS1_Pressed;
+extern float Percent_APPS2_Pressed;
+extern float Percent_BSE_Pressed;
+
 extern bool THROTTLE_AVAILABLE;
 
 extern data *VCUDataPtr;
 
 bool previous_brake_light_state = 1;    // Default = 1. Holds previous brake light state, 1 = ON, 0 = OFF - jaypacamarra
 uint16_t hysteresis = 200;          // change this to tweak hysteresis threshhold - jaypacamarra
+
+// for calculating throttle to the DAC
+float apps_percent_avg;
+unsigned int throttle;
 
 /***********************************************************
  * @function                - vThrottleTask
@@ -79,8 +88,13 @@ void vThrottleTask(void *pvParameters)
         // Wait for the next cycle
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-        // ADC conversions
+        // Get pedal readings
         getPedalReadings();
+
+        // Update pedal inputs in vcu data structure
+        VCUDataPtr->AnalogIn.APPS1_percentage.value = Percent_APPS1_Pressed;
+        VCUDataPtr->AnalogIn.APPS2_percentage.value = Percent_APPS2_Pressed;
+        VCUDataPtr->AnalogIn.BSE_percentage.value = Percent_BSE_Pressed;
 
         // Signal conditioning - jaypacamarra
         applyLowPassFilter();
@@ -130,6 +144,9 @@ void vThrottleTask(void *pvParameters)
             // turn on brake lights
             gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
 
+            // update brake light enable in the vcu data structure
+            VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 1;
+
             // update brake light state
             previous_brake_light_state = 1;
         }
@@ -138,6 +155,9 @@ void vThrottleTask(void *pvParameters)
         {
             // turn off brake lights
             gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
+
+            // update brake light enable in the vcu data structure
+            VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
 
             // update brake light state
             previous_brake_light_state = 0;
@@ -171,26 +191,28 @@ void vThrottleTask(void *pvParameters)
 
         // debugging - jaypacamarra
         // manually setting state to RUNNING and setting THROTTLE_AVAILABLE to true to test DAC - jaypacamarra
-//        state = RUNNING;
-//        THROTTLE_AVAILABLE = true;
+        state = RUNNING;
+        THROTTLE_AVAILABLE = true;
 
         /*********************************************************************************
           Set Throttle
          *********************************************************************************/
         if (state == RUNNING && THROTTLE_AVAILABLE)
         {
+            // update throttle percentage in vcu data structure
+            apps_percent_avg = (Percent_APPS1_Pressed + Percent_APPS2_Pressed) / 2;
+            VCUDataPtr->AnalogOut.throttle_percentage.value = apps_percent_avg;
+
             // send DAC to inverter
-            unsigned int apps_avg = 0.5 * (FP_sensor_1_sum + FP_sensor_2_sum); // averaging the two foot pedal signals
-            unsigned int throttle = 0.23640662 * apps_avg - 88.6524825;        // equation mapping the averaged signals to 0->500 for the DAC driver
+            throttle = 390 * apps_percent_avg + 60;        // equation mapping the averaged signals to 0->500 for the DAC driver
             // ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
             // i.e. map from 0.6V (60) to 4.5V (450) or something like that, instead of 0->500 (0V -> 5V)
-
             MCP48FV_Set_Value(throttle); // send throttle value to DAC driver
         }
         else
         {
             // send 0 to DAC
-            MCP48FV_Set_Value(450);
+            MCP48FV_Set_Value(0);
             THROTTLE_AVAILABLE = false;
         }
     }

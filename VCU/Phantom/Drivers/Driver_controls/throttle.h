@@ -20,6 +20,7 @@
 
 
 void getPedalReadings();
+void calculatePedalPercents();
 void applyLowPassFilter();
 bool check_BSE_Range_Fault();
 bool check_APPS1_Range_Fault();

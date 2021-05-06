@@ -16,6 +16,10 @@ unsigned int volatile BSE_sensor_sum;   // = 0;
 unsigned int volatile FP_sensor_1_sum;  // = 0;
 unsigned int volatile FP_sensor_2_sum;  // = 0;
 
+float volatile Percent_APPS1_Pressed;
+float volatile Percent_APPS2_Pressed;
+float volatile Percent_BSE_Pressed;
+
 float alpha = 0.5;                               // Change this to tweak lowpass filter response - jaypacamarra
 float BSE_filtered_sensor_value;                 // filtered BSE sensor value - jaypacamarra
 float BSE_previous_filtered_sensor_values = 0;   // previous BSE filtered output - jaypacamarra
@@ -47,9 +51,6 @@ extern bool APPS2_RANGE_FAULT_TIMER_EXPIRED;   //jaypacamarra
 extern bool BSE_RANGE_FAULT_TIMER_EXPIRED;     //jaypacamarra
 extern bool FP_DIFF_FAULT_TIMER_EXPIRED;       //jaypacamarra
 
-
-float volatile Percent_APPS1_pressed; // hold percentage foot pedal1 (APPS1) is pressed, 0-1 -jaypacamarra
-float volatile Percent_APPS2_pressed; // hold percentage foot pedal2 (APPS2) is pressed, 0-1 -jaypacamarra
 float FP_sensor_diff;
 
 
@@ -68,6 +69,41 @@ void getPedalReadings() {
     BSE_sensor_sum = (unsigned int)FP_data[0].value;   // BSE
     FP_sensor_1_sum = (unsigned int)FP_data[1].value;  // APPS1
     FP_sensor_2_sum = (unsigned int)FP_data[2].value;  // APPS2
+
+    // Update pedal percentages
+    calculatePedalPercents();
+}
+
+/** @fn void calculatePedalPercents(void)
+*   @brief Calculates the percent pressed of the brake pedal
+*          and the accelerator pedal
+*   @Return This function does not return anything, it only
+*           updates the VCU data structure
+*/
+void calculatePedalPercents() {
+    // APPS1
+    if(FP_sensor_1_sum < APPS1_MIN_VALUE)
+        Percent_APPS1_Pressed = 0;
+    else if(FP_sensor_1_sum > APPS1_MAX_VALUE)
+        Percent_APPS1_Pressed = 1.0;
+    else
+        Percent_APPS1_Pressed = (FP_sensor_1_sum - APPS1_MIN_VALUE) / (float)(APPS1_MAX_VALUE - APPS1_MIN_VALUE);
+
+    // APPS2
+    if(FP_sensor_2_sum < APPS2_MIN_VALUE)
+        Percent_APPS2_Pressed = 0;
+    else if(FP_sensor_2_sum > APPS2_MAX_VALUE)
+        Percent_APPS2_Pressed = 1.0;
+    else
+        Percent_APPS2_Pressed = (FP_sensor_2_sum - APPS2_MIN_VALUE) / (float)(APPS2_MAX_VALUE - APPS2_MIN_VALUE);
+
+    // BSE
+    if(BSE_sensor_sum < BSE_MIN_VALUE)
+        Percent_BSE_Pressed = 0;
+    else if(BSE_sensor_sum > BSE_MAX_VALUE)
+        Percent_BSE_Pressed = 1.0;
+    else
+        Percent_BSE_Pressed = (BSE_sensor_sum - BSE_MIN_VALUE) / (float)(BSE_MAX_VALUE - BSE_MIN_VALUE);
 }
 
 /** @fn void applyLowPassFilter(void)
@@ -292,13 +328,7 @@ bool check_APPS2_Range_Fault() {
 *           False -> No Fault
 */
 bool check_10PercentAPPS_Fault() {
-    Percent_APPS1_pressed = (FP_sensor_1_sum - APPS1_MIN_VALUE) / (float)(APPS1_MAX_VALUE - APPS1_MIN_VALUE);
-    Percent_APPS1_pressed = (FP_sensor_1_sum <= APPS1_MIN_VALUE) ? 0 : Percent_APPS1_pressed;                 // negative values are set to 0
-
-    Percent_APPS2_pressed = (FP_sensor_2_sum - APPS2_MIN_VALUE) / (float)(APPS2_MAX_VALUE - APPS2_MIN_VALUE);
-    Percent_APPS2_pressed = (FP_sensor_2_sum <= APPS2_MIN_VALUE) ? 0 : Percent_APPS2_pressed;                 // negative values are set to 0
-
-    FP_sensor_diff = fabs(Percent_APPS2_pressed - Percent_APPS1_pressed); // Calculate absolute difference between APPS1 and APPS2 readings
+    FP_sensor_diff = fabs(Percent_APPS2_Pressed - Percent_APPS1_Pressed); // Calculate absolute difference between APPS1 and APPS2 readings
 
     if (FP_sensor_diff > 0.10)
     {
@@ -343,8 +373,8 @@ bool check_10PercentAPPS_Fault() {
 */
 bool check_Brake_Plausibility_Fault() {
     if (BSE_sensor_sum >= BRAKING_THRESHOLD &&
-            Percent_APPS1_pressed >= 0.25 &&
-            Percent_APPS2_pressed >= 0.25)
+            Percent_APPS1_Pressed >= 0.25 &&
+            Percent_APPS2_Pressed >= 0.25)
     {
         // Set fault
         is_there_brake_plausibility_fault = true;
@@ -354,8 +384,8 @@ bool check_Brake_Plausibility_Fault() {
     {
         // APPS/Brake plausibility fault only clears if APPS returns to less than 5% pedal position
         // with or without brake operation (see EV.5.7.2) - jaypacamarra
-        if (Percent_APPS1_pressed < 0.05 &&
-                Percent_APPS2_pressed < 0.05)
+        if (Percent_APPS1_Pressed < 0.05 &&
+                Percent_APPS2_Pressed < 0.05)
         {
             // No fault
             is_there_brake_plausibility_fault = false;
