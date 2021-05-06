@@ -9,14 +9,14 @@
 #include "phantom_freertos.h"
 #include "gio.h"
 
-unsigned int BSE_sensor_sum  = 0;    // needs to be stored in VCU data structure and referenced from there
+extern unsigned int BSE_sensor_sum;    // needs to be stored in VCU data structure and referenced from there
 
 bool INTERRUPT_AVAILABLE;
 bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has gone for 2 seconds
 bool APPS1_RANGE_FAULT_TIMER_EXPIRED;   //jaypacamarra
 bool APPS2_RANGE_FAULT_TIMER_EXPIRED;   //jaypacamarra
-bool BSE_RANGE_FAULT_TIMER_EXPIRED;  //jaypacamarra
-bool FP_DIFF_FAULT_TIMER_EXPIRED;    //jaypacamarra
+bool BSE_RANGE_FAULT_TIMER_EXPIRED;     //jaypacamarra
+bool FP_DIFF_FAULT_TIMER_EXPIRED;       //jaypacamarra
 
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
