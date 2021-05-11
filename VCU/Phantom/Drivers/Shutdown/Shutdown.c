@@ -51,15 +51,15 @@ void ShutdownInit(){
        resetShutdownSignals();
 
        //Enable Interrupts
-       edgeEnableNotification(RESETPort,RESETedge);
+       edgeEnableNotification(SHUTDOWN_REGISTER, RESETedge);
 
-       edgeEnableNotification(BSPD_FAULT_PORT,BSPDedge);
+       edgeEnableNotification(SHUTDOWN_REGISTER, BSPDedge);
 
-       gioEnableNotification(SHUTDOWN_CIRCUIT_PORT,BMS_FAULT_PIN);
+       gioEnableNotification(SHUTDOWN_CIRCUIT_PORT, BMS_FAULT_PIN);
 
-       gioEnableNotification(SHUTDOWN_CIRCUIT_PORT,BSPD_FAULT_PIN);
+       gioEnableNotification(SHUTDOWN_CIRCUIT_PORT, BSPD_FAULT_PIN);
 
-       gioEnableNotification(SHUTDOWN_CIRCUIT_PORT,IMD_FAULT_PIN);
+       gioEnableNotification(SHUTDOWN_CIRCUIT_PORT, IMD_FAULT_PIN);
 
        _enable_IRQ();
 
@@ -112,35 +112,36 @@ void storeShutdownValues(){
 
     //getBit(blah blah)
 
-    VCUDataPtr->DigitalVal.BMS_STATUS = gioGetBit(SHUTDOWN_CIRCUIT_PORT,BMS_FAULT_PIN);
+    VCUDataPtr->DigitalVal.BMS_STATUS = gioGetBit(SHUTDOWN_CIRCUIT_PORT, BMS_FAULT_PIN);
 
-    VCUDataPtr->DigitalVal.IMD_STATUS = gioGetBit(SHUTDOWN_CIRCUIT_PORT,IMD_FAULT_PIN);
+    VCUDataPtr->DigitalVal.IMD_STATUS = gioGetBit(SHUTDOWN_CIRCUIT_PORT, IMD_FAULT_PIN);
 
-    VCUDataPtr->DigitalVal.TSAL_STATUS = gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN);
+    VCUDataPtr->DigitalVal.TSAL_STATUS = gioGetBit(TSAL_PORT, TSAL_ACTIVE_PIN);
 
-    VCUDataPtr->DigitalVal.BSPD_STATUS = gioGetBit(BSPD_FAULT_PORT,BSPD_FAULT_PIN);
+    VCUDataPtr->DigitalVal.BSPD_STATUS = gioGetBit(BSPD_FAULT_PORT, BSPD_FAULT_PIN);
 
-    VCUDataPtr->DigitalVal.RESET_STATUS = gioGetBit(RESETPort,RESETPin);
+    VCUDataPtr->DigitalVal.RESET_STATUS = gioGetBit(RESETPort, RESETPin);
+
+    //      (Shutdown Board SHOULD be Triggered)  &&  (TSAL_HV == ON) ----> TSAL_WELDED
+     if((VCUDataPtr->DigitalVal.BMS_FAULT || VCUDataPtr->DigitalVal.IMD_FAULT || VCUDataPtr->DigitalVal.BSPD_FAULT) && gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN))
+
+        VCUDataPtr->DigitalVal.TSAL_WELDED = true; //should this latch?
 
 }
 
 //moved to
-//#include "phantom_freertos.h"/
-
+//#include "phantom_freertos.c"
+//
 //void gioNotification(gioPORT_t* port,uint32 bit){
 //
 //    if(port == SHUTDOWN_CIRCUIT_PORT && bit == BMS_FAULT_PIN) VCUDataPtr->DigitalVal.BMS_FAULT = true;
 //
-//
 //    if(port == SHUTDOWN_CIRCUIT_PORT && bit == IMD_FAULT_PIN) VCUDataPtr->DigitalVal.IMD_FAULT = true;
-//
-//    // (Shutdown Board SHOULD be Triggered)   &&   (TSAL_HV == ON) ----> TSAL_WELDED
-//    if((BMS_FAULT || IMD_FAULT || BSPD_FAULT) && gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN)) VCUDataPtr->DigitalVal.TSAL_WELDED = true;
 //
 //}
 
 //moved to
-#include "IMD.h"
+//#include "IMD.c"
 //void edgeNotification(hetBASE_t * hetREG,uint32 edge)
 //{
 //    if(hetREG == RESETPort && edge == RESETedge) resetShutdownSignals();
