@@ -25,9 +25,9 @@
 #define BSPD_FAULT_PORT       hetPORT1
 #define BSPD_FAULT_PIN        20
 #define BSPDedge              0
-#define RESETPort             hetPORT1// needs to be confirmed
-#define RESETPin              18// needs to be confirmed
-#define RESETedge             1// needs to be confirmed
+#define RESETPort             hetPORT1
+#define RESETPin              18
+#define RESETedge             1
 
 
 /***************  TSAL GPIO  *********************/
