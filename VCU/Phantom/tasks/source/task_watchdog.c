@@ -12,8 +12,8 @@
 #include "os_task.h"
 #include "os_timer.h"
 
-//#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
-#include <Phantom/hardware/vcu_hw/board_hardware.h>
+#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
+//#include <Phantom/hardware/vcu_hw/board_hardware.h>
 
 #include "Phantom_sci.h"
 #include "gio.h"

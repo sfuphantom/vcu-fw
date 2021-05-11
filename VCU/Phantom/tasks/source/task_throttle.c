@@ -16,9 +16,9 @@
 #include "stdlib.h" // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 
 
-//#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
+#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
-#include <Phantom/hardware/vcu_hw/board_hardware.h>
+//#include <Phantom/hardware/vcu_hw/board_hardware.h>
 
 #include "MCP48FV_DAC_SPI.h"
 #include "Phantom_sci.h"

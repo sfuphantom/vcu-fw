@@ -13,8 +13,8 @@
 #include "os_task.h"
 #include "os_timer.h"
 
-//#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
-#include <Phantom/hardware/vcu_hw/board_hardware.h>
+#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
+//#include <Phantom/hardware/vcu_hw/board_hardware.h>
 
 #include "Phantom_sci.h"
 #include "LV_monitor.h"
@@ -23,6 +23,10 @@
 #include "FreeRTOS.h"
 //#include "Current_transducer.h" //merge with yash branch first
 #include "Shutdown.h"
+
+unsigned int temp_sum = 0;
+
+
 
 //#define TASK_PRINT
 
@@ -127,16 +131,16 @@ void vSensorReadTask(void *pvParameters){
 //        VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
 
 
-
         #ifdef SENSOR_PRINT
 
-        UARTSend(PC_UART, "SENSOR READING TASK\r\n");
+//        UARTSend(PC_UART, "SENSOR READING TASK\r\n");
 
 //        serialSendData();
 
 //        UARTSend(PC_UART, "\r\n\n\n");
+        UARTSend(PC_UART, VCUDataPtr->DigitalVal.TSAL_WELDED ? "AIRS ARE WELDED\r\n" : "");
 
-        print_Shutdownvals();
+//        print_Shutdownvals();
 
         #endif
 
