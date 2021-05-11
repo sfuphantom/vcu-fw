@@ -46,11 +46,11 @@
 
 #include "phantom_freertos.h" // contains functions for freertos startup, timer setup, and task creation
 #include "vcu_data.h"         // holds VCU data structure
-//#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
+#include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 
 //#include <Phantom/tasks/headers/priorities.h>
 
-#include <Phantom/hardware/vcu_hw/board_hardware.h>
+//#include <Phantom/hardware/vcu_hw/board_hardware.h>
 
 
 

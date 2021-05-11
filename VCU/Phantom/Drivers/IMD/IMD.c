@@ -156,9 +156,23 @@ void edgeNotification(hetBASE_t * hetREG,uint32 edge)
 
     /*********************************** SHUTDOWN SIGNALS ***************************************/
 
-    if(hetREG == RESETPort && edge == RESETedge) resetShutdownSignals();
+    if(hetREG == SHUTDOWN_REGISTER && edge == RESETedge){
 
-    if(hetREG == BSPD_FAULT_PORT && edge == BSPDedge) VCUDataPtr->DigitalVal.BSPD_FAULT = true;
+        #ifdef SENSOR_PRINT
+        UARTSend(PC_UART, "Resetting Shutdown Faults...\r\n");
+        #endif
+
+        resetShutdownSignals();
+    }
+
+    if(hetREG == SHUTDOWN_REGISTER && edge == BSPDedge){
+
+        #ifdef SENSOR_PRINT
+        UARTSend(PC_UART, "BSPD Fault Triggered!\r\n");
+        #endif
+
+        VCUDataPtr->DigitalVal.BSPD_FAULT = true;
+    }
 
 
 

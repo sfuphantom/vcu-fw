@@ -197,14 +197,24 @@ void phantom_freeRTOStaskInit(void)
 
      /*********************************** SHUTDOWN SIGNALS ***************************************/
 
-         if(port == SHUTDOWN_CIRCUIT_PORT && bit == BMS_FAULT_PIN) VCUDataPtr->DigitalVal.BMS_FAULT = true;
+     if(port == SHUTDOWN_CIRCUIT_PORT && bit == BMS_FAULT_PIN){
 
-         if(port == SHUTDOWN_CIRCUIT_PORT && bit == IMD_FAULT_PIN) VCUDataPtr->DigitalVal.IMD_FAULT = true;
+        #ifdef SENSOR_PRINT
+        UARTSend(PC_UART, "BMS Fault Triggered!\r\n");
+        #endif
 
-         //      (Shutdown Board SHOULD be Triggered)  &&  (TSAL_HV == ON) ----> TSAL_WELDED
-         if((VCUDataPtr->DigitalVal.BMS_FAULT || VCUDataPtr->DigitalVal.IMD_FAULT || VCUDataPtr->DigitalVal.BSPD_FAULT) && gioGetBit(TSAL_PORT,TSAL_ACTIVE_PIN))
+         VCUDataPtr->DigitalVal.BMS_FAULT = true;
 
-             VCUDataPtr->DigitalVal.TSAL_WELDED = true;
+     }
+
+     if(port == SHUTDOWN_CIRCUIT_PORT && bit == IMD_FAULT_PIN){
+
+        #ifdef SENSOR_PRINT
+        UARTSend(PC_UART, "IMD Fault Triggered!\r\n");
+        #endif
+
+         VCUDataPtr->DigitalVal.IMD_FAULT = true;
+     }
 
 
  //    UARTSend(PC_UART, "---------Interrupt Request-------\r\n");
