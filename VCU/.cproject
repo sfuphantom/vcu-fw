@@ -154,6 +154,7 @@
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.OPT_LEVEL.254913936" name="Optimization level (--opt_level, -O)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.OPT_LEVEL" value="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.OPT_LEVEL.2" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.INCLUDE_PATH.1395982396" name="Add dir to #include search path (--include_path, -I)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.INCLUDE_PATH" valueType="includePath">
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/RTD_Buzzer}"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/EEPROM}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Support}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/RTOS}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/RGB_LED}"/>
