@@ -5,8 +5,7 @@
  *      Author: jaypacamarra
  */
 
-#include <Phantom/Drivers/Driver_controls/throttle.h>
-
+#include "throttle.h"
 
 
 
@@ -373,23 +372,20 @@ bool check_10PercentAPPS_Fault() {
 */
 bool check_Brake_Plausibility_Fault() {
     if (BSE_sensor_sum >= BRAKING_THRESHOLD &&
-            Percent_APPS1_Pressed >= 0.25 &&
-            Percent_APPS2_Pressed >= 0.25)
+        Percent_APPS1_Pressed >= 0.25 &&
+        Percent_APPS2_Pressed >= 0.25)
     {
         // Set fault
         is_there_brake_plausibility_fault = true;
 
     }
-    else
+    // APPS/Brake plausibility fault only clears if APPS returns to less than 5% pedal position
+    // with or without brake operation (see EV.5.7.2) - jaypacamarra
+    else if (Percent_APPS1_Pressed < 0.05 &&
+             Percent_APPS2_Pressed < 0.05)
     {
-        // APPS/Brake plausibility fault only clears if APPS returns to less than 5% pedal position
-        // with or without brake operation (see EV.5.7.2) - jaypacamarra
-        if (Percent_APPS1_Pressed < 0.05 &&
-                Percent_APPS2_Pressed < 0.05)
-        {
-            // No fault
-            is_there_brake_plausibility_fault = false;
-        }
+        // No fault
+        is_there_brake_plausibility_fault = false;
     }
 
     return is_there_brake_plausibility_fault;

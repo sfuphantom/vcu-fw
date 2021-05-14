@@ -19,6 +19,8 @@
 #include <stdio.h>
 #include "reg_het.h"
 
+#include "execution_timer.h" // FOR DETERMINING TASK EXECUTION TIME
+
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
 #include "IMD.h"             // Bender IR155 IMD Library written by Sumreen Rattan
@@ -59,6 +61,9 @@ int main(void)
 {
 /* USER CODE BEGIN (3) */
 
+#ifdef PMU_CYCLE
+    timer_Init();
+#endif
     /* Halcogen Initialization */
 
     _enable_IRQ();              // Enable interrupts
@@ -69,7 +74,7 @@ int main(void)
 
     /* Phantom Library Initialization */
 
-    initData(VCUDataPtr);       // Initialize VCU Data Structure
+//    initData(VCUDataPtr);       // Initialize VCU Data Structure
     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_LED_Init();             // Initialize RGB LEDs to start off
     MCP48FV_Init();             // Initialize DAC Library
