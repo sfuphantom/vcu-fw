@@ -24,16 +24,6 @@
 
 #include "vcu_data.h"
 
-//++ Added by jaypacamarra for execution time measurement
-
-#include <Phantom/Support/execution_timer.h>
-
-#define CPU_CLOCK_MHz (float) 160.0  // System clock is 180 Mhz, RTI Clock is 80 Mhz
-volatile unsigned long cycles_PMU_start;    // CPU cycle count at start
-volatile float time_PMU_code_uSecond;   // the calculated time in uSecond.
-
-//++ Added by jaypacamarra for execution time measurement
-
 
 extern State state;
 extern TimerHandle_t xTimers[];                 //jaypacamarra
@@ -97,14 +87,6 @@ void vThrottleTask(void *pvParameters)
     {
         // Wait for the next cycle
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
-#ifdef PMU_CYCLE
-        //Start timer.
-        cycles_PMU_start = timer_Start();
-        gioSetBit(gioPORTA, 5, 1);
-#endif
-        // for timing:
-//        gioSetBit(gioPORTB, 1, 1);
 
         // Get pedal readings
         getPedalReadings();
@@ -233,13 +215,5 @@ void vThrottleTask(void *pvParameters)
             MCP48FV_Set_Value(0);
             THROTTLE_AVAILABLE = false;
         }
-
-#ifdef PMU_CYCLE
-        //Start timer.
-        cycles_PMU_start = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
-        gioSetBit(gioPORTA, 5, 0);
-#endif
-        // for timing:
-//        gioSetBit(gioPORTB, 1, 0);
     }
 }
