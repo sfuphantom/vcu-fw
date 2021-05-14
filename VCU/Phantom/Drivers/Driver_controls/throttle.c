@@ -67,8 +67,8 @@ void getPedalReadings() {
     while (!adcIsConversionComplete(adcREG1, adcGROUP1));
     adcGetData(adcREG1, adcGROUP1, FP_data_ptr);
     BSE_sensor_sum = (unsigned int)FP_data[0].value;   // BSE
-    FP_sensor_1_sum = (unsigned int)FP_data[1].value;  // APPS1
-    FP_sensor_2_sum = (unsigned int)FP_data[2].value;  // APPS2
+    FP_sensor_2_sum = (unsigned int)FP_data[1].value;  // APPS1
+    FP_sensor_1_sum = (unsigned int)FP_data[2].value;  // APPS2
 
     // Update pedal percentages
     calculatePedalPercents();
@@ -149,6 +149,14 @@ bool check_BSE_Range_Fault() {
                 BSE_range_fault_timer_started = true;
             }
         }
+        if(BSE_RANGE_FAULT_TIMER_EXPIRED)
+        {
+            is_there_BSE_range_fault = true; // Set fault flag in vcu data structure
+        }
+        else
+        {
+            is_there_BSE_range_fault = false; // Set fault flag in vcu data structure
+        }
     }
     else if (BSE_sensor_sum > BSE_MAX_VALUE) // BSE is assumed shorted to VCC
     {
@@ -167,6 +175,10 @@ bool check_BSE_Range_Fault() {
         if(BSE_RANGE_FAULT_TIMER_EXPIRED)
         {
             is_there_BSE_range_fault = true; // Set fault flag in vcu data structure
+        }
+        else
+        {
+            is_there_BSE_range_fault = false; // Set fault flag in vcu data structure
         }
     }
     else
