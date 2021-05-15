@@ -51,6 +51,16 @@ extern bool THROTTLE_AVAILABLE;
 
 extern data *VCUDataPtr;
 
+//++ Added by jaypacamarra for execution time measurement
+
+#include <Phantom/support/execution_timer.h>
+
+#define CPU_CLOCK_MHz (float) 160.0  // System clock is 180 Mhz, RTI Clock is 80 Mhz
+volatile unsigned long cycles_PMU_start;    // CPU cycle count at start
+volatile float time_PMU_code_uSecond;   // the calculated time in uSecond.
+
+//++ Added by jaypacamarra for execution time measurement
+
 bool previous_brake_light_state = 1;    // Default = 1. Holds previous brake light state, 1 = ON, 0 = OFF - jaypacamarra
 uint16_t hysteresis = 200;          // change this to tweak hysteresis threshhold - jaypacamarra
 
@@ -87,6 +97,12 @@ void vThrottleTask(void *pvParameters)
     {
         // Wait for the next cycle
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
+
+#ifdef PMU_CYCLE
+        //Start timer.
+        cycles_PMU_start = timer_Start();
+        gioSetBit(gioPORTA, 5, 1);
+#endif
 
         // Get pedal readings
         getPedalReadings();
@@ -215,5 +231,11 @@ void vThrottleTask(void *pvParameters)
             MCP48FV_Set_Value(0);
             THROTTLE_AVAILABLE = false;
         }
+
+#ifdef PMU_CYCLE
+        //Start timer.
+        cycles_PMU_start = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
+        gioSetBit(gioPORTA, 5, 0);
+#endif
     }
 }
