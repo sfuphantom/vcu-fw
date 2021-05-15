@@ -234,7 +234,7 @@ void vThrottleTask(void *pvParameters)
 
 #ifdef PMU_CYCLE
         //Start timer.
-        cycles_PMU_start = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
+        time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
         gioSetBit(gioPORTA, 5, 0);
 #endif
     }
