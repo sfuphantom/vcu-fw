@@ -31,8 +31,10 @@
 
 //++ Added by jjkhan
 
-#define TEST_EEPROM     1
+#define TEST_EEPROM     0
 #include "../test_eeprom/testEeprom.h" // Included for testing eeprom -> should remove later.
+
+#define TEST_STATEMACHINE 0
 #include "../test_statemachine/stateMachineTaskTest.h" // Included for testing Statemachine -> should remove later
 //-- Added by jjkhan
 

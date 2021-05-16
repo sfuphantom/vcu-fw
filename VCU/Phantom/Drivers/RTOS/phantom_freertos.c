@@ -89,7 +89,7 @@ void phantom_freeRTOStimerInit(void)
                  "HV_Current_OutOfRange_T",
                  /* The timer period in ticks, must be
                  greater than 0. */
-                 pdMS_TO_TICKS(100),
+                 pdMS_TO_TICKS(1000),
                  /* The timers will auto-reload themselves
                  when they expire. */
                  pdFALSE,
@@ -107,7 +107,7 @@ void phantom_freeRTOStimerInit(void)
                  "HV_Voltage_OutOfRange_T",
                  /* The timer period in ticks, must be
                  greater than 0. */
-                 pdMS_TO_TICKS(100),
+                 pdMS_TO_TICKS(1000),
                  /* The timers will auto-reload themselves
                  when they expire. */
                  pdFALSE,
@@ -260,14 +260,14 @@ void phantom_freeRTOStaskInit(void)
 #endif
       /* -- Added by jjkhan */
 
-
+#if TEST_STATEMACHINE == 1
       // ++ Added by jjkhan - State machine Test Task
             if(xTaskCreate(stateMachineTaskTest, (const char*)"State Machine Task Test", 240, NULL, tskIDLE_PRIORITY, &testingStateMachineTask)!= pdTRUE){
                 sciSend(PC_UART,23,(unsigned char*)"TestTask Creation Failed.\r\n");
                 while(1);
             }
       // -- Added by jjkhan - State machine Test Task
-
+#endif
 
      // all tasks have been created successfully
      UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
