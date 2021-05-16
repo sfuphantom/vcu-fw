@@ -13,7 +13,7 @@
 #include "board_hardware.h" // Has definition of State possible values
 
 // ++ This is the vcuState memory location in VCU Data structure
-#define VCU_STATE 0x48  // 0x48 = 72
+#define VCU_STATE 0x5B  // 0x5B = 91
 // -- This is the vcuState memory location in VCU Data structure
 
 extern TaskHandle_t eepromHandler; // Eeprom Task handler
@@ -21,7 +21,7 @@ extern SemaphoreHandle_t vcuKey;
 extern data VCUData;
 void *pVCUDataStructure = &VCUData;  // Need this void pointer to read from eeprom bank - Added by jjkhan
 extern data* VCUDataPtr; // Need this pointer to update "state" with "vcuState" when last shutdown is not graceful
-extern State state; //  In state machine task can simply use VCUDataPtr->vcuState, instead of "state" ?
+//extern State state; //  In state machine task can simply use VCUDataPtr->vcuState, instead of "state" ?
 //++ Added by jjkhan for execution time measurement
 
 #include <Phantom/support/execution_timer.h>
@@ -170,7 +170,7 @@ inline void loadFromEeprom(void){
                      xQueueSendToBack(eepromMessages,(void *)txBuffer, pdMS_TO_TICKS(0)); // Don't block if Queue is already full
 #endif
                      initializationOccured = 1;
-                     state = VCUDataPtr->vcuState; // Get last saved state after loading VCUData from eeprom memory
+                     //state = VCUDataPtr->vcuState; // Get last saved state after loading VCUData from eeprom memory
                 }else if(jobCompletedFlag == E_NOT_OK){
                     // Print VCU data structure load from eeprom failed.
                 }
