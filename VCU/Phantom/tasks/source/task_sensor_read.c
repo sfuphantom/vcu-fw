@@ -86,7 +86,7 @@ void vSensorReadTask(void *pvParameters){
 
             if ( gioGetBit(gioPORTA, 2) == 1)
             {
-                VCUDataPtr->DigitalVal.RTDS = 0;
+                //VCUDataPtr->DigitalVal.RTDS = 0; -> Commented out by jjkhan: Don't know what it going on here
     //            UARTSend(PC_UART, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
             }
             else
