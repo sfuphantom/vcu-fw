@@ -34,10 +34,8 @@
 
 #include "execution_timer.h"
 
-State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and referenced from there
 data VCUData;
 data* VCUDataPtr = &VCUData;
-
 
 // ++ Added by jjkhan:
      // Uncomment the following directive if the current sensor module is connected.
