@@ -11,6 +11,11 @@
 
 #include "sys_common.h"
 
+
+//++ Added by jjkhan
+#include "board_hardware.h"  // Has "State" enum definition
+//-- Added by jjkhan
+
 typedef struct analogData
 {
     float adc_value;
@@ -53,7 +58,6 @@ typedef struct analogOutputs
 
 typedef struct digitalValues
 {
-
 
     uint8_t TSAL_ON;
     uint8_t RTDS;
@@ -115,13 +119,23 @@ typedef struct digitalOutputs
     // somehow show the PWM for the buzzer here
 } digitalOutputs;
 
-
 typedef struct data
 {
+    /* Note: -> DO NOT change the place of vcuState structure in this file because:
+         *  In eepromTask, we're reading vcuState from FEE bank using an OFFSET of 72 bytes.
+         *  i.e. 73rd byte is the value corresponding to vcuState, based on the setup on
+         *  the placement order of "data" structure below.
+     */
+
     analogInputs AnalogIn;
     analogOutputs AnalogOut;
-    digitalValues DigitalVal;
     digitalOutputs DigitalOut;
+    digitalValues DigitalVal;
+
+    //++ Added by jjkhan
+    State vcuState;
+    //-- Added by jjkhan
+
 } data;
 
 

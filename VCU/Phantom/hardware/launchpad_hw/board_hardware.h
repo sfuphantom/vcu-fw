@@ -87,10 +87,4 @@
 typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, MINOR_FAULT, SEVERE_FAULT} State; // Added MINOR and SEVERE FAULT states - jjkhan
 
 
-
-
-
-
-
-
 #endif /* PHANTOM_HARDWARE_LAUNCHPAD_HW_BOARD_HARDWARE_H_ */

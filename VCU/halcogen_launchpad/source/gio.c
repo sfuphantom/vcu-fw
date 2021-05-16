@@ -1,12 +1,12 @@
 /** @file gio.c
 *   @brief GIO Driver Implementation File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -103,7 +103,7 @@ void gioInit(void)
     /** - Port A pullup / pulldown selection */
     gioPORTA->PSL  = (uint32)((uint32)0U << 0U)  /* Bit 0 */
                    | (uint32)((uint32)0U << 1U)  /* Bit 1 */
-                   | (uint32)((uint32)0U << 2U)  /* Bit 2 */
+                   | (uint32)((uint32)1U << 2U)  /* Bit 2 */
                    | (uint32)((uint32)0U << 3U)  /* Bit 3 */
                    | (uint32)((uint32)0U << 4U)  /* Bit 4 */
                    | (uint32)((uint32)0U << 5U)  /* Bit 5 */
@@ -173,6 +173,7 @@ void gioInit(void)
                       | (uint32)((uint32)0U << 7U); /* Bit 7 */
 
 /* USER CODE BEGIN (3) */
+
 /* USER CODE END */
 
     /** @b initialize @b interrupts */
@@ -183,7 +184,7 @@ void gioInit(void)
                 | (uint32)((uint32)0U << 2U)   /* Bit 2 */
                 | (uint32)((uint32)0U << 3U)   /* Bit 3 */
                 | (uint32)((uint32)0U << 4U)   /* Bit 4 */
-                | (uint32)((uint32)0U << 5U)   /* Bit 5 */
+                | (uint32)((uint32)1U << 5U)   /* Bit 5 */
                 | (uint32)((uint32)0U << 6U)   /* Bit 6 */
                 | (uint32)((uint32)0U << 7U)   /* Bit 7 */
                 | (uint32)((uint32)0U << 8U)   /* Bit 8  */
@@ -223,10 +224,10 @@ void gioInit(void)
     /** - enable interrupts */
     gioREG->ENASET = (uint32)((uint32)0U << 0U)   /* Bit 0 */
                    | (uint32)((uint32)0U << 1U)   /* Bit 1 */
-                   | (uint32)((uint32)0U << 2U)   /* Bit 2 */
+                   | (uint32)((uint32)1U << 2U)   /* Bit 2 */
                    | (uint32)((uint32)0U << 3U)   /* Bit 3 */
                    | (uint32)((uint32)0U << 4U)   /* Bit 4 */
-                   | (uint32)((uint32)0U << 5U)   /* Bit 5 */
+                   | (uint32)((uint32)1U << 5U)   /* Bit 5 */
                    | (uint32)((uint32)0U << 6U)   /* Bit 6 */
                    | (uint32)((uint32)0U << 7U)   /* Bit 7 */
                    | (uint32)((uint32)0U << 8U)   /* Bit 8  */
@@ -507,11 +508,51 @@ void gioGetConfigValue(gio_config_reg_t *config_reg, config_value_type_t type)
     /*SAFETYMCUSW 134 S MR:12.2 <APPROVED> "LDRA Tool issue" */
         config_reg->CONFIG_PORTBDIR    = gioPORTB->DIR;
         config_reg->CONFIG_PORTBPDR    = gioPORTB->PDR;
-        config_reg->CONFIG_PORTBPSL    = gioPORTB->PULDIS;
-        config_reg->CONFIG_PORTBPULDIS = gioPORTB->PSL;
+        config_reg->CONFIG_PORTBPSL    = gioPORTB->PSL;
+        config_reg->CONFIG_PORTBPULDIS = gioPORTB->PULDIS;
     }
 }
 
+
+/* USER CODE BEGIN (16) */
+/* USER CODE END */
+
+/** @fn void gioLowLevelInterrupt(void)
+*   @brief GIO Interrupt Handler
+*
+*   Low Level Interrupt handler for GIO pin interrupt
+*
+*/
+#pragma CODE_STATE(gioLowLevelInterrupt, 32)
+#pragma INTERRUPT(gioLowLevelInterrupt, IRQ)
+
+/* SourceId : GIO_SourceId_012 */
+/* DesignId : GIO_DesignId_011 */
+/* Requirements : HL_SR35, HL_SR36 */
+void gioLowLevelInterrupt(void)
+{
+    uint32 offset = gioREG->OFF2;
+
+/* USER CODE BEGIN (17) */
+/* USER CODE END */
+
+    if (offset != 0U)
+    {
+        offset = offset - 1U;
+        if (offset >= 8U)
+        {
+            gioNotification(gioPORTB, offset - 8U);
+        }
+        else
+        {
+            gioNotification(gioPORTA, offset);
+        }
+    }
+
+/* USER CODE BEGIN (18) */
+/* USER CODE END */
+
+}
 
 
 /* USER CODE BEGIN (19) */

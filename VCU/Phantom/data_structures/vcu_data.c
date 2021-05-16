@@ -6,6 +6,20 @@
  */
 #include "vcu_data.h"
 
+
+/*******************************************************************
+* NAME :            initData
+*
+* DESCRIPTION :     Initializes the VCU State Machine
+*
+* INPUTS : Pointer to baseAddress to data structure of VCU data.
+*
+* RETURN : None
+*
+*
+* NOTES :
+*
+*/
 void initData(data* VCUDataPtr)
 {
     /***********************************************************
@@ -92,5 +106,4 @@ void initData(data* VCUDataPtr)
 
     VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
 }
-
 

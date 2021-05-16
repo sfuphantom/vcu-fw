@@ -22,12 +22,27 @@
 #include "priorities.h"
 #include "Phantom_sci.h"
 #include "FreeRTOS.h"
+#include "os_projdefs.h"
 
+// Needed the swiSwitchMode defined in here, will moved swiSwitchMode to board_hardware.h
+#include "eeprom_driver.h"
 #include "vcu_data.h" // data structure to hold VCU data
 #include "task_statemachine.h"
 
 uint32_t blue_duty = 100;
 uint32_t blue_flag = 0;
+
+
+/*
+ *  task_eeprom.c initializes the VCUData structure based on last stored VCU state in eeprom.
+ *      Task can't should not execute its body until initialization has occurred.
+ */
+// ++ Added by jjkhan
+extern volatile uint8_t initializationOccured;
+extern SemaphoreHandle_t vcuKey;
+extern data* VCUDataPtr;
+// -- Added by jjkhan
+
 
 
 /*********************************************************************************
@@ -193,7 +208,7 @@ void vStateMachineTask(void *pvParameters){
 //    int nchars;
 
     TickType_t xLastWakeTime;          // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 100; // task frequency in ms
+    //const TickType_t xFrequency = 100; // task frequency in ms
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
@@ -220,8 +235,7 @@ void vStateMachineTask(void *pvParameters){
 
     while(true)
     {
-
-
+        if(initializationOccured){
         // for timing:
         gioSetBit(hetPORT1, 9, 1);
 
@@ -245,7 +259,6 @@ void vStateMachineTask(void *pvParameters){
            /* -- New Code: Added by jjkhan */
         }else if (state == TRACTIVE_ON){
 
-            if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********");}
 
             temp_state = state;
             /* ++ New Code - Added by jjkhan */
@@ -367,7 +380,6 @@ void vStateMachineTask(void *pvParameters){
 
         }else if (state == RUNNING){
 
-            if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********");}
 
 
             /* ++ New Code - Added by jjkhan */
@@ -573,13 +585,12 @@ void vStateMachineTask(void *pvParameters){
             /* -- New Code - Added by jjkhan */
         }
 
-        if (STATE_PRINT) {UARTSend(PC_UART, "\r\n");}
+            if (STATE_PRINT) {UARTSend(PC_UART, "\r\n");}
 
-        // for timing:
-        gioSetBit(hetPORT1, 9, 0);
-
-        // Wait for the next cycle
-         vTaskDelayUntil(&xLastWakeTime, xFrequency);
-
+            // for timing:
+            //gioSetBit(hetPORT1, 9, 0);
+        }else{
+            vTaskDelayUntil(&xLastWakeTime, STATE_MACHINE_TASK_PERIOD_MS); // A delay of 0.1 seconds -  based on line 66 statement
+        }
     }
 }

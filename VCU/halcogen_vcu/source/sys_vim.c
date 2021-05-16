@@ -1,12 +1,12 @@
 /** @file sys_vim.c 
 *   @brief VIM Driver Implementation File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com  
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com  
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -41,9 +41,9 @@
 
 
 
-#include <halcogen_vcu/include/esm.h>
-#include <halcogen_vcu/include/sys_vim.h>
-#include <halcogen_vcu/include/system.h>
+#include "sys_vim.h"
+#include "system.h"
+#include "esm.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
@@ -93,7 +93,7 @@ static const t_isrFuncPTR s_vim_init[128U] =
     &vPortYeildWithinAPI,            /* Channel 21 */
     &phantomInterrupt,            /* Channel 22 */
     &gioLowLevelInterrupt,            /* Channel 23 */
-    &phantomInterrupt,            /* Channel 24 */
+    &het1LowLevelInterrupt,            /* Channel 24 */
     &phantomInterrupt,            /* Channel 25 */
     &phantomInterrupt,            /* Channel 26 */
     &phantomInterrupt,            /* Channel 27 */
@@ -386,7 +386,7 @@ void vimInit(void)
                         | (uint32)((uint32)1U << 21U)
                         | (uint32)((uint32)0U << 22U)
                         | (uint32)((uint32)1U << 23U)
-                        | (uint32)((uint32)0U << 24U)
+                        | (uint32)((uint32)1U << 24U)
                         | (uint32)((uint32)0U << 25U)
                         | (uint32)((uint32)0U << 26U)
                         | (uint32)((uint32)0U << 27U)

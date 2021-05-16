@@ -1,7 +1,7 @@
 /** @file sys_selftest.h
 *   @brief System Memory Header File
-*   @date 07-July-2017
-*   @version 04.07.00
+*   @date 11-Dec-2018
+*   @version 04.07.01
 *   
 *   This file contains:
 *   - Efuse Self Test Functions
@@ -10,7 +10,7 @@
 */
 
 /* 
-* Copyright (C) 2009-2016 Texas Instruments Incorporated - www.ti.com 
+* Copyright (C) 2009-2018 Texas Instruments Incorporated - www.ti.com 
 * 
 * 
 *  Redistribution and use in source and binary forms, with or without 
@@ -47,18 +47,18 @@
 #ifndef __sys_selftest_H__
 #define __sys_selftest_H__
 
-#include <halcogen_vcu/include/adc.h>
-#include <halcogen_vcu/include/can.h>
-#include <halcogen_vcu/include/esm.h>
-#include <halcogen_vcu/include/het.h>
-#include <halcogen_vcu/include/htu.h>
-#include <halcogen_vcu/include/mibspi.h>
-#include <halcogen_vcu/include/reg_efc.h>
-#include <halcogen_vcu/include/reg_pbist.h>
-#include <halcogen_vcu/include/reg_stc.h>
-#include <halcogen_vcu/include/sys_core.h>
-#include <halcogen_vcu/include/sys_vim.h>
-#include <halcogen_vcu/include/system.h>
+#include "reg_pbist.h"
+#include "reg_stc.h"
+#include "reg_efc.h"
+#include "sys_core.h"
+#include "system.h"
+#include "sys_vim.h"
+#include "adc.h"
+#include "can.h"
+#include "mibspi.h"
+#include "het.h"
+#include "htu.h"
+#include "esm.h"
 
 /* USER CODE BEGIN (0) */
 /* USER CODE END */
