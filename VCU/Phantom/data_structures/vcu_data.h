@@ -122,8 +122,8 @@ typedef struct digitalOutputs
 typedef struct data
 {
     /* Note: -> DO NOT change the place of vcuState structure in this file because:
-         *  In eepromTask, we're reading vcuState from FEE bank using an OFFSET of 72 bytes.
-         *  i.e. 73rd byte is the value corresponding to vcuState, based on the setup on
+         *  In eepromTask, we're reading vcuState from FEE bank using an OFFSET of 91 bytes.
+         *  i.e. 92nd byte is the value corresponding to vcuState, based on the setup on
          *  the placement order of "data" structure below.
      */
 

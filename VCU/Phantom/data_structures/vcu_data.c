@@ -102,5 +102,8 @@ void initData(data* VCUDataPtr)
     /* -- New Faults  */
 
     VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
+
+    /* Default VCU State at Start-up. */
+    VCUDataPtr->vcuState = TRACTIVE_OFF;
 }
 
