@@ -26,7 +26,7 @@
 
 #include "priorities.h"
 
-extern State state;
+State state;
 
 /*********************************************************************************
                  ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
@@ -87,6 +87,10 @@ void vThrottleTask(void *pvParameters){
     while(true)
     {
         if(initializationOccured){
+
+            // Added by jjkhan: moved "state" inside VCU Data structure;
+            state = VCUDataPtr->vcuState; // Get current VCU state
+
             // Wait for the next cycle
             vTaskDelayUntil(&xLastWakeTime, THROTTLE_TASK_PERIOD_MS);
 
