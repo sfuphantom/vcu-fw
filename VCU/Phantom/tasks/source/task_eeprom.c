@@ -250,13 +250,13 @@ inline void initializeVCU(void){
 
     jobCompletedFlag = eeprom_Read(EEP0, DATA_BLOCK_2, VCU_STATE, &lastStoredState, 0x01, SYNC);
      if(jobCompletedFlag==E_OK){
-         if(lastStoredState==FAULT){ // Last shutdown was due to a Fault
+         if(lastStoredState==SEVERE_FAULT || lastStoredState==MINOR_FAULT ){ // Last shutdown was due to a Fault
 #if EEPROM_DEBUG_MESSAGES  == 1
                  sprintf(txBuffer, message24); // Write  message to txBuffer
                  xQueueSendToBack(eepromMessages,(void *)txBuffer, pdMS_TO_TICKS(0)); // Don't block if Queue is already full
 #endif
                  loadFromEeprom();
-         }else if(lastStoredState!=FAULT){  // Last shutdown was graceful
+         }else if(lastStoredState!=SEVERE_FAULT || lastStoredState!=MINOR_FAULT){  // Last shutdown was graceful
 #if EEPROM_DEBUG_MESSAGES  == 1
                  sprintf(txBuffer, message25); // Write  message to txBuffer
                  xQueueSendToBack(eepromMessages,(void *)txBuffer, pdMS_TO_TICKS(0)); // Don't block if Queue is already full

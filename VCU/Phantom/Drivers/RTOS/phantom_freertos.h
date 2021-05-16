@@ -33,13 +33,21 @@
 
 #define TEST_EEPROM     1
 #include "../test_eeprom/testEeprom.h" // Included for testing eeprom -> should remove later.
+#include "../test_statemachine/stateMachineTaskTest.h" // Included for testing Statemachine -> should remove later
 //-- Added by jjkhan
 
-#define NUMBER_OF_TIMERS   2
+
+
+#define NUMBER_OF_TIMERS   4        // Updated by jjkhan: State machine Task needs 2 timers.
 
 /* This timer is used to debounce the interrupts for the RTDS and SDC signals */
 void Timer_300ms(TimerHandle_t xTimers);
 void Timer_2s(TimerHandle_t xTimers);
+
+// ++ Added by jjkhan: State machine timers
+void Timer_HV_CurrentRange(TimerHandle_t xTimers);
+void Timer_HV_VoltageRange(TimerHandle_t xTimers);
+// -- Added by jjkhan: State machine timers
 
 void phantom_freeRTOSInit(void);
 void phantom_freeRTOStimerInit(void);

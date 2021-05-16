@@ -13,6 +13,12 @@ unsigned int BSE_sensor_sum  = 0;    // needs to be stored in VCU data structure
 bool INTERRUPT_AVAILABLE;
 bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has gone for 2 seconds
 
+// ++ Added by jjkhan: State machine Timer callback flags
+volatile bool HV_CURRENT_TIMER_EXPIRED = false;
+volatile bool HV_VOLTAGE_TIMER_EXPIRED = false;
+// -- Added by jjkhan: State machine Timer callback flags
+
+
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
 xQueueHandle VCUDataQueue;
@@ -20,6 +26,7 @@ xQueueHandle VCUDataQueue;
 // ++ Added by jjkhan
 TaskHandle_t testingEepromHandler = NULL; // Eeprom Test Task Task Handler
 TaskHandle_t stateMachineHandler = NULL;  // State machine Task Handler
+TaskHandle_t testingStateMachineTask = NULL;  // State Machine Test Task Handler.
 TaskHandle_t eepromHandler = NULL;  // Eeprom Task Task Handler
 SemaphoreHandle_t vcuKey;        // Mutex to protect VCU data structure
 SemaphoreHandle_t powerfailureFlagKey;  // still using this? - jjkhan
@@ -74,6 +81,45 @@ void phantom_freeRTOStimerInit(void)
              Timer_2s
            );
 
+    // ++ Added by jjkhan - State Machint Task Timers for HV Current and Voltage Flags
+
+        xTimers[2] = xTimerCreate
+                ( /* Just a text name, not used by the RTOS
+                 kernel. */
+                 "HV_Current_OutOfRange_T",
+                 /* The timer period in ticks, must be
+                 greater than 0. */
+                 pdMS_TO_TICKS(100),
+                 /* The timers will auto-reload themselves
+                 when they expire. */
+                 pdFALSE,
+                 /* The ID is used to store a count of the
+                 number of times the timer has expired, which
+                 is initialised to 0. */
+                 ( void * ) 0,
+                 /* Callback function for when the timer expires*/
+                 Timer_HV_CurrentRange
+               );
+
+        xTimers[3] = xTimerCreate
+                ( /* Just a text name, not used by the RTOS
+                 kernel. */
+                 "HV_Voltage_OutOfRange_T",
+                 /* The timer period in ticks, must be
+                 greater than 0. */
+                 pdMS_TO_TICKS(100),
+                 /* The timers will auto-reload themselves
+                 when they expire. */
+                 pdFALSE,
+                 /* The ID is used to store a count of the
+                 number of times the timer has expired, which
+                 is initialised to 0. */
+                 ( void * ) 0,
+                 /* Callback function for when the timer expires*/
+                 Timer_HV_VoltageRange
+               );
+
+    // -- Added by jjkhan - State Machint Task Timers for HV Current and Voltage Flags
 
     // with more timers being added it's more worth it to do a for loop for initializing each one here at the start
 
@@ -112,6 +158,23 @@ void phantom_freeRTOStimerInit(void)
              UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
          }
     }
+
+
+    // ++ Added by jjkhan: State machine Timer Declarations
+        if( xTimers[2] == NULL )
+        {
+             /* The timer was not created. */
+            UARTSend(PC_UART, "HV Current Fault timer was not created.\r\n");
+        }
+
+
+        if( xTimers[3] == NULL )
+        {
+             /* The timer was not created. */
+            UARTSend(PC_UART, "HV Voltage Fault timer was not created.\r\n");
+        }
+     // -- Added by jjkhan: State machine Timer Declarations
+
 }
 
 void phantom_freeRTOStaskInit(void)
@@ -134,7 +197,7 @@ void phantom_freeRTOStaskInit(void)
 
 
      // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
-     if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  150, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
+     if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -197,6 +260,15 @@ void phantom_freeRTOStaskInit(void)
 #endif
       /* -- Added by jjkhan */
 
+
+      // ++ Added by jjkhan - State machine Test Task
+            if(xTaskCreate(stateMachineTaskTest, (const char*)"State Machine Task Test", 240, NULL, tskIDLE_PRIORITY, &testingStateMachineTask)!= pdTRUE){
+                sciSend(PC_UART,23,(unsigned char*)"TestTask Creation Failed.\r\n");
+                while(1);
+            }
+      // -- Added by jjkhan - State machine Test Task
+
+
      // all tasks have been created successfully
      UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
      // will need our own hardware defines file to do this for all the ports and pins we use..
@@ -216,6 +288,22 @@ void phantom_freeRTOStaskInit(void)
 //     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
      THROTTLE_AVAILABLE = true;
  }
+
+
+ // ++ Added by jjkhan - Timer Callbacks for HV Current and Voltage Fault Timers
+
+  void Timer_HV_CurrentRange(TimerHandle_t xTimers){
+      HV_CURRENT_TIMER_EXPIRED = true; //  i.e. Timer value = threshold
+
+
+  }
+
+  void Timer_HV_VoltageRange(TimerHandle_t xTimers){
+      HV_VOLTAGE_TIMER_EXPIRED = true; //  i.e. Timer value = threshold
+  }
+
+  // -- Added by jjkhan - Timer Callbacks for HV Current and Voltage Fault Timers
+
 
  /*********************************************************************************
   *               READY TO DRIVE SIGNAL INTERRUPT (SHOULD PROBABLY FIND A BETTER PLACE TO PUT THIS)

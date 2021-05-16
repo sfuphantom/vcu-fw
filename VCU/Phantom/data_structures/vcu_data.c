@@ -101,9 +101,6 @@ void initData(data* VCUDataPtr)
 
     /* -- New Faults  */
 
-
-
-
     VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
 }
 
