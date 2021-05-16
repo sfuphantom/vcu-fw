@@ -166,7 +166,6 @@
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/RTD_Buzzer}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/RGB_LED}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/RTOS}"/>
-									<listOptionValue builtIn="false" value="C:\ti\Hercules\F021 Flash API\02.01.01\include"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/halcogen_launchpad/include}"/>
