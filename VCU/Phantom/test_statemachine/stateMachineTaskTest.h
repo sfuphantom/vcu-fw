@@ -14,7 +14,6 @@
 
 extern SemaphoreHandle_t vcuKey;
 extern data* VCUDataPtr;
-
 void stateMachineTaskTest(void* parameters);
 
 
