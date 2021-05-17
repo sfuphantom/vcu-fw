@@ -13,7 +13,7 @@
 #include "board_hardware.h" // Has definition of State possible values
 
 // ++ This is the vcuState memory location in VCU Data structure
-#define VCU_STATE 0x5B  // 0x5B = 91
+#define VCU_STATE 0x59  // 0x59 = 89
 // -- This is the vcuState memory location in VCU Data structure
 
 extern TaskHandle_t eepromHandler; // Eeprom Task handler
@@ -244,9 +244,8 @@ inline void workOnLastScheduledJob(void){
 
 inline void initializeVCU(void){
     // Read the last saved POWER_FAILURE_FLAG, it is the last byte of the VCUData Structure,
-    // VCUData Structure (at the time of integration) -> 73 Bytes
-    // The last byte == POWER_FAILURE_FLAG,
-    // Therefore, need to offset memory pointer by 72 bytes (in hex = 0x48)
+    // VCUData Structure (at the time of integration) -> 92 Bytes (0x5C)
+    // Therefore, need to offset memory pointer by 91 bytes (in hex = 0x5B)
 
     jobCompletedFlag = eeprom_Read(EEP0, DATA_BLOCK_2, VCU_STATE, &lastStoredState, 0x01, SYNC);
      if(jobCompletedFlag==E_OK){
