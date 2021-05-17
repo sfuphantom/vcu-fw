@@ -30,7 +30,7 @@ TaskHandle_t testingStateMachineTask = NULL;  // State Machine Test Task Handler
 TaskHandle_t eepromHandler = NULL;  // Eeprom Task Task Handler
 SemaphoreHandle_t vcuKey;        // Mutex to protect VCU data structure
 SemaphoreHandle_t powerfailureFlagKey;  // still using this? - jjkhan
-xQueueHandle eepromMessages;
+xQueueHandle eepromMessages, stateMachineMessages;
 // -- Added by jjkhan
 
 void phantom_freeRTOSInit(void)
@@ -184,6 +184,7 @@ void phantom_freeRTOStaskInit(void)
 
      VCUDataQueue = xQueueCreate(5, sizeof(long)); // what does this 5 mean?
      eepromMessages = xQueueCreate(10, sizeof(char)*60U);
+     stateMachineMessages = xQueueCreate(10, sizeof(char)*60U);
 
      // can I already shove the VCU data structure into here? or do i need to do that within a task
 
