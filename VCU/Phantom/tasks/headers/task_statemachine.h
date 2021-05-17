@@ -51,10 +51,7 @@ int checkIMD(void);
 int checkBSE_APPS(void);
 int CheckHVLVSensor(void);
 int checkCAN(void);
-int isRTDS(void);
-int isTSAL_ON(void);
 uint16_t faultLocation(void);
-int anyFaults(void);
 
 /* Task */
 void vStateMachineTask(void *);

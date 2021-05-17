@@ -37,11 +37,17 @@ extern data *VCUDataPtr;
 static uint16_t faultNumber;
 static State currentState;
 static State newState;
+volatile static bool TSAL_ON;
+volatile static bool RTDS_SET;
+volatile static bool FAULTS;
 volatile static bool HV_CurrentTimerStarted;
 volatile static bool HV_VoltageTimerStarted;
+inline bool isTSAL_ON();
+inline bool isRTDS();
+inline bool anyFaults(void);
 inline bool isSevereFault(void);
 inline bool isMinorFault(void);
-
+inline State stateUpdate(void);
 /***********************************************************
  * @function                - vStateMachineTask
  *
@@ -71,19 +77,12 @@ void vStateMachineTask(void *pvParameters)
     HV_VoltageTimerStarted = false;
     // -- For HV Voltage
 
-    //uint16_t faultNumber;
-    //State currentState;
-    State temp_state;
-    //State newState;
     /* -- Added Timer flags for HV Current and Voltage Fault */
 
     while (true)
     {
         if (initializationOccured)
         {
-            // for timing:
-            //gioSetBit(hetPORT1, 9, 1);
-
             if (TASK_PRINT)
             {
                 UARTSend(PC_UART, "STATE MACHINE UPDATE TASK\r\n");
@@ -93,374 +92,132 @@ void vStateMachineTask(void *pvParameters)
 
             currentState = VCUDataPtr->vcuState; // Get current State
             faultNumber = 0;                     // clear faultNumber
+
+            TSAL_ON = isTSAL_ON();
+            RTDS_SET = isRTDS();
+            FAULTS = anyFaults();
+
             if (currentState == TRACTIVE_OFF)
             {
-                /* ++ New Code: Added by jjkhan */
 
                 if (STATE_PRINT)
                 {
                     UARTSend(PC_UART, "********TRACTIVE_OFF********");
                 }
 
-                if (isRTDS() || anyFaults())
+                if (RTDS_SET || FAULTS)
                 {
-                    newState = SEVERE_FAULT; // RTDS should be off when currentState is TRACTIVE_OFF && you all errors should be taken care before you proceed.
+                    newState = SEVERE_FAULT;
                 }
-                else if (isTSAL_ON() && !anyFaults() && !isRTDS())
+                else if (TSAL_ON && !FAULTS && !RTDS_SET)
                 {
                     newState = TRACTIVE_ON; //No faults AND TSAL is on AND RTDS not set
                 }
 
-                /* -- New Code: Added by jjkhan */
             }
             else if (currentState == TRACTIVE_ON)
             {
 
-                temp_state = currentState;
-                /* ++ New Code - Added by jjkhan */
-                if (!isTSAL_ON())
+                if (TSAL_ON && !RTDS_SET && !FAULTS)
                 {
-                    newState = SEVERE_FAULT; // TSAL light is OFF - shouldn't happen, but if it does, handle it - Redundant
+                    newState = TRACTIVE_ON;
 
                 }
-                else if (anyFaults())
+                else if (TSAL_ON && RTDS_SET && FAULTS)
                 {
-
-                    faultNumber = faultLocation();
-
-                    // Shutdown Circuit Fault or IMD Fault -> its Severe so don't need to check other faults
-                    if (faultNumber & (1U << SDC_FAULT) || faultNumber & (1U << IMD_SYSTEM_FAULT))
-                    {
-                        temp_state = SEVERE_FAULT;
-                    }
-
-                    // Check BSE APPS Faults
-                    if (faultNumber & (1U << BSE_APPS_FAULT))
-                    {
-                      // Either BSE or APPS Fault
-                        if (!(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT))
-                        {
-                            // if the fault isn't the Minor Fault, then set SEVERE_FAULT, don't need to check for minor
-                            temp_state = SEVERE_FAULT;
-                        }
-                    }
-                    // Check HV Range Faults and set flags iff this isnt the first time (i.e. timers already started.)
-                    if (faultNumber & (1U << HV_LV_FAULT))
-                    {
-                        // Check for SEVERE Faults Right now
-                        if (HV_CurrentTimerStarted || HV_VoltageTimerStarted)
-                        {
-                            if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
-                            {
-                                if (HV_VOLTAGE_TIMER_EXPIRED)
-                                {
-                                    temp_state = SEVERE_FAULT;
-                                    HV_VoltageTimerStarted = 0; // Reset Timer
-                                    HV_VOLTAGE_TIMER_EXPIRED = false;
-                                }
-                            }
-
-                            if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
-                            {
-                                if (HV_CURRENT_TIMER_EXPIRED)
-                                {
-                                    temp_state = SEVERE_FAULT;
-                                    HV_CurrentTimerStarted = 0; // Reset Timer
-                                    HV_CURRENT_TIMER_EXPIRED = false;
-
-                                }
-                            }
-
-                            if(VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR && currentState==RUNNING){
-                                                            temp_state = SEVERE_FAULT;
-                            }
-
-                        }
-                    }
-
-                    // Check CAN Severe Faults
-                    if (faultNumber & (1U << CAN_FAULT))
-                    {
-                        // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
-                        if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1)
-                        { // Severe Fault message from CAN, so don't need to check other faults, change currentState and yield task
-                            temp_state = SEVERE_FAULT;
-                        }
-                    }
-                    /* Checking For Minor Faults provide severe fault not detected. */
-                    if ((temp_state != SEVERE_FAULT))
-                    {
-                        // Check for HV Range Faults
-                        if (faultNumber & (1U << HV_LV_FAULT))
-                        {
-                            // Check for HV Possible Minor Faults
-                            if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
-                            {
-                                // First HV Voltage out of safe range first time; Start timer
-                                HV_VOLTAGE_TIMER_EXPIRED = false;
-                                if (xTimerStart(xTimers[3], 0) != pdPASS)
-                                {
-                                    // Need to decide on what to do if timer start fails - jjkhan
-                                    for (;;)
-                                        ;
-                                }
-                                else
-                                {
-                                    HV_CurrentTimerStarted = 1;
-                                    temp_state = MINOR_FAULT;
-                                }
-
-                            }
-
-                            if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
-                            {
-                                // First HV Current out of safe range first time; Start timer
-                                HV_CURRENT_TIMER_EXPIRED = false;
-                                if (xTimerStart(xTimers[2],0) != pdPASS)
-                                {
-                                    // Need to decide on what to do if timer start fails - jjkhan
-                                    for (;;)
-                                        ;
-                                }
-                                else
-                                {
-                                    HV_VoltageTimerStarted = 1;
-                                    temp_state = MINOR_FAULT;
-                                }
-                            }
-                            if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE || VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE )
-                            {
-                                temp_state = MINOR_FAULT;
-
-                            }
-
-                            if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
-                            {
-
-                                if (isRTDS() && (temp_state!=MINOR_FAULT))
-                                {
-                                    temp_state = TRACTIVE_ON;
-                                }
-                                else
-                                {
-                                    temp_state = MINOR_FAULT;
-                                }
-                            }
-                        }
-
-                        if (faultNumber & (1U <<CAN_FAULT))
-                        {
-                            if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2)
-                            {
-                                temp_state = MINOR_FAULT;
-                            }
-                        }
-                    }
-                    newState = temp_state;
-
+                    // Update state depending on severity of fault
+                    newState = stateUpdate();
                 }
-                else if (isRTDS())
+                else if (TSAL_ON && RTDS_SET && !FAULTS)
                 {
                     newState = RUNNING;
+                }else{
+                    newState = TRACTIVE_OFF;
                 }
-
-                /* -- New Code - Added by jjkhan */
 
             }
             else if (currentState == RUNNING)
             {
-
-                /* ++ New Code - Added by jjkhan */
-
-                // Find fault in the system
-                //temp_state = currentState;
-
-                if (anyFaults())
+                if (FAULTS)
                 {
-                    faultNumber = faultLocation();
-                    // ++ For Readability
-                    if(isSevereFault()){
-                        newState = SEVERE_FAULT;
-                    }else if(isMinorFault()){
-                        newState = MINOR_FAULT;
-                    }
-                    // -- For Readability
+                    // Update state depending on severity of fault
+                    newState = stateUpdate();
                 }
                 else
                 {
-                    if (isRTDS() && isTSAL_ON())
+                    if (RTDS_SET && TSAL_ON)
                     {
-                        //newState = temp_state;
-                        newState = currentState;
+                        newState = RUNNING;
                     }
-                    else if(!isRTDS() && isTSAL_ON())
+                    else if(!RTDS_SET && TSAL_ON)
                     {
                         newState = TRACTIVE_ON;
-                    }else if(!isTSAL_ON() && isRTDS())
+                    }else if(!TSAL_ON && RTDS_SET)
                     {
                         newState= SEVERE_FAULT;
                     }
                 }
-                /*
-                if (faultNumber == 0)
-                {
-                    if (isRTDS() && isTSAL_ON())
-                    {
-                        newState = temp_state;
-                    }
-                    else if(!isRTDS() && isTSAL_ON())
-                    {
-                        newState = TRACTIVE_ON;
-                    }else if(!isTSAL_ON() && isRTDS())
-                    {
-                        newState= SEVERE_FAULT;
-                    }
-                }
-                else
-                {
-                    newState = temp_state;
-                }
-                */
-                /* -- New Code - Added by jjkhan */
+
             }
             else if (currentState == MINOR_FAULT)
             {
-
                 if (STATE_PRINT)
                 {
                     UARTSend(PC_UART, "********MINOR_FAULT********");
                 }
 
-                /* ++ New Code - Added by jjkhan */
-                temp_state = currentState;
-                // Check if faults have been cleared -> Could run the same fault checking scenario above.
-                if (anyFaults())
+                if (FAULTS)
                 {
+                    // Update state depending on severity of fault
                     faultNumber = faultLocation();
+                    if(isSevereFault()){
+                        newState = SEVERE_FAULT;
+                    }
 
-                    // In MINOR FAULT currentState, only need to worry about MINOR FAULTS.
-
-                    if ((faultNumber & (1U << HV_LV_FAULT)))
+                }else{
+                    // no FAULTS were found; i.e. faults were fixed
+                    if (RTDS_SET && TSAL_ON)
                     {
-
-                        //UARTSend(PC_UART, "Inside Minor Fault currentState. \r\n");
-                        // Check for SEVERE Faults Right now
-                        if (HV_CurrentTimerStarted || HV_VoltageTimerStarted)
-                        {
-                            //UARTSend(PC_UART, "Inside Minor Timer started. \r\n");
-
-                            if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
-                            {
-                                if (HV_VOLTAGE_TIMER_EXPIRED)
-                                {
-                                    temp_state = SEVERE_FAULT;
-                                    HV_VoltageTimerStarted = 0; // Reset Timer
-                                    HV_VOLTAGE_TIMER_EXPIRED = false;
-                                }
-                                else
-                                {
-                                    temp_state = MINOR_FAULT;
-                                }
-                            }
-                            else if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
-                            {
-
-                                if (HV_CURRENT_TIMER_EXPIRED)
-                                {
-                                    //UARTSend(PC_UART, "Timeout. \r\n");
-                                    temp_state = SEVERE_FAULT;
-                                    HV_CurrentTimerStarted = 0; // Reset Timer
-                                    HV_CURRENT_TIMER_EXPIRED = false;
-
-                                }
-                                else
-                                {
-                                    temp_state = MINOR_FAULT;
-                                }
-
-                            }
-
-                        }
-                        else if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE)
-                        {
-                            temp_state = MINOR_FAULT;
-
-                        }
-                        else if (VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE)
-                        {
-                            temp_state = MINOR_FAULT;
-                        }
-                        else if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
-                        {
-                            temp_state = MINOR_FAULT;
-                        }
+                        newState = RUNNING; // RTDS =1 and HV present
                     }
-                    else if ((faultNumber & (1U << CAN_FAULT)))
+                    else if (!RTDS_SET && TSAL_ON)
                     {
-
-                        if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2)
-                        {
-                            temp_state = MINOR_FAULT;
-                        }
-                    }
-                }
-                else
-                {
-                    faultNumber = 0;
-                }
-
-                // Checked for all Faults above and now if no MINOR_FAULTS were found, then we can move back to TRACTIVE_ON if RTDS is on and TSAL is ON, else we go to TRACTIVE_OFF; SEVERE_FAULTS wouldn't reach this far because taskYIELDs whenever you find a SEVERE_FAULT
-
-                if (!anyFaults())
-                {
-
-                    if (isRTDS() && isTSAL_ON())
-                    {  // RTDS =1 and HV present
-                        newState = RUNNING;
-
-                    }
-                    else if (!isRTDS() && isTSAL_ON())
-                    { // RTDS = 0 but HV present
-                        newState = TRACTIVE_ON;
+                        newState = TRACTIVE_ON; // RTDS = 0 but HV present
                     }
                     else
-                    {  // RTDS = 0 and HV not present
-                        newState = TRACTIVE_OFF;
+                    {
+                        newState = TRACTIVE_OFF; // RTDS = 0 and HV not present
                     }
-                    // Reset the HV timer_started flags as the fault was fixed before timeout
+                    // Reset the HV timer_started flags as the HV fault was fixed before timeout
                     if (HV_CurrentTimerStarted || HV_VoltageTimerStarted)
                     {
+                        xTimerStop(xTimers[2], pdMS_TO_TICKS(5));
+                        xTimerStop(xTimers[3], pdMS_TO_TICKS(5));
                         HV_CurrentTimerStarted = 0;
                         HV_VoltageTimerStarted = 0;
                     }
-
                 }
-                else
-                {
-                    newState = temp_state;
-                }
-
-                /* -- New Code - Added by jjkhan */
             }
             else if (currentState == SEVERE_FAULT)
             {
 
-                /* ++ New Code - Added by jjkhan */
                 if (STATE_PRINT)
                 {
                     UARTSend(PC_UART, "********SEVERE_FAULT********");
                 }
 
-                if (anyFaults())
+                if (FAULTS)
                 {
                     newState = SEVERE_FAULT;
                 }
                 else
                 {
-                    newState = TRACTIVE_OFF;
+                    if(!RTDS_SET){
+                        newState = TRACTIVE_OFF;
+                    }else{
+                        newState = SEVERE_FAULT;
+                    }
                 }
-
-                /* -- New Code - Added by jjkhan */
             }
 
             // Update VCUData with newState
@@ -551,7 +308,7 @@ int checkCAN(void)
     return NOFAULT;
 }
 
-int isRTDS(void)
+inline bool isRTDS(void)
 {
     if (VCUDataPtr->DigitalVal.RTDS)
     {
@@ -560,7 +317,7 @@ int isRTDS(void)
     return !SET;
 }
 
-int isTSAL_ON(void)
+inline bool isTSAL_ON(void)
 {
     if (VCUDataPtr->DigitalVal.TSAL_ON)
     {
@@ -634,7 +391,7 @@ uint16_t faultLocation(void)
  *
  ***********************************************************/
 
-int anyFaults(void)
+inline bool anyFaults(void)
 {
     if (checkSDC() || checkCAN() || checkIMD() || checkBSE_APPS()
             || CheckHVLVSensor())
@@ -677,10 +434,13 @@ inline bool isSevereFault(void){
             {
                 if (HV_VOLTAGE_TIMER_EXPIRED)
                 {
-                    //temp_state = SEVERE_FAULT;
+                    // Timer expired
                     isSevere = true;
-                    HV_VoltageTimerStarted = 0; // Reset Timer
+                    HV_VoltageTimerStarted = false; // Reset Timer
                     HV_VOLTAGE_TIMER_EXPIRED = false;
+                }else{
+                    // timer not expired yet
+                    isSevere = false;
                 }
             }
 
@@ -688,17 +448,19 @@ inline bool isSevereFault(void){
             {
                 if (HV_CURRENT_TIMER_EXPIRED)
                 {
-                    //temp_state = SEVERE_FAULT;
+                    //timer Expired
                     isSevere = true;
-                    HV_CurrentTimerStarted = 0; // Reset Timer
+                    HV_CurrentTimerStarted = false; // Reset Timer
                     HV_CURRENT_TIMER_EXPIRED = false;
 
+                }else{
+                    // timer not expired yet
+                    isSevere = false;
                 }
             }
             if(VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR
                     && currentState==RUNNING)
             {
-                 //temp_state = SEVERE_FAULT;
                 isSevere = true;
             }
 
@@ -711,7 +473,6 @@ inline bool isSevereFault(void){
         // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
         if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1)
         { // Severe Fault message from CAN, so don't need to check other faults, change currentState and yield task
-            //temp_state = SEVERE_FAULT;
             isSevere = true;
         }
     }
@@ -730,48 +491,69 @@ inline bool isMinorFault(void){
 
         if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
         {
-            HV_VOLTAGE_TIMER_EXPIRED = false;
-            if (xTimerStart(xTimers[3], 0) != pdPASS)
+            if(!HV_VoltageTimerStarted){
+                // Start Timer
+                HV_VOLTAGE_TIMER_EXPIRED = false;
+                if (xTimerStart(xTimers[3], 0) != pdPASS)
+                {
+                    for (;;)
+                        ;
+                }
+                else
+                {
+                    HV_CurrentTimerStarted = true;
+                    //temp_state = MINOR_FAULT;
+                    isMinor = true;
+                }
+            }else{
+
+                // Timer already started
+                // Need to decide what to do here.
+                isMinor = false;
+
+            }
+        }
+        if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
+        {
+            if(!HV_CurrentTimerStarted){
+                // Start Timer
+                HV_CURRENT_TIMER_EXPIRED = false;
+                if (xTimerStart(xTimers[2],0) != pdPASS)
+                {
+                    for (;;)
+                        ;
+                }
+                else
+                {
+                    HV_VoltageTimerStarted = true;
+                    //temp_state = MINOR_FAULT;
+                    isMinor = true;
+                }
+            }else{
+
+                // Timer already started
+                // Need to decide what to do here.
+                isMinor = false;
+            }
+        }
+        if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE)
+        {
+            isMinor = true;
+        }
+        if (VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE)
+        {
+            isMinor = true;
+        }
+        if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
+        {
+            if (!isMinor && RTDS_SET && TSAL_ON && currentState==TRACTIVE_ON)
             {
-                for (;;)
-                    ;
+                isMinor = false;
             }
             else
             {
-                HV_CurrentTimerStarted = 1;
-                //temp_state = MINOR_FAULT;
                 isMinor = true;
             }
-        }
-        else if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
-        {
-            HV_CURRENT_TIMER_EXPIRED = false;
-            if (xTimerStart(xTimers[2],0) != pdPASS)
-            {
-                for (;;)
-                    ;
-            }
-            else
-            {
-                HV_VoltageTimerStarted = 1;
-                //temp_state = MINOR_FAULT;
-                isMinor = true;
-            }
-        }
-        else if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE)
-        {
-            //temp_state = MINOR_FAULT;
-            isMinor = true;
-        }
-        else if (VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE)
-        {
-            //temp_state = MINOR_FAULT;
-            isMinor = true;
-        }
-        else if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
-        {
-            //temp_state = MINOR_FAULT;
-            isMinor = true;
         }
     }
 
@@ -779,10 +561,19 @@ inline bool isMinorFault(void){
     {
         if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2)
         {
-            //temp_state = MINOR_FAULT;
             isMinor = true;
         }
     }
 
     return isMinor;
+}
+
+inline State stateUpdate(void){
+    faultNumber = faultLocation();
+    if(isSevereFault()){
+        newState = SEVERE_FAULT;
+    }else if(isMinorFault()){
+        newState = MINOR_FAULT;
+    }
+    return newState;
 }
