@@ -21,6 +21,7 @@
 #include "os_projdefs.h"
 #include "vcu_data.h"
 #include "task_statemachine.h"
+#include <stdbool.h>
 
 /*
  *  task_eeprom.c initializes the VCUData structure based on last stored VCU state in eeprom.
@@ -33,7 +34,13 @@ extern SemaphoreHandle_t vcuKey;
 extern data *VCUDataPtr;
 // -- Added by jjkhan
 
-// Added by jjkhan: Placeholder for VCU State
+static uint16_t faultNumber;
+static State currentState;
+static State newState;
+volatile static bool HV_CurrentTimerStarted;
+volatile static bool HV_VoltageTimerStarted;
+inline bool isSevereFault(void);
+inline bool isMinorFault(void);
 
 /***********************************************************
  * @function                - vStateMachineTask
@@ -57,17 +64,17 @@ void vStateMachineTask(void *pvParameters)
     /* ++ Added Timer flags for HV Current and Voltage Fault */
 
     // ++ For HV Current
-    uint8_t timer1_started = 0;
+    HV_CurrentTimerStarted = false;
     // -- For HV Current
 
     // ++ For HV Voltage
-    uint8_t timer2_started = 0;
+    HV_VoltageTimerStarted = false;
     // -- For HV Voltage
 
-    uint16_t faultNumber;
-    State currentState;
+    //uint16_t faultNumber;
+    //State currentState;
     State temp_state;
-    State newState;
+    //State newState;
     /* -- Added Timer flags for HV Current and Voltage Fault */
 
     while (true)
@@ -85,7 +92,7 @@ void vStateMachineTask(void *pvParameters)
             /*********************** STATE MACHINE EVALUATION ***********************************/
 
             currentState = VCUDataPtr->vcuState; // Get current State
-            faultNumber = 0;// clear faultNumber
+            faultNumber = 0;                     // clear faultNumber
             if (currentState == TRACTIVE_OFF)
             {
                 /* ++ New Code: Added by jjkhan */
@@ -121,127 +128,116 @@ void vStateMachineTask(void *pvParameters)
 
                     faultNumber = faultLocation();
 
-                    // Shutdown Circuit Fault - its Severe so don't need to check other faults
-                    if ((faultNumber & (1U << SDC_FAULT)))
+                    // Shutdown Circuit Fault or IMD Fault -> its Severe so don't need to check other faults
+                    if (faultNumber & (1U << SDC_FAULT) || faultNumber & (1U << IMD_SYSTEM_FAULT))
                     {
-                        //UARTSend(PC_UART,"SDC FAULT DETECTED.\r\n");
-                        if (checkSDC())
-                        {
-                            temp_state = SEVERE_FAULT;
-                        }
+                        temp_state = SEVERE_FAULT;
                     }
-                    else if ((faultNumber & (1U << IMD_SYSTEM_FAULT)))
-                    {
 
-                        // IMD Fault Checks - its Severe so don't need to check other faults
-                        //UARTSend(PC_UART, "IMD FAULT DETECTED. \r\n");
-                        if (checkIMD())
-                        {
-                            temp_state = SEVERE_FAULT;
-                        }
-                    }
                     // Check BSE APPS Faults
-                    if ((faultNumber & (1U << BSE_APPS_FAULT)))
-                    { // Either BSE or APPS Fault
-                      //UARTSend(PC_UART, "BSE_APPS FAULT DETECTED. \r\n");
+                    if (faultNumber & (1U << BSE_APPS_FAULT))
+                    {
+                      // Either BSE or APPS Fault
                         if (!(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT))
-                        { // if the fault isn't the Minor Fault, then set SEVERE_FAULT and yield, don't need to check for minor
+                        {
+                            // if the fault isn't the Minor Fault, then set SEVERE_FAULT, don't need to check for minor
                             temp_state = SEVERE_FAULT;
                         }
                     }
-
-                    if ((faultNumber & (1U << HV_LV_FAULT)))
+                    // Check HV Range Faults and set flags iff this isnt the first time (i.e. timers already started.)
+                    if (faultNumber & (1U << HV_LV_FAULT))
                     {
-                        //UARTSend(PC_UART, "HV  FAULT DETECTED. \r\n");
                         // Check for SEVERE Faults Right now
-                        if (timer1_started || timer2_started)
+                        if (HV_CurrentTimerStarted || HV_VoltageTimerStarted)
                         {
-                            //UARTSend(PC_UART, "HV Timer Already started. \r\n");
                             if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
                             {
                                 if (HV_VOLTAGE_TIMER_EXPIRED)
                                 {
                                     temp_state = SEVERE_FAULT;
-                                    timer2_started = 0; // Reset Timer
+                                    HV_VoltageTimerStarted = 0; // Reset Timer
                                     HV_VOLTAGE_TIMER_EXPIRED = false;
                                 }
                             }
-                            else if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
+
+                            if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
                             {
                                 if (HV_CURRENT_TIMER_EXPIRED)
                                 {
                                     temp_state = SEVERE_FAULT;
-                                    timer1_started = 0; // Reset Timer
+                                    HV_CurrentTimerStarted = 0; // Reset Timer
                                     HV_CURRENT_TIMER_EXPIRED = false;
 
                                 }
                             }
 
+                            if(VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR && currentState==RUNNING){
+                                                            temp_state = SEVERE_FAULT;
+                            }
+
                         }
                     }
 
-                    // Check CAN Faults
-                    if ((faultNumber & (1U << CAN_FAULT)))
-                    { // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
-                      //UARTSend(PC_UART, "CAN FAULT DETECTED. \r\n");
-
+                    // Check CAN Severe Faults
+                    if (faultNumber & (1U << CAN_FAULT))
+                    {
+                        // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
                         if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1)
                         { // Severe Fault message from CAN, so don't need to check other faults, change currentState and yield task
                             temp_state = SEVERE_FAULT;
                         }
                     }
-
+                    /* Checking For Minor Faults provide severe fault not detected. */
                     if ((temp_state != SEVERE_FAULT))
-                    {  // Check for MINOR Faults
-
-                        if ((faultNumber & (1U << HV_LV_FAULT)))
+                    {
+                        // Check for HV Range Faults
+                        if (faultNumber & (1U << HV_LV_FAULT))
                         {
-                            //UARTSend(PC_UART, "Inside Minor Faults \r\n");
-
+                            // Check for HV Possible Minor Faults
                             if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
                             {
+                                // First HV Voltage out of safe range first time; Start timer
                                 HV_VOLTAGE_TIMER_EXPIRED = false;
                                 if (xTimerStart(xTimers[3], 0) != pdPASS)
                                 {
+                                    // Need to decide on what to do if timer start fails - jjkhan
                                     for (;;)
                                         ;
                                 }
                                 else
                                 {
-                                    timer1_started = 1;
+                                    HV_CurrentTimerStarted = 1;
                                     temp_state = MINOR_FAULT;
                                 }
 
                             }
-                            else if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
+
+                            if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
                             {
-                                //UARTSend(PC_UART, "Inside HV Current Fault. \r\n");
+                                // First HV Current out of safe range first time; Start timer
                                 HV_CURRENT_TIMER_EXPIRED = false;
                                 if (xTimerStart(xTimers[2],0) != pdPASS)
                                 {
+                                    // Need to decide on what to do if timer start fails - jjkhan
                                     for (;;)
                                         ;
                                 }
                                 else
                                 {
-                                    UARTSend(PC_UART, "Timer Started. \r\n");
-                                    timer2_started = 1;
+                                    HV_VoltageTimerStarted = 1;
                                     temp_state = MINOR_FAULT;
                                 }
                             }
-                            else if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE)
+                            if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE || VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE )
                             {
                                 temp_state = MINOR_FAULT;
 
                             }
-                            else if (VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE)
-                            {
-                                temp_state = MINOR_FAULT;
-                            }
-                            else if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
+
+                            if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
                             {
 
-                                if (isRTDS())
+                                if (isRTDS() && (temp_state!=MINOR_FAULT))
                                 {
                                     temp_state = TRACTIVE_ON;
                                 }
@@ -251,9 +247,9 @@ void vStateMachineTask(void *pvParameters)
                                 }
                             }
                         }
-                        else if ((faultNumber & (1U << CAN_FAULT)))
-                        {
 
+                        if (faultNumber & (1U <<CAN_FAULT))
+                        {
                             if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2)
                             {
                                 temp_state = MINOR_FAULT;
@@ -277,141 +273,35 @@ void vStateMachineTask(void *pvParameters)
                 /* ++ New Code - Added by jjkhan */
 
                 // Find fault in the system
-                temp_state = currentState;
+                //temp_state = currentState;
 
                 if (anyFaults())
                 {
                     faultNumber = faultLocation();
-
-                    //UARTSend(PC_UART,"Got Fault number. \r\n");
-                    if ((faultNumber & (1U << SDC_FAULT)))
-                    {
-                        //UARTSend(PC_UART,"SDC FAULT DETECTED.\r\n");
-                        if (checkSDC())
-                        {
-                            temp_state = SEVERE_FAULT;
-                        }
+                    // ++ For Readability
+                    if(isSevereFault()){
+                        newState = SEVERE_FAULT;
+                    }else if(isMinorFault()){
+                        newState = MINOR_FAULT;
                     }
-                    else if ((faultNumber & (1U << IMD_SYSTEM_FAULT)))
-                    {
-                        //UARTSend(PC_UART, "IMD FAULT DETECTED. \r\n");
-                        if (checkIMD())
-                        {
-                            temp_state = SEVERE_FAULT;
-                        }
-                    }
-
-                    if ((faultNumber & (1U << BSE_APPS_FAULT)))
-                    { // Either BSE or APPS Fault
-                      //UARTSend(PC_UART, "BSE_APPS FAULT DETECTED. \r\n");
-                        if (!(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT))
-                        { // if the fault isn't the Minor Fault, then set SEVERE_FAULT and yield, don't need to check for minor
-                            temp_state = SEVERE_FAULT;
-                        }
-                    }
-                    if ((faultNumber & (1U << CAN_FAULT)))
-                    { // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
-                      //UARTSend(PC_UART, "CAN FAULT DETECTED. \r\n");
-
-                        if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1)
-                        { // Severe Fault message from CAN, so don't need to check other faults, change currentState and yield task
-                            temp_state = SEVERE_FAULT;
-                        }
-                    }
-                    if ((faultNumber & (1U << HV_LV_FAULT)))
-                    {
-
-                        // Check for HV SEVERE Faults
-                        if (timer1_started || timer2_started)
-                        {
-                            // HV Current or Voltage Fault timer started in previously execution of state machine task
-                            if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
-                            {
-                                if (HV_VOLTAGE_TIMER_EXPIRED)
-                                {
-                                    temp_state = SEVERE_FAULT;
-                                    timer2_started = 0; // Reset Timer
-                                    HV_VOLTAGE_TIMER_EXPIRED = false;
-                                }
-                            }
-                            else if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
-                            {
-                                if (HV_CURRENT_TIMER_EXPIRED)
-                                {
-                                    temp_state = SEVERE_FAULT;
-                                    timer1_started = 0; // Reset Timer
-                                    HV_CURRENT_TIMER_EXPIRED = false;
-
-                                }
-                            }
-
-                        }else if(VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR){
-                                temp_state = SEVERE_FAULT;
-                        }
-
-                    }
-
-                    if ((temp_state != SEVERE_FAULT))
-                    {  // Check for MINOR Faults
-
-                        if ((faultNumber & (1U << HV_LV_FAULT)))
-                        {
-
-                            if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
-                            {
-                                HV_VOLTAGE_TIMER_EXPIRED = false;
-                                if (xTimerStart(xTimers[3], 0) != pdPASS)
-                                {
-                                    for (;;)
-                                        ;
-                                }
-                                else
-                                {
-                                    timer1_started = 1;
-                                    temp_state = MINOR_FAULT;
-                                }
-
-                            }
-                            else if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
-                            {
-                                HV_CURRENT_TIMER_EXPIRED = false;
-                                if (xTimerStart(xTimers[2],0) != pdPASS)
-                                {
-                                    for (;;)
-                                        ;
-                                }
-                                else
-                                {
-                                    timer2_started = 1;
-                                    temp_state = MINOR_FAULT;
-                                }
-                            }
-                            else if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE)
-                            {
-                                temp_state = MINOR_FAULT;
-
-                            }
-                            else if (VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE)
-                            {
-                                temp_state = MINOR_FAULT;
-                            }
-                            else if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
-                            {
-                                temp_state = MINOR_FAULT;
-                            }
-                        }
-                        else if ((faultNumber & (1U << CAN_FAULT)))
-                        {
-
-                            if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2)
-                            {
-                                temp_state = MINOR_FAULT;
-                            }
-                        }
-                    }
-
+                    // -- For Readability
                 }
-
+                else
+                {
+                    if (isRTDS() && isTSAL_ON())
+                    {
+                        //newState = temp_state;
+                        newState = currentState;
+                    }
+                    else if(!isRTDS() && isTSAL_ON())
+                    {
+                        newState = TRACTIVE_ON;
+                    }else if(!isTSAL_ON() && isRTDS())
+                    {
+                        newState= SEVERE_FAULT;
+                    }
+                }
+                /*
                 if (faultNumber == 0)
                 {
                     if (isRTDS() && isTSAL_ON())
@@ -430,7 +320,7 @@ void vStateMachineTask(void *pvParameters)
                 {
                     newState = temp_state;
                 }
-
+                */
                 /* -- New Code - Added by jjkhan */
             }
             else if (currentState == MINOR_FAULT)
@@ -455,7 +345,7 @@ void vStateMachineTask(void *pvParameters)
 
                         //UARTSend(PC_UART, "Inside Minor Fault currentState. \r\n");
                         // Check for SEVERE Faults Right now
-                        if (timer1_started || timer2_started)
+                        if (HV_CurrentTimerStarted || HV_VoltageTimerStarted)
                         {
                             //UARTSend(PC_UART, "Inside Minor Timer started. \r\n");
 
@@ -464,7 +354,7 @@ void vStateMachineTask(void *pvParameters)
                                 if (HV_VOLTAGE_TIMER_EXPIRED)
                                 {
                                     temp_state = SEVERE_FAULT;
-                                    timer2_started = 0; // Reset Timer
+                                    HV_VoltageTimerStarted = 0; // Reset Timer
                                     HV_VOLTAGE_TIMER_EXPIRED = false;
                                 }
                                 else
@@ -479,7 +369,7 @@ void vStateMachineTask(void *pvParameters)
                                 {
                                     //UARTSend(PC_UART, "Timeout. \r\n");
                                     temp_state = SEVERE_FAULT;
-                                    timer1_started = 0; // Reset Timer
+                                    HV_CurrentTimerStarted = 0; // Reset Timer
                                     HV_CURRENT_TIMER_EXPIRED = false;
 
                                 }
@@ -538,10 +428,10 @@ void vStateMachineTask(void *pvParameters)
                         newState = TRACTIVE_OFF;
                     }
                     // Reset the HV timer_started flags as the fault was fixed before timeout
-                    if (timer1_started || timer2_started)
+                    if (HV_CurrentTimerStarted || HV_VoltageTimerStarted)
                     {
-                        timer1_started = 0;
-                        timer2_started = 0;
+                        HV_CurrentTimerStarted = 0;
+                        HV_VoltageTimerStarted = 0;
                     }
 
                 }
@@ -587,6 +477,7 @@ void vStateMachineTask(void *pvParameters)
                 UARTSend(PC_UART, "\r\n");
             }
 
+            // Block Task
             vTaskDelayUntil(&xLastWakeTime, STATE_MACHINE_TASK_PERIOD_MS);
 
         }
@@ -650,7 +541,7 @@ int CheckHVLVSensor(void)
     return NOFAULT;
 }
 
-inline checkCAN(void)
+int checkCAN(void)
 {
     if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1
             || VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2)
@@ -751,4 +642,147 @@ int anyFaults(void)
         return FAULT;
     }
     return NOFAULT;
+}
+
+
+inline bool isSevereFault(void){
+
+    bool isSevere = false;
+
+    // Shutdown Circuit Fault or IMD Fault -> its Severe so don't need to check other faults
+    if (faultNumber & (1U << SDC_FAULT) || faultNumber & (1U << IMD_SYSTEM_FAULT))
+    {
+        //temp_state = SEVERE_FAULT;
+        isSevere = true;
+    }
+
+    // Check BSE APPS Faults
+    if (faultNumber & (1U << BSE_APPS_FAULT))
+    {
+      // Either BSE or APPS Fault
+        if (!(VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT))
+        {
+            // if the fault isn't the Minor Fault, then set SEVERE_FAULT, don't need to check for minor
+            //temp_state = SEVERE_FAULT;
+            isSevere = true;
+        }
+    }
+    // Check HV Range Faults and set flags iff this isnt the first time (i.e. timers already started.)
+    if (faultNumber & (1U << HV_LV_FAULT))
+    {
+        // Check for SEVERE Faults Right now
+        if (HV_CurrentTimerStarted || HV_VoltageTimerStarted)
+        {
+            if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
+            {
+                if (HV_VOLTAGE_TIMER_EXPIRED)
+                {
+                    //temp_state = SEVERE_FAULT;
+                    isSevere = true;
+                    HV_VoltageTimerStarted = 0; // Reset Timer
+                    HV_VOLTAGE_TIMER_EXPIRED = false;
+                }
+            }
+
+            if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
+            {
+                if (HV_CURRENT_TIMER_EXPIRED)
+                {
+                    //temp_state = SEVERE_FAULT;
+                    isSevere = true;
+                    HV_CurrentTimerStarted = 0; // Reset Timer
+                    HV_CURRENT_TIMER_EXPIRED = false;
+
+                }
+            }
+            if(VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR
+                    && currentState==RUNNING)
+            {
+                 //temp_state = SEVERE_FAULT;
+                isSevere = true;
+            }
+
+        }
+    }
+
+    // Check CAN Severe Faults
+    if (faultNumber & (1U << CAN_FAULT))
+    {
+        // Either CAN Message indicates a severe fault (TYPE1 ERROR) or a minor fault (TYPE2 ERROR)
+        if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1)
+        { // Severe Fault message from CAN, so don't need to check other faults, change currentState and yield task
+            //temp_state = SEVERE_FAULT;
+            isSevere = true;
+        }
+    }
+
+    return isSevere;
+
+}
+
+inline bool isMinorFault(void){
+
+    bool isMinor = false;
+    // Check for MINOR Faults
+
+    if ((faultNumber & (1U << HV_LV_FAULT)))
+    {
+
+        if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
+        {
+            HV_VOLTAGE_TIMER_EXPIRED = false;
+            if (xTimerStart(xTimers[3], 0) != pdPASS)
+            {
+                for (;;)
+                    ;
+            }
+            else
+            {
+                HV_CurrentTimerStarted = 1;
+                //temp_state = MINOR_FAULT;
+                isMinor = true;
+            }
+        }
+        else if (VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE)
+        {
+            HV_CURRENT_TIMER_EXPIRED = false;
+            if (xTimerStart(xTimers[2],0) != pdPASS)
+            {
+                for (;;)
+                    ;
+            }
+            else
+            {
+                HV_VoltageTimerStarted = 1;
+                //temp_state = MINOR_FAULT;
+                isMinor = true;
+            }
+        }
+        else if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE)
+        {
+            //temp_state = MINOR_FAULT;
+            isMinor = true;
+        }
+        else if (VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE)
+        {
+            //temp_state = MINOR_FAULT;
+            isMinor = true;
+        }
+        else if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
+        {
+            //temp_state = MINOR_FAULT;
+            isMinor = true;
+        }
+    }
+
+    if ((faultNumber & (1U << CAN_FAULT)))
+    {
+        if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2)
+        {
+            //temp_state = MINOR_FAULT;
+            isMinor = true;
+        }
+    }
+
+    return isMinor;
 }
