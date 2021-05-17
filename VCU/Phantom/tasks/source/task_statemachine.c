@@ -321,9 +321,10 @@ void vStateMachineTask(void *pvParameters)
                     if ((faultNumber & (1U << HV_LV_FAULT)))
                     {
 
-                        // Check for SEVERE Faults Right now
+                        // Check for HV SEVERE Faults
                         if (timer1_started || timer2_started)
                         {
+                            // HV Current or Voltage Fault timer started in previously execution of state machine task
                             if (VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT)
                             {
                                 if (HV_VOLTAGE_TIMER_EXPIRED)
@@ -344,7 +345,10 @@ void vStateMachineTask(void *pvParameters)
                                 }
                             }
 
+                        }else if(VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR){
+                                temp_state = SEVERE_FAULT;
                         }
+
                     }
 
                     if ((temp_state != SEVERE_FAULT))
