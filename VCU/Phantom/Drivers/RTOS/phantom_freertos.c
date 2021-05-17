@@ -14,8 +14,8 @@ bool INTERRUPT_AVAILABLE;
 bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has gone for 2 seconds
 
 // ++ Added by jjkhan: State machine Timer callback flags
-volatile bool HV_CURRENT_TIMER_EXPIRED = false;
-volatile bool HV_VOLTAGE_TIMER_EXPIRED = false;
+volatile bool HV_CURRENT_TIMER_EXPIRED;
+volatile bool HV_VOLTAGE_TIMER_EXPIRED;
 // -- Added by jjkhan: State machine Timer callback flags
 
 
@@ -89,7 +89,7 @@ void phantom_freeRTOStimerInit(void)
                  "HV_Current_OutOfRange_T",
                  /* The timer period in ticks, must be
                  greater than 0. */
-                 pdMS_TO_TICKS(1000),
+                 pdMS_TO_TICKS(10000),
                  /* The timers will auto-reload themselves
                  when they expire. */
                  pdFALSE,
@@ -107,7 +107,7 @@ void phantom_freeRTOStimerInit(void)
                  "HV_Voltage_OutOfRange_T",
                  /* The timer period in ticks, must be
                  greater than 0. */
-                 pdMS_TO_TICKS(1000),
+                 pdMS_TO_TICKS(10000),
                  /* The timers will auto-reload themselves
                  when they expire. */
                  pdFALSE,
@@ -295,8 +295,6 @@ void phantom_freeRTOStaskInit(void)
 
   void Timer_HV_CurrentRange(TimerHandle_t xTimers){
       HV_CURRENT_TIMER_EXPIRED = true; //  i.e. Timer value = threshold
-
-
   }
 
   void Timer_HV_VoltageRange(TimerHandle_t xTimers){
