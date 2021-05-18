@@ -23,6 +23,8 @@ TimerHandle_t xTimers[NUMBER_OF_TIMERS];
 
 xQueueHandle VCUDataQueue;
 
+SemaphoreHandle_t vcuKey;        // Mutex to protect VCU data structure
+
 extern data* VCUDataPtr;
 
 void phantom_freeRTOSInit(void)
@@ -214,6 +216,7 @@ void phantom_freeRTOStaskInit(void)
 
     // need to do an "if queue != NULL"
 
+    vcuKey = xSemaphoreCreateMutex(); // vcuKey to protect VCUData
 
     // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
     if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)

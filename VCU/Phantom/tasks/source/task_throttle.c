@@ -49,6 +49,8 @@ extern float Percent_BSE_Pressed;
 
 extern bool THROTTLE_AVAILABLE;
 
+extern SemaphoreHandle_t vcuKey;    // mutex
+
 extern data *VCUDataPtr;
 
 //++ Added by jaypacamarra for execution time measurement
@@ -107,101 +109,105 @@ void vThrottleTask(void *pvParameters)
         // Get pedal readings
         getPedalReadings();
 
-        // Update pedal inputs in vcu data structure
-        VCUDataPtr->AnalogIn.APPS1_percentage.value = Percent_APPS1_Pressed;
-        VCUDataPtr->AnalogIn.APPS2_percentage.value = Percent_APPS2_Pressed;
-        VCUDataPtr->AnalogIn.BSE_percentage.value = Percent_BSE_Pressed;
+        if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(1))==1){ // Protect vcuStructure & wait for 1 milliseconds, if key not available, skip
+            // Update pedal inputs in vcu data structure
+            VCUDataPtr->AnalogIn.APPS1_percentage.value = Percent_APPS1_Pressed;
+            VCUDataPtr->AnalogIn.APPS2_percentage.value = Percent_APPS2_Pressed;
+            VCUDataPtr->AnalogIn.BSE_percentage.value = Percent_BSE_Pressed;
 
-        // Signal conditioning - jaypacamarra
-        applyLowPassFilter();
+            // Signal conditioning - jaypacamarra
+            applyLowPassFilter();
 
-        /*********************************************************************************
-          check for short to GND/VCC on APPS sensor 1
-         *********************************************************************************/
-        if(check_APPS1_Range_Fault())
-        {
-            VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
-        }
-        else
-        {
-            VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
-        }
+            /*********************************************************************************
+              check for short to GND/VCC on APPS sensor 1
+             *********************************************************************************/
+            if(check_APPS1_Range_Fault())
+            {
+                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
+            }
+            else
+            {
+                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
+            }
 
-        /*********************************************************************************
-          check for short to GND/VCC on APPS sensor 2
-         *********************************************************************************/
-        if(check_APPS2_Range_Fault())
-        {
-            VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
-        }
-        else
-        {
-            VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
-        }
+            /*********************************************************************************
+              check for short to GND/VCC on APPS sensor 2
+             *********************************************************************************/
+            if(check_APPS2_Range_Fault())
+            {
+                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
+            }
+            else
+            {
+                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
+            }
 
-        /*********************************************************************************
-          check for short to GND/VCC on BSE
-         *********************************************************************************/
-        if(check_BSE_Range_Fault())
-        {
-            VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
-        }
-        else
-        {
-            VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
-        }
+            /*********************************************************************************
+              check for short to GND/VCC on BSE
+             *********************************************************************************/
+            if(check_BSE_Range_Fault())
+            {
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
+            }
+            else
+            {
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
+            }
 
-        /*********************************************************************************
-          brake light
-         *********************************************************************************/
-        if (previous_brake_light_state == 0 &&
-            BSE_sensor_sum > BRAKING_THRESHOLD + hysteresis)
-        {
-            // turn on brake lights
-            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
+            /*********************************************************************************
+              brake light
+             *********************************************************************************/
+            if (previous_brake_light_state == 0 &&
+                    BSE_sensor_sum > BRAKING_THRESHOLD + hysteresis)
+            {
+                // turn on brake lights
+                gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
 
-            // update brake light enable in the vcu data structure
-            VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 1;
+                // update brake light enable in the vcu data structure
+                VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 1;
 
-            // update brake light state
-            previous_brake_light_state = 1;
-        }
-        else if (previous_brake_light_state == 1 &&
-                 BSE_sensor_sum < BRAKING_THRESHOLD - hysteresis)
-        {
-            // turn off brake lights
-            gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
+                // update brake light state
+                previous_brake_light_state = 1;
+            }
+            else if (previous_brake_light_state == 1 &&
+                    BSE_sensor_sum < BRAKING_THRESHOLD - hysteresis)
+            {
+                // turn off brake lights
+                gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
 
-            // update brake light enable in the vcu data structure
-            VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
+                // update brake light enable in the vcu data structure
+                VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
 
-            // update brake light state
-            previous_brake_light_state = 0;
-        }
-        
-        /*********************************************************************************
-          Check if APPS1 and APPS2 are within 10% of each other
-         *********************************************************************************/
-        if(check_10PercentAPPS_Fault())
-        {
-            VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1; // Set fault flag in vcu data structure;
-        }
-        else
-        {
-            VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0;
-        }
+                // update brake light state
+                previous_brake_light_state = 0;
+            }
 
-        /*********************************************************************************
-          Check if brakes are pressed and accelerator pedal
-          is pressed greater than or equal to 25%
-         *********************************************************************************/
-        if(check_Brake_Plausibility_Fault())
-        {
-            VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 1;
-        }
-        else
-        {
-            VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
+            /*********************************************************************************
+              Check if APPS1 and APPS2 are within 10% of each other
+             *********************************************************************************/
+            if(check_10PercentAPPS_Fault())
+            {
+                VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1; // Set fault flag in vcu data structure;
+            }
+            else
+            {
+                VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0;
+            }
+
+            /*********************************************************************************
+              Check if brakes are pressed and accelerator pedal
+              is pressed greater than or equal to 25%
+             *********************************************************************************/
+            if(check_Brake_Plausibility_Fault())
+            {
+                VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 1;
+            }
+            else
+            {
+                VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
+            }
+
+            xSemaphoreGive(vcuKey);
         }
 
 
