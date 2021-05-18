@@ -27,6 +27,8 @@ extern uint8_t RESET_STATUS;
 
 void resetShutdownSignals(){
 
+    //All Severe Faults get reset here...
+
     VCUDataPtr->DigitalVal.BMS_FAULT = false;
 
     VCUDataPtr->DigitalVal.BSPD_FAULT = false;
@@ -89,28 +91,9 @@ void print_Shutdownvals(){
     if(VCUDataPtr->DigitalVal.RESET_STATUS)
 
         UARTSend(PC_UART, "RESET SIGNAL HIGH\r\n");
-
-//    printf("\nBMSval: ");
-//    printf(VCUDataPtr->DigitalVal.BMS_STATUS ? "true" : "false");
-//
-//    printf("\nBSPDval: ");
-//    printf(VCUDataPtr->DigitalVal.BSPD_STATUS ? "true" : "false");
-//
-//
-//    printf("\nIMDval: ");
-//    printf(VCUDataPtr->DigitalVal.IMD_STATUS ? "true" : "false");
-//
-//    printf("\nTSALval: ");
-//    printf(VCUDataPtr->DigitalVal.TSAL_STATUS ? "true" : "false");
-//
-//    printf("\nRESETval: ");
-//    printf(VCUDataPtr->DigitalVal.RESET_STATUS ? "true" : "false");
-
 }
 
 void storeShutdownValues(){
-
-    //getBit(blah blah)
 
     VCUDataPtr->DigitalVal.BMS_STATUS = gioGetBit(SHUTDOWN_CIRCUIT_PORT, BMS_FAULT_PIN);
 
