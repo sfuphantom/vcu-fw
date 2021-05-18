@@ -82,7 +82,7 @@ void vThrottleTask(void *pvParameters)
 {
 
     TickType_t xLastWakeTime;         // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 10; // task frequency in ms
+    const TickType_t xFrequency = 1; // task frequency in ms
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
@@ -207,8 +207,8 @@ void vThrottleTask(void *pvParameters)
 
         // debugging - jaypacamarra
         // manually setting state to RUNNING and setting THROTTLE_AVAILABLE to true to test DAC - jaypacamarra
-//        state = RUNNING;
-//        THROTTLE_AVAILABLE = true;
+        state = RUNNING;
+        THROTTLE_AVAILABLE = true;
 
         /*********************************************************************************
           Set Throttle

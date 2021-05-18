@@ -18,6 +18,8 @@
 #include "os_timer.h"
 #include <adc.h>
 
+/* For calculating throttle padding */
+#define PADDING_PERCENT  0.05       // Must be between 0.0 and 1.0
 
 void getPedalReadings();
 void calculatePedalPercents();

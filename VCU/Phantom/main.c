@@ -19,7 +19,7 @@
 #include <stdio.h>
 #include "reg_het.h"
 
-#include "execution_timer.h" // FOR DETERMINING TASK EXECUTION TIME
+//#include "execution_timer.h" // FOR DETERMINING TASK EXECUTION TIME
 
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
 #include "LV_monitor.h"      // INA226 Current Sense Amplifier Library written by David Cao
@@ -38,6 +38,9 @@ State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and re
 data VCUData;
 data* VCUDataPtr = &VCUData;
 
+#define CPU_CLOCK_MHz (float) 160.0  // System clock is 180 Mhz, RTI Clock is 80 Mhz
+volatile unsigned long cycles_PMU_start;    // CPU cycle count at start
+volatile float time_PMU_code_uSecond;   // the calculated time in uSecond.
 // ++ Added by jaypacamarra
      // Uncomment the following directive if the current sensor module is connected.
     // VCU has it on-board, launchpad doesn't -> will get stuck in lv_monitorInit()
@@ -61,17 +64,26 @@ int main(void)
 {
 /* USER CODE BEGIN (3) */
 
-#ifdef PMU_CYCLE
-    timer_Init();
-#endif
     /* Halcogen Initialization */
 
     _enable_IRQ();              // Enable interrupts
+#ifdef PMU_CYCLE
+    timer_Init();
+#endif
     sciInit();                  // Initialize UART (SCI) halcogen driver
     gioInit();                  // Initialize GPIO halcogen driver
+#ifdef PMU_CYCLE2
+        //Start timer.
+        cycles_PMU_start = timer_Start();
+//        gioSetBit(gioPORTA, 5, 1);
+#endif
     adcInit();                  // Initialize ADC halcogen driver
     hetInit();                  // Initialize HET (PWM) halcogen driver
-
+#ifdef PMU_CYCLE2
+        //Stop timer.
+        time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
+//        gioSetBit(gioPORTA, 5, 0);
+#endif
     /* Phantom Library Initialization */
 
     initData(VCUDataPtr);       // Initialize VCU Data Structure

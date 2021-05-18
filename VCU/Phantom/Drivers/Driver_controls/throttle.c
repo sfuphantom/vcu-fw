@@ -5,10 +5,7 @@
  *      Author: jaypacamarra
  */
 
-#include <Phantom/Drivers/Driver_controls/throttle.h>
-
-
-
+#include "throttle.h"
 
 adcData_t FP_data[3];
 adcData_t *FP_data_ptr = FP_data;
@@ -67,8 +64,8 @@ void getPedalReadings() {
     while (!adcIsConversionComplete(adcREG1, adcGROUP1));
     adcGetData(adcREG1, adcGROUP1, FP_data_ptr);
     BSE_sensor_sum = (unsigned int)FP_data[0].value;   // BSE
-    FP_sensor_2_sum = (unsigned int)FP_data[1].value;  // APPS1
-    FP_sensor_1_sum = (unsigned int)FP_data[2].value;  // APPS2
+    FP_sensor_2_sum = (unsigned int)FP_data[1].value;  // APPS2
+    FP_sensor_1_sum = (unsigned int)FP_data[2].value;  // APPS1
 
     // Update pedal percentages
     calculatePedalPercents();
@@ -81,29 +78,37 @@ void getPedalReadings() {
 *           updates the VCU data structure
 */
 void calculatePedalPercents() {
+    // For adding padding to eliminate unintended range faults at 0% or 100% pedal presses
+    unsigned int PADDED_BSE_MIN_VALUE = BSE_MIN_VALUE * (1 + PADDING_PERCENT);
+    unsigned int PADDED_BSE_MAX_VALUE = BSE_MAX_VALUE * (1 - PADDING_PERCENT);
+    unsigned int PADDED_APPS1_MIN_VALUE = APPS1_MIN_VALUE * (1 + PADDING_PERCENT);
+    unsigned int PADDED_APPS1_MAX_VALUE = APPS1_MAX_VALUE * (1 - PADDING_PERCENT);
+    unsigned int PADDED_APPS2_MIN_VALUE = APPS2_MIN_VALUE * (1 + PADDING_PERCENT);
+    unsigned int PADDED_APPS2_MAX_VALUE = APPS2_MAX_VALUE * (1 - PADDING_PERCENT);
+
     // APPS1
-    if(FP_sensor_1_sum < APPS1_MIN_VALUE)
+    if(FP_sensor_1_sum < PADDED_APPS1_MIN_VALUE)
         Percent_APPS1_Pressed = 0;
-    else if(FP_sensor_1_sum > APPS1_MAX_VALUE)
+    else if(FP_sensor_1_sum > PADDED_APPS1_MAX_VALUE)
         Percent_APPS1_Pressed = 1.0;
     else
-        Percent_APPS1_Pressed = (FP_sensor_1_sum - APPS1_MIN_VALUE) / (float)(APPS1_MAX_VALUE - APPS1_MIN_VALUE);
+        Percent_APPS1_Pressed = (FP_sensor_1_sum - PADDED_APPS1_MIN_VALUE) / (float)(PADDED_APPS1_MAX_VALUE - PADDED_APPS1_MIN_VALUE);
 
     // APPS2
-    if(FP_sensor_2_sum < APPS2_MIN_VALUE)
+    if(FP_sensor_2_sum < PADDED_APPS2_MIN_VALUE)
         Percent_APPS2_Pressed = 0;
-    else if(FP_sensor_2_sum > APPS2_MAX_VALUE)
+    else if(FP_sensor_2_sum > PADDED_APPS2_MAX_VALUE)
         Percent_APPS2_Pressed = 1.0;
     else
-        Percent_APPS2_Pressed = (FP_sensor_2_sum - APPS2_MIN_VALUE) / (float)(APPS2_MAX_VALUE - APPS2_MIN_VALUE);
+        Percent_APPS2_Pressed = (FP_sensor_2_sum - PADDED_APPS2_MIN_VALUE) / (float)(PADDED_APPS2_MAX_VALUE - PADDED_APPS2_MIN_VALUE);
 
     // BSE
-    if(BSE_sensor_sum < BSE_MIN_VALUE)
+    if(BSE_sensor_sum < PADDED_BSE_MIN_VALUE)
         Percent_BSE_Pressed = 0;
-    else if(BSE_sensor_sum > BSE_MAX_VALUE)
+    else if(BSE_sensor_sum > PADDED_BSE_MAX_VALUE)
         Percent_BSE_Pressed = 1.0;
     else
-        Percent_BSE_Pressed = (BSE_sensor_sum - BSE_MIN_VALUE) / (float)(BSE_MAX_VALUE - BSE_MIN_VALUE);
+        Percent_BSE_Pressed = (BSE_sensor_sum - PADDED_BSE_MIN_VALUE) / (float)(PADDED_BSE_MAX_VALUE - PADDED_BSE_MIN_VALUE);
 }
 
 /** @fn void applyLowPassFilter(void)
@@ -129,7 +134,7 @@ void applyLowPassFilter() {
     APPS2_previous_filtered_sensor_values = FP_sensor_2_sum;
 }
 
-/** @fn bool check_BSE_Range(void)
+/** @fn bool check_BSE_Range_Fault(void)
 *   @brief Checks if the BSE is in the right voltage range
 *   @Return This function returns:
 *           True -> Fault
