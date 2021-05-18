@@ -69,20 +69,34 @@ void vSensorReadTask(void *pvParameters){
         // for timing:
         gioSetBit(hetPORT1, 25, 1);
 
-        RTDS_RAW = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN);
+        /* not too sure about this logic here...(used for momentary switch? but we're using toggle)
 
-        if ( gioGetBit(gioPORTA, 2) == 1)
-        {
-            VCUDataPtr->DigitalVal.RTDS = 0;
+         RTDS_RAW = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN);
+//
+//        if ( gioGetBit(gioPORTA, 2) == 1)
+//        {
+//            VCUDataPtr->DigitalVal.RTDS = 0;
 //            UARTSend(PC_UART, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
-        }
-        else
-        {
+//        }
+//        else
+//        {
 //            UARTSend(PC_UART, "RTDS RAW IS READ AS 0, RESETTING RTDS SIGNAL\r\n");
+//        }
+
+         ...check later */
+//
+        if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");
+
+        // TSAL and Shutdown GPIO states
+        storeShutdownValues();
+
+        //RTDS values
+        if(VCUDataPtr->DigitalVal.TSAL_STATUS == 0){
+
+            VCUDataPtr->DigitalVal.RTDS = 0;
+
         }
 
-        if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");}
-//        UARTSend(scilinREG, xTaskGetTickCount());
 
         //HVcurrent data merge with yash branch first
 
@@ -98,7 +112,7 @@ void vSensorReadTask(void *pvParameters){
 
             //update HV flags accordingly
 
-        //merge with main first to get the IMD states within the vcu data structure
+        // IMD data (maybe this needs to be a separate interrupt?)
         updateIMDData();
 
         IMDData_t dataIMD = getIMDData();
@@ -116,14 +130,7 @@ void vSensorReadTask(void *pvParameters){
 //
 //        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
 
-        // TSAL and Shutdown GPIO states
-        storeShutdownValues();
-
         // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
-
-        // IMD data (maybe this needs to be a separate interrupt?)
-        updateIMDData();
-
 
         // read LV voltage, current
 //        VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
