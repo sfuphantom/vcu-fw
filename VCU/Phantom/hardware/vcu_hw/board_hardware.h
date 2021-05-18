@@ -57,8 +57,8 @@
 
 /****************** BRAKE LIGHT *************************/
 #define BRAKING_THRESHOLD     2000 // threshold for turning on brake light
-#define BRAKE_LIGHT_PORT      gioPORTA
-#define BRAKE_LIGHT_PIN       6
+#define BRAKE_LIGHT_PORT      hetPORT1  //het1[12] as GPIO pin; must conifgure in halcogen
+#define BRAKE_LIGHT_PIN       12
 
 /*********   UART PORTS   ****************/
 #define PC_UART               sciREG

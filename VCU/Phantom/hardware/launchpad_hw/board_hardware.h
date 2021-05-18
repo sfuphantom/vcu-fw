@@ -32,11 +32,6 @@
 #define RESETedge 0 // needs to be confirmed
 
 
-
-
-
-
-
 /***************  TSAL GPIO  *********************/
 #define TSAL_PORT             hetPORT1
 #define TSAL_ACTIVE_PIN       5 // needs to be confirmed
@@ -54,8 +49,8 @@
 #define RED_LED               pwm3
 
 /********* READY TO DRIVE PIEZO PWM ****************/
-#define BUZZER_PORT           hetRAM1
-#define READY_TO_DRIVE_BUZZER pwm0
+#define BUZZER_PORT           hetRAM1 //het1[30]
+#define READY_TO_DRIVE_BUZZER pwm0 //outputting on pin 30
 
 /********* BRAKE SYSTEM ENCODER MIN/MAX ****************/
 /* These allow for checking short to GND and 5V faults */
