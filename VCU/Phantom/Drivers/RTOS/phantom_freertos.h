@@ -33,6 +33,14 @@
 
 #define NUMBER_OF_TIMERS   2
 
+//software timers
+enum{
+
+    BUZZER_TIMER,
+    DEBOUNCE_TIMER
+
+};
+
 
 
 /* This timer is used to debounce the interrupts for the RTDS and SDC signals */

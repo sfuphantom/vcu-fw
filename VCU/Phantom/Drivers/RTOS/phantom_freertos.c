@@ -8,6 +8,7 @@
 
 #include "phantom_freertos.h"
 #include "gio.h"
+#include "het.h"
 
 unsigned int BSE_sensor_sum  = 0;    // needs to be stored in VCU data structure and referenced from there
 
@@ -33,7 +34,7 @@ void phantom_freeRTOStimerInit(void)
  *                          freeRTOS SOFTWARE TIMER SETUP
  *********************************************************************************/
 
-    xTimers[0] = xTimerCreate
+    xTimers[DEBOUNCE_TIMER] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
              kernel. */
              "RTDS_Timer",
@@ -51,7 +52,7 @@ void phantom_freeRTOStimerInit(void)
              Timer_300ms
            );
 
-    xTimers[1] = xTimerCreate
+    xTimers[BUZZER_TIMER] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
              kernel. */
              "RTDS_Timer",
@@ -72,7 +73,7 @@ void phantom_freeRTOStimerInit(void)
 
     // with more timers being added it's more worth it to do a for loop for initializing each one here at the start
 
-    if( xTimers[0] == NULL )
+    if( xTimers[BUZZER_TIMER] == NULL )
     {
          /* The timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
@@ -82,7 +83,7 @@ void phantom_freeRTOStimerInit(void)
          /* Start the timer.  No block time is specified, and
          even if one was it would be ignored because the RTOS
          scheduler has not yet been started. */
-         if( xTimerStart( xTimers[0], 0 ) != pdPASS )
+         if( xTimerStart( xTimers[BUZZER_TIMER], 0 ) != pdPASS )
          {
              /* The timer could not be set into the Active
              state. */
@@ -90,7 +91,7 @@ void phantom_freeRTOStimerInit(void)
          }
     }
 
-    if( xTimers[1] == NULL )
+    if( xTimers[DEBOUNCE_TIMER] == NULL )
     {
          /* The timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
@@ -100,7 +101,7 @@ void phantom_freeRTOStimerInit(void)
          /* Start the timer.  No block time is specified, and
          even if one was it would be ignored because the RTOS
          scheduler has not yet been started. */
-         if( xTimerStart( xTimers[1], 0 ) != pdPASS )
+         if( xTimerStart( xTimers[DEBOUNCE_TIMER], 0 ) != pdPASS )
          {
              /* The timer could not be set into the Active
              state. */
@@ -182,7 +183,7 @@ void phantom_freeRTOStaskInit(void)
  /* Timer callback when it expires for the ready to drive sound */
  void Timer_2s(TimerHandle_t xTimers)
  {
-//     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
      THROTTLE_AVAILABLE = true;
  }
 
@@ -218,41 +219,48 @@ void phantom_freeRTOStaskInit(void)
 
 
  //    UARTSend(PC_UART, "---------Interrupt Request-------\r\n");
-     if (port == gioPORTA && bit == 2 && INTERRUPT_AVAILABLE)
+     if (port == READY_TO_DRIVE_PORT && bit == READY_TO_DRIVE_PIN && INTERRUPT_AVAILABLE) //configure to handle on rising and falling edge
      {
-         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-         // RTDS switch
-         UARTSend(PC_UART, "---------Interrupt Active\r\n");
-         if (VCUDataPtr->DigitalVal.RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
-         {
-             if (BSE_sensor_sum < 2000)
-             {
-                 gioSetBit(gioPORTA, 6, 1);
-                 VCUDataPtr->DigitalVal.RTDS = 1; // CHANGE STATE TO RUNNING
-                 UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
+         BaseType_t* xHigherPriorityTaskWoken = pdFALSE;
 
-                 // ready to drive buzzer, need to start a 2 second timer here
- //                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+         VCUDataPtr->DigitalVal.RTDS = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN); // Check status of RTDS
 
-                 // reset the 2 second timer to let the buzzer ring for 2 seconds
-                 if (xTimerResetFromISR(xTimers[1], xHigherPriorityTaskWoken) != pdPASS)// after 2s the timer will allow the interrupt to toggle the signal again
-                 {
-                     // timer reset failed
-                     UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
-                 }
-             }
-         }
- //        else
- //        {
- //            UARTSend(PC_UART, "---------RTDS set to 0 in interrupt\r\n");
- //            RTDS = 0;
- //        }
+        UARTSend(PC_UART, "---------Interrupt Active\r\n");
+        if (BSE_sensor_sum < 2000)
+        {
+//            gioSetBit(gioPORTA, 6, 1); //enable brake light
 
-         INTERRUPT_AVAILABLE = false;
-         if (xTimerResetFromISR(xTimers[0], xHigherPriorityTaskWoken) != pdPASS)// after 300ms the timer will allow the interrupt to toggle the signal again
-         {
-             // timer reset failed
-             UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
-         }
-     }
- }
+            //CHANGE TO STATE RUNNING
+            if(VCUDataPtr->DigitalVal.RTDS == 1){
+
+    //            UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
+
+                // ready to drive buzzer
+                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+
+                // reset the 2 second timer to let the buzzer ring for 2 seconds and allow throttle to motor (within BUZZER_TIMER)
+                if (xTimerResetFromISR(xTimers[BUZZER_TIMER], xHigherPriorityTaskWoken) != pdPASS) // after 2s the timer will allow the interrupt to toggle the signal again (ASSUMING A MOMENTARY SWITCH)ss
+                {
+                    // timer reset failed
+                    UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+                }
+
+            }else{
+                //block throttle to motor
+                THROTTLE_AVAILABLE = false;
+            }
+
+
+
+            INTERRUPT_AVAILABLE = false;
+            if (xTimerResetFromISR(xTimers[DEBOUNCE_TIMER], xHigherPriorityTaskWoken) != pdPASS) // after 300ms the timer will allow the interrupt to toggle the signal again
+            {
+                // timer reset failed
+                UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+            }
+
+        }//check brake pedal
+
+     } //RTDS interrupt handling
+
+ }//gioNotification
