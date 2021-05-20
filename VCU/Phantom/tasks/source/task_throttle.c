@@ -158,7 +158,7 @@ void vThrottleTask(void *pvParameters)
               brake light
              *********************************************************************************/
             if (previous_brake_light_state == 0 &&
-                    BSE_sensor_sum > BRAKING_THRESHOLD + hysteresis)
+                BSE_sensor_sum > BRAKING_THRESHOLD + hysteresis)
             {
                 // turn on brake lights
                 gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);

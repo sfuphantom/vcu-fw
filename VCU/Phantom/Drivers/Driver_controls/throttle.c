@@ -49,6 +49,7 @@ extern bool BSE_RANGE_FAULT_TIMER_EXPIRED;     //jaypacamarra
 extern bool FP_DIFF_FAULT_TIMER_EXPIRED;       //jaypacamarra
 
 float FP_sensor_diff;
+extern uint16_t hysteresis;
 
 
 /** @fn void getPedalReadings(void)
@@ -389,7 +390,7 @@ bool check_10PercentAPPS_Fault() {
 *           False -> No Fault
 */
 bool check_Brake_Plausibility_Fault() {
-    if (BSE_sensor_sum >= BRAKING_THRESHOLD &&
+    if (BSE_sensor_sum >= BRAKING_THRESHOLD + hysteresis &&
             Percent_APPS1_Pressed >= 0.25 &&
             Percent_APPS2_Pressed >= 0.25)
     {

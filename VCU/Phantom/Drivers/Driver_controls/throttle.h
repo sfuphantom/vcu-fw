@@ -20,7 +20,7 @@
 
 
 /* For calculating throttle padding */
-#define PADDING_PERCENT     0.05 // Must be between 0.0 and 1.0
+#define PADDING_PERCENT     0.08 // Must be between 0.0 and 1.0
 
 /* Brake Light readability */
 #define BRAKE_LIGHT_ON      0

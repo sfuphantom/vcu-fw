@@ -44,15 +44,15 @@
 
 /********* BRAKE SYSTEM ENCODER MIN/MAX ****************/
 /* These allow for checking short to GND and 5V faults */
-#define BSE_MIN_VALUE           2009
+#define BSE_MIN_VALUE           1268
 #define BSE_MAX_VALUE           3686
-#define APPS1_MIN_VALUE         2009
+#define APPS1_MIN_VALUE         1268
 #define APPS1_MAX_VALUE         3686
 #define APPS2_MIN_VALUE         410
 #define APPS2_MAX_VALUE         1229
 
 /****************** BRAKE LIGHT *************************/
-#define BRAKING_THRESHOLD     2000 // threshold for turning on brake light
+#define BRAKING_THRESHOLD     1500 // threshold for turning on brake light
 #define BRAKE_LIGHT_PORT      gioPORTA
 #define BRAKE_LIGHT_PIN       6
 
