@@ -19,8 +19,9 @@
 
 #endif
 
-#define DEFAULT_PWM_PERIOD_US   10.0
+#define DEFAULT_PWM_PERIOD_US   100.0
 #define DEFAULT_SIGNAL          (hetSIGNAL_t) {DEFAULT_PWM_DUTY, DEFAULT_PWM_PERIOD_US}
+#define DEFAULT_COLOR           RGB_OFF
 
 // This function must be called before using
 // anything else in the module.
@@ -34,7 +35,7 @@ void RGB_LED_Init()
     pwmStart(RGB_LED_PORT, GREEN_LED);
     pwmStart(RGB_LED_PORT, BLUE_LED);
 
-    RGB_LED_drive(DEFAULT_COLOR, DEFAULT_PWM_DUTY);
+    RGB_LED_drive(DEFAULT_COLOR);
 }
 
 void RGB_LED_reset()
@@ -53,14 +54,12 @@ void RGB_LED_reset()
     pwmStart(RGB_LED_PORT, GREEN_LED);
     pwmStart(RGB_LED_PORT, BLUE_LED);
 
-    RGB_LED_drive(DEFAULT_COLOR, DEFAULT_PWM_DUTY);
+    RGB_LED_drive(DEFAULT_COLOR);
 }
 
-void RGB_LED_drive(uint8_t colorCode, uint32_t pwm)
+void RGB_LED_drive(uint32_t redLedPwm, uint32_t greenLedPwm, uint32_t blueLedPwm)
 {
-    ASSERT(isInitialized);
-
-    pwmSetDuty(RGB_LED_PORT, RED_LED, pwm * ((colorCode & RGB_RED) && 1) + 1);
-    pwmSetDuty(RGB_LED_PORT, GREEN_LED, pwm * ((colorCode & RGB_GREEN) && 1) + 1);
-    pwmSetDuty(RGB_LED_PORT, BLUE_LED, pwm * ((colorCode & RGB_BLUE) && 1) + 1);
+    pwmSetDuty(RGB_LED_PORT, RED_LED, redLedPwm + 1);
+    pwmSetDuty(RGB_LED_PORT, GREEN_LED, greenLedPwm + 1);
+    pwmSetDuty(RGB_LED_PORT, BLUE_LED, blueLedPwm + 1);
 }

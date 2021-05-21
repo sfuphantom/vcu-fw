@@ -143,7 +143,7 @@ void vStateMachineTask(void *pvParameters){
 
                 */
 
-                RGB_LED_drive(RGB_CYAN, DEFAULT_PWM_DUTY);
+                RGB_LED_drive(RGB_CYAN);
 
                 if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********\r\n");}
 
@@ -179,7 +179,7 @@ void vStateMachineTask(void *pvParameters){
                 pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue
                 */
 
-                RGB_LED_drive(RGB_MAGENTA, DEFAULT_PWM_DUTY);
+                RGB_LED_drive(RGB_MAGENTA);
 
                 if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********\r\n");}
 
@@ -209,7 +209,7 @@ void vStateMachineTask(void *pvParameters){
                 pwmSetDuty(RGB_LED_PORT, GREEN_LED, 50U); // green LED
                 */
 
-                RGB_LED_drive(RGB_GREEN, DEFAULT_PWM_DUTY);
+                RGB_LED_drive(RGB_GREEN);
 
                 if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********\r\n");}
 
@@ -236,7 +236,7 @@ void vStateMachineTask(void *pvParameters){
                 pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED*/
 
                 // since there's no differentiation between MINOR and SEVERE faults, FAULT will be considered SEVERE for now -Josh
-                RGB_LED_drive(RGB_RED, DEFAULT_PWM_DUTY);
+                RGB_LED_drive(RGB_RED);
 
                 if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********\r\n");}
                 // uhhh turn on a fault LED here??
