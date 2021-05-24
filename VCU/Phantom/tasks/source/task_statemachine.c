@@ -25,6 +25,8 @@
 #include "eeprom_driver.h"
 #include "vcu_data.h" // data structure to hold VCU data
 
+#include "RGB_LED.h" // needed to drive LEDs for each machine state
+
 uint32_t blue_duty = 100;
 uint32_t blue_flag = 0;
 
@@ -141,6 +143,8 @@ void vStateMachineTask(void *pvParameters){
 
                 */
 
+                RGB_LED_drive(RGB_CYAN);
+
                 if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_OFF********\r\n");}
 
 
@@ -175,6 +179,8 @@ void vStateMachineTask(void *pvParameters){
                 pwmSetDuty(RGB_LED_PORT, BLUE_LED, 50U); // blue
                 */
 
+                RGB_LED_drive(RGB_MAGENTA);
+
                 if (STATE_PRINT) {UARTSend(PC_UART, "********TRACTIVE_ON********\r\n");}
 
 
@@ -203,6 +209,8 @@ void vStateMachineTask(void *pvParameters){
                 pwmSetDuty(RGB_LED_PORT, GREEN_LED, 50U); // green LED
                 */
 
+                RGB_LED_drive(RGB_GREEN);
+
                 if (STATE_PRINT) {UARTSend(PC_UART, "********RUNNING********\r\n");}
 
 
@@ -226,6 +234,9 @@ void vStateMachineTask(void *pvParameters){
                 pwmSetDuty(RGB_LED_PORT, BLUE_LED, 100U); // blue LED
                 pwmSetDuty(RGB_LED_PORT, RED_LED, 50U); // red LED
                 pwmSetDuty(RGB_LED_PORT, GREEN_LED, 100U); // green LED*/
+
+                // since there's no differentiation between MINOR and SEVERE faults, FAULT will be considered SEVERE for now -Josh
+                RGB_LED_drive(RGB_RED);
 
                 if (STATE_PRINT) {UARTSend(PC_UART, "********FAULT********\r\n");}
                 // uhhh turn on a fault LED here??
