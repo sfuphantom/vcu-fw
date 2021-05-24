@@ -40,8 +40,6 @@ void RGB_LED_Init()
 
 void RGB_LED_reset()
 {
-    ASSERT(isInitialized);
-    
     pwmStop(RGB_LED_PORT, RED_LED);
     pwmStop(RGB_LED_PORT, GREEN_LED);
     pwmStop(RGB_LED_PORT, BLUE_LED);
