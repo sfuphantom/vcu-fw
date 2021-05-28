@@ -49,8 +49,8 @@
 #define RED_LED               pwm3
 
 /********* READY TO DRIVE PIEZO PWM ****************/
-#define BUZZER_PORT           hetRAM1 //het1[30]
-#define READY_TO_DRIVE_BUZZER pwm0 //outputting on pin 30
+#define BUZZER_PORT           hetRAM1 //het1[12]
+#define READY_TO_DRIVE_BUZZER pwm0 //outputting on pin 12
 
 /********* BRAKE SYSTEM ENCODER MIN/MAX ****************/
 /* These allow for checking short to GND and 5V faults */
