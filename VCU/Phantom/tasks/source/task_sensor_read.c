@@ -68,34 +68,23 @@ void vSensorReadTask(void *pvParameters){
 
         // for timing:
         gioSetBit(hetPORT1, 25, 1);
-
-        /* not too sure about this logic here...(used for momentary switch? but we're using toggle)
-
-         RTDS_RAW = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN);
 //
-//        if ( gioGetBit(gioPORTA, 2) == 1)
-//        {
-//            VCUDataPtr->DigitalVal.RTDS = 0;
-//            UARTSend(PC_UART, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
-//        }
-//        else
-//        {
-//            UARTSend(PC_UART, "RTDS RAW IS READ AS 0, RESETTING RTDS SIGNAL\r\n");
-//        }
+        if (TASK_PRINT) { UARTSend(PC_UART, "SENSOR READING TASK\r\n"); }
 
-         ...check later */
-//
-        if (TASK_PRINT) {UARTSend(PC_UART, "SENSOR READING TASK\r\n");
 
-        // TSAL and Shutdown GPIO states
-        storeShutdownValues();
+        // TSAL and Shutdown GPIO states, check welded airs
+       storeShutdownValues();
 
-        //RTDS values
+        //RTDS values, turn off RTDS if TSAL is off
         if(VCUDataPtr->DigitalVal.TSAL_STATUS == 0){
 
             VCUDataPtr->DigitalVal.RTDS = 0;
-
         }
+
+        VCUDataPtr->DigitalVal.RTDS = !isSevereFault();
+
+
+        //throttle still allowed w/ minor fault...
 
 
         //HVcurrent data merge with yash branch first
@@ -112,12 +101,20 @@ void vSensorReadTask(void *pvParameters){
 
             //update HV flags accordingly
 
+        // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
+
+        // read LV voltage, current (confirm Range w/ test board team)
+        VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
+
+        VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
+
+
         // IMD data (maybe this needs to be a separate interrupt?)
         updateIMDData();
 
         IMDData_t dataIMD = getIMDData();
 
-        //determine state of all flags (add to vcu data structure in some format...?)
+        //determine state OF IMD flags
 //        VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
 //
 //        VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
@@ -130,24 +127,18 @@ void vSensorReadTask(void *pvParameters){
 //
 //        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
 
-        // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
-
-        // read LV voltage, current
-//        VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
-
-//        VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
 
 
         #ifdef SENSOR_PRINT
 
-//        UARTSend(PC_UART, "SENSOR READING TASK\r\n");
+        UARTSend(PC_UART, "SENSOR READING TASK\r\n");
 
-//        serialSendData();
+        serialSendData();
 
-//        UARTSend(PC_UART, "\r\n\n\n");
+        UARTSend(PC_UART, "\r\n\n\n");
         UARTSend(PC_UART, VCUDataPtr->DigitalVal.TSAL_WELDED ? "AIRS ARE WELDED\r\n" : "");
 
-//        print_Shutdownvals();
+        print_Shutdownvals();
 
         #endif
 
@@ -155,3 +146,4 @@ void vSensorReadTask(void *pvParameters){
         gioSetBit(hetPORT1, 25, 0);
     }
 }
+
