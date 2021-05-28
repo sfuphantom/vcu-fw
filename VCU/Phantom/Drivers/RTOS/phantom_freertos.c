@@ -12,8 +12,8 @@
 
 unsigned int BSE_sensor_sum  = 0;    // needs to be stored in VCU data structure and referenced from there
 
-bool INTERRUPT_AVAILABLE;
-bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has gone for 2 seconds
+bool INTERRUPT_AVAILABLE = false;
+bool THROTTLE_AVAILABLE = false; // used to only enable throttle after the buzzer has gone for 2 seconds
 
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
@@ -37,7 +37,7 @@ void phantom_freeRTOStimerInit(void)
     xTimers[DEBOUNCE_TIMER] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
              kernel. */
-             "RTDS_Timer",
+             "Debounce_Timer",
              /* The timer period in ticks, must be
              greater than 0. */
              pdMS_TO_TICKS(10),
@@ -55,7 +55,7 @@ void phantom_freeRTOStimerInit(void)
     xTimers[BUZZER_TIMER] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
              kernel. */
-             "RTDS_Timer",
+             "Buzzer_Timer",
              /* The timer period in ticks, must be
              greater than 0. */
              pdMS_TO_TICKS(2000),
@@ -184,6 +184,7 @@ void phantom_freeRTOStaskInit(void)
  void Timer_2s(TimerHandle_t xTimers)
  {
      pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+//     pwmSetDuty(BUZZER_PORT, READY_TO_DRIVE_BUZZER, 0U);
      THROTTLE_AVAILABLE = true;
  }
 
@@ -219,47 +220,50 @@ void phantom_freeRTOStaskInit(void)
 
 
  //    UARTSend(PC_UART, "---------Interrupt Request-------\r\n");
-     if (port == READY_TO_DRIVE_PORT && bit == READY_TO_DRIVE_PIN && INTERRUPT_AVAILABLE) //configure to handle on rising and falling edge
-     {
-         BaseType_t* xHigherPriorityTaskWoken = pdFALSE;
+     if (port == READY_TO_DRIVE_PORT && bit == READY_TO_DRIVE_PIN /* && INTERRUPT_AVAILABLE */){ //active on rising and falling edge
 
-         VCUDataPtr->DigitalVal.RTDS = gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN); // Check status of RTDS
+        BaseType_t* xHigherPriorityTaskWoken = pdFALSE;
 
         UARTSend(PC_UART, "---------Interrupt Active\r\n");
-        if (BSE_sensor_sum < 2000)
-        {
-//            gioSetBit(gioPORTA, 6, 1); //enable brake light
+        if (/* BSE_sensor_sum > BRAKING_THRESHOLD && */  gioGetBit(READY_TO_DRIVE_PORT, READY_TO_DRIVE_PIN)){
+
+            //            gioSetBit(gioPORTA, 6, 1); //enable brake light
 
             //CHANGE TO STATE RUNNING
-            if(VCUDataPtr->DigitalVal.RTDS == 1){
+            VCUDataPtr->DigitalVal.RTDS = 1;
 
-    //            UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
+            // ready to drive buzzer ON
+            pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
 
-                // ready to drive buzzer
-                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
-
-                // reset the 2 second timer to let the buzzer ring for 2 seconds and allow throttle to motor (within BUZZER_TIMER)
-                if (xTimerResetFromISR(xTimers[BUZZER_TIMER], xHigherPriorityTaskWoken) != pdPASS) // after 2s the timer will allow the interrupt to toggle the signal again (ASSUMING A MOMENTARY SWITCH)ss
-                {
-                    // timer reset failed
-                    UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
-                }
-
-            }else{
-                //block throttle to motor
-                THROTTLE_AVAILABLE = false;
-            }
+            // reset the 2 second timer to let the buzzer ring for 2 seconds and allow throttle to motor (within BUZZER_TIMER)
 
 
+//            if (xTimerStartFromISR(xTimers[BUZZER_TIMER], xHigherPriorityTaskWoken) != pdPASS){
+//
+//                // timer reset failed
+//                UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+//            }
+//            xTimerStartFromISR(xTimers[BUZZER_TIMER], 500);
 
-            INTERRUPT_AVAILABLE = false;
-            if (xTimerResetFromISR(xTimers[DEBOUNCE_TIMER], xHigherPriorityTaskWoken) != pdPASS) // after 300ms the timer will allow the interrupt to toggle the signal again
-            {
+            if (xTimerResetFromISR(xTimers[BUZZER_TIMER], xHigherPriorityTaskWoken) != pdPASS){
+
                 // timer reset failed
                 UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
             }
 
-        }//check brake pedal
+        }else{
+
+            //block throttle to motor
+            THROTTLE_AVAILABLE = false;
+        }
+
+        //BUTTON DEBOUNCING
+        INTERRUPT_AVAILABLE = false;
+        if (xTimerResetFromISR(xTimers[DEBOUNCE_TIMER], xHigherPriorityTaskWoken) != pdPASS) // after 300ms the timer will allow the interrupt to toggle the signal again
+        {
+            // timer reset failed
+            UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+        }
 
      } //RTDS interrupt handling
 

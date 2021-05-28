@@ -42,7 +42,6 @@ enum{
 };
 
 
-
 /* This timer is used to debounce the interrupts for the RTDS and SDC signals */
 void Timer_300ms(TimerHandle_t xTimers);
 void Timer_2s(TimerHandle_t xTimers);
