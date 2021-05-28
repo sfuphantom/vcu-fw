@@ -23,11 +23,24 @@ extern uint8_t BSPD_STATUS;         // if 1, then BSPD is healthy, if 0 then BSP
 extern uint8_t TSAL_STATUS;
 extern uint8_t RESET_STATUS;
 
+bool isSevereFault(){
 
+    return (
+                VCUDataPtr->DigitalVal.BMS_FAULT   ||
+
+                VCUDataPtr->DigitalVal.BSPD_FAULT  ||
+
+                VCUDataPtr->DigitalVal.TSAL_WELDED ||
+
+                VCUDataPtr->DigitalVal.IMD_FAULT
+            );
+}
 
 void resetShutdownSignals(){
 
     //All Severe Faults get reset here...
+
+    VCUDataPtr->DigitalVal.RTDS = 0; //go back to TS_OFF/ON
 
     VCUDataPtr->DigitalVal.BMS_FAULT = false;
 

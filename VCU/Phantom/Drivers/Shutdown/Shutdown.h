@@ -54,6 +54,8 @@
 
 /*Function Headers */
 
+bool isSevereFault();
+
 void resetShutdownSignals();
 
 void ShutdownInit();
