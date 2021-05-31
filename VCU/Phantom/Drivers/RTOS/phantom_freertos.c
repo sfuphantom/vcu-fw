@@ -83,12 +83,12 @@ void phantom_freeRTOStimerInit(void)
          /* Start the timer.  No block time is specified, and
          even if one was it would be ignored because the RTOS
          scheduler has not yet been started. */
-         if( xTimerStart( xTimers[BUZZER_TIMER], 0 ) != pdPASS )
-         {
-             /* The timer could not be set into the Active
-             state. */
-             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
-         }
+//         if( xTimerStart( xTimers[BUZZER_TIMER], 0 ) != pdPASS )
+//         {
+//             /* The timer could not be set into the Active
+//             state. */
+//             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
+//         }
     }
 
     if( xTimers[DEBOUNCE_TIMER] == NULL )
@@ -183,7 +183,7 @@ void phantom_freeRTOStaskInit(void)
  /* Timer callback when it expires for the ready to drive sound */
  void Timer_2s(TimerHandle_t xTimers)
  {
-     pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+     pwmSetDuty(BUZZER_PORT,READY_TO_DRIVE_BUZZER,0);
 //     pwmSetDuty(BUZZER_PORT, READY_TO_DRIVE_BUZZER, 0U);
      THROTTLE_AVAILABLE = true;
  }
@@ -233,7 +233,7 @@ void phantom_freeRTOStaskInit(void)
             VCUDataPtr->DigitalVal.RTDS = 1;
 
             // ready to drive buzzer ON
-            pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+            pwmSetDuty(BUZZER_PORT,READY_TO_DRIVE_BUZZER,50);
 
             // reset the 2 second timer to let the buzzer ring for 2 seconds and allow throttle to motor (within BUZZER_TIMER)
 
@@ -248,7 +248,7 @@ void phantom_freeRTOStaskInit(void)
             if (xTimerResetFromISR(xTimers[BUZZER_TIMER], xHigherPriorityTaskWoken) != pdPASS){
 
                 // timer reset failed
-                UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+                UARTSend(PC_UART, "---------Buzzer Timer reset failed-------\r\n");
             }
 
         }else{
@@ -262,7 +262,7 @@ void phantom_freeRTOStaskInit(void)
         if (xTimerResetFromISR(xTimers[DEBOUNCE_TIMER], xHigherPriorityTaskWoken) != pdPASS) // after 300ms the timer will allow the interrupt to toggle the signal again
         {
             // timer reset failed
-            UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+            UARTSend(PC_UART, "---------Debounce Timer reset failed-------\r\n");
         }
 
      } //RTDS interrupt handling

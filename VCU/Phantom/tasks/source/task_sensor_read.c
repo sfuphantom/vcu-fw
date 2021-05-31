@@ -103,10 +103,10 @@ void vSensorReadTask(void *pvParameters){
 
         // CAN status from BMS (call Xinglu driver) (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
 
-        // read LV voltage, current (confirm Range w/ test board team)
-        VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
-
-        VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
+//        // read LV voltage, current (confirm Range w/ test board team) (need timeout for i2c first)
+//        VCUDataPtr->AnalogIn.currentLV_A.adc_value = LV_reading(LV_current_register);
+//
+//        VCUDataPtr->AnalogIn.voltageLV_V.adc_value = LV_reading(LV_bus_voltage_register);
 
 
         // IMD data (maybe this needs to be a separate interrupt?)
@@ -128,17 +128,19 @@ void vSensorReadTask(void *pvParameters){
 //        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
 
 
+//        pwmSetDuty(BUZZER_PORT,READY_TO_DRIVE_BUZZER,50);
+//        pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
 
         #ifdef SENSOR_PRINT
 
-        UARTSend(PC_UART, "SENSOR READING TASK\r\n");
+//        UARTSend(PC_UART, "SENSOR READING TASK\r\n");
 
-        serialSendData();
+//        serialSendData();
 
-        UARTSend(PC_UART, "\r\n\n\n");
+//        UARTSend(PC_UART, "\r\n\n\n");
         UARTSend(PC_UART, VCUDataPtr->DigitalVal.TSAL_WELDED ? "AIRS ARE WELDED\r\n" : "");
 
-        print_Shutdownvals();
+//        print_Shutdownvals();
 
         #endif
 
