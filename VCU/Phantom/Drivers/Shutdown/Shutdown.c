@@ -61,7 +61,7 @@ void ShutdownInit(){
        vimInit();
 
        //set hetPORT1 as inputs
-       gioSetDirection(hetPORT1, 0x00000000);
+//       gioSetDirection(hetPORT1, 0x00000000);
 
        resetShutdownSignals();
 

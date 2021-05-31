@@ -8,6 +8,6 @@
 
 void RTD_Buzzer_Init(void)
 {
-    pwmStop(BUZZER_PORT, READY_TO_DRIVE_BUZZER); // stop the ready to drive buzzer PWM from starting automatically
+    pwmSetDuty(BUZZER_PORT, READY_TO_DRIVE_BUZZER, 0); // stop the ready to drive buzzer PWM from starting automatically
 }
 

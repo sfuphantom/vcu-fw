@@ -166,6 +166,8 @@ int main(void)
 
     phantom_freeRTOSInit();     // Initialize freeRTOS timers, queues, and tasks
 
+    pwmSetDuty(BUZZER_PORT, READY_TO_DRIVE_BUZZER, 0); //hetInits turns on the buzzer pin; reset to 0 before starting scheduler
+
     vTaskStartScheduler();      // start freeRTOS task scheduler
 
     // infinite loop to prevent code from ending. The scheduler will now pre-emptively switch between tasks.
