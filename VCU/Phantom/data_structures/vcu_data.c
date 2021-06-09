@@ -6,6 +6,20 @@
  */
 #include "vcu_data.h"
 
+
+/*******************************************************************
+* NAME :            initData
+*
+* DESCRIPTION :     Initializes the VCU State Machine
+*
+* INPUTS : Pointer to baseAddress to data structure of VCU data.
+*
+* RETURN : None
+*
+*
+* NOTES :
+*
+*/
 void initData(data* VCUDataPtr)
 {
     /***********************************************************
@@ -40,16 +54,18 @@ void initData(data* VCUDataPtr)
      *              DIGITAL VALUE INITIALIZATION
      ***********************************************************/
 
-    VCUDataPtr->DigitalVal.RTDS = 1;
-    VCUDataPtr->DigitalVal.BMS_STATUS = 1;
-    VCUDataPtr->DigitalVal.IMD_STATUS = 1;
-    VCUDataPtr->DigitalVal.BSPD_STATUS = 1;
+    VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
 
-    VCUDataPtr->DigitalVal.TSAL_STATUS = 1;
+    VCUDataPtr->DigitalVal.RTDS = 1;
+    VCUDataPtr->DigitalVal.BMS_FAULT = 1;
+    VCUDataPtr->DigitalVal.IMD_FAULT = 1;
+    VCUDataPtr->DigitalVal.BSPD_FAULT = 1;
+
+    VCUDataPtr->DigitalVal.TSAL_FAULT = 1;
     VCUDataPtr->DigitalVal.BSE_FAULT = 0;
     VCUDataPtr->DigitalVal.APPS_FAULT = 0;
-
-    VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
+    // ++ Added by jjkhan
+    VCUDataPtr->vcuState = TRACTIVE_OFF;
+    // -- Added by jjkhan
 }
-
 

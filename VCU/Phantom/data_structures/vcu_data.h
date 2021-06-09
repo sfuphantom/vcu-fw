@@ -11,6 +11,11 @@
 
 #include "sys_common.h"
 
+
+//++ Added by jjkhan
+#include "board_hardware.h"  // Has "State" enum definition
+//-- Added by jjkhan
+
 typedef struct analogData
 {
     float adc_value;
@@ -36,11 +41,11 @@ typedef struct analogOutputs
 typedef struct digitalValues
 {
     uint8_t RTDS;               // if 1, ready to drive is set, if 0 then not ready to drive
-    uint8_t BMS_STATUS;         // if 1, then BMS is healthy, if 0 then BMS fault
-    uint8_t IMD_STATUS;         // if 1, then IMD is healthy, if 0 then IMD fault
-    uint8_t BSPD_STATUS;        // if 1, then BSPD is healthy, if 0 then BSPD fault
+    uint8_t BMS_FAULT;         // if 1, then BMS is healthy, if 0 then BMS fault
+    uint8_t IMD_FAULT;         // if 1, then IMD is healthy, if 0 then IMD fault
+    uint8_t BSPD_FAULT;        // if 1, then BSPD is healthy, if 0 then BSPD fault
 
-    uint8_t TSAL_STATUS;        // if 1, then TSAL is on and AIRs are closed, if 0 then TSAL is off and AIRs should be open
+    uint8_t TSAL_FAULT;        // if 1, then TSAL is on and AIRs are closed, if 0 then TSAL is off and AIRs should be open
     uint8_t BSE_FAULT;          // if 0, then BSE is healthy, if 1 then BSE fault
     uint8_t APPS_FAULT;         // if 0, then APPS is healthy, if 1 then APPS fault
 
@@ -53,13 +58,23 @@ typedef struct digitalOutputs
     // somehow show the PWM for the buzzer here
 } digitalOutputs;
 
-
 typedef struct data
 {
+    /* Note: -> DO NOT change the place of vcuState structure in this file because:
+         *  In eepromTask, we're reading vcuState from FEE bank using an OFFSET of 72 bytes.
+         *  i.e. 73rd byte is the value corresponding to vcuState, based on the setup on
+         *  the placement order of "data" structure below.
+     */
+
     analogInputs AnalogIn;
     analogOutputs AnalogOut;
-    digitalValues DigitalVal;
     digitalOutputs DigitalOut;
+    digitalValues DigitalVal;
+
+    //++ Added by jjkhan
+    State vcuState;
+    //-- Added by jjkhan
+
 } data;
 
 
