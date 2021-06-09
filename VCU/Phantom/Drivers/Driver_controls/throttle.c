@@ -17,7 +17,6 @@ float volatile Percent_APPS1_Pressed;
 float volatile Percent_APPS2_Pressed;
 float volatile Percent_BSE_Pressed;
 
-float alpha = 0.5;                               // Change this to tweak lowpass filter response - jaypacamarra
 float BSE_filtered_sensor_value;                 // filtered BSE sensor value - jaypacamarra
 float BSE_previous_filtered_sensor_values = 0;   // previous BSE filtered output - jaypacamarra
 float APPS1_filtered_sensor_value;               // filtered APPS1 sensor value - jaypacamarra
@@ -49,7 +48,6 @@ extern bool BSE_RANGE_FAULT_TIMER_EXPIRED;     //jaypacamarra
 extern bool FP_DIFF_FAULT_TIMER_EXPIRED;       //jaypacamarra
 
 float FP_sensor_diff;
-extern uint16_t hysteresis;
 
 
 /** @fn void getPedalReadings(void)
@@ -79,14 +77,6 @@ void getPedalReadings() {
 *           updates the VCU data structure
 */
 void calculatePedalPercents() {
-    // For adding padding to eliminate unintended range faults at 0% or 100% pedal presses
-    unsigned int PADDED_BSE_MIN_VALUE = BSE_MIN_VALUE * (1 + PADDING_PERCENT);
-    unsigned int PADDED_BSE_MAX_VALUE = BSE_MAX_VALUE * (1 - PADDING_PERCENT);
-    unsigned int PADDED_APPS1_MIN_VALUE = APPS1_MIN_VALUE * (1 + PADDING_PERCENT);
-    unsigned int PADDED_APPS1_MAX_VALUE = APPS1_MAX_VALUE * (1 - PADDING_PERCENT);
-    unsigned int PADDED_APPS2_MIN_VALUE = APPS2_MIN_VALUE * (1 + PADDING_PERCENT);
-    unsigned int PADDED_APPS2_MAX_VALUE = APPS2_MAX_VALUE * (1 - PADDING_PERCENT);
-
     // APPS1
     if(FP_sensor_1_sum < PADDED_APPS1_MIN_VALUE)
         Percent_APPS1_Pressed = 0;
@@ -125,9 +115,9 @@ void calculatePedalPercents() {
 */
 void applyLowPassFilter() {
     // Filter the raw BSE,APPS1, and APPS2 sensor values
-    BSE_sensor_sum = BSE_previous_filtered_sensor_values + alpha * (BSE_sensor_sum - BSE_previous_filtered_sensor_values);
-    FP_sensor_1_sum = APPS1_previous_filtered_sensor_values + alpha * (FP_sensor_1_sum - APPS1_previous_filtered_sensor_values);
-    FP_sensor_2_sum = APPS2_previous_filtered_sensor_values + alpha * (FP_sensor_2_sum - APPS2_previous_filtered_sensor_values);
+    BSE_sensor_sum = BSE_previous_filtered_sensor_values + ALPHA * (BSE_sensor_sum - BSE_previous_filtered_sensor_values);
+    FP_sensor_1_sum = APPS1_previous_filtered_sensor_values + ALPHA * (FP_sensor_1_sum - APPS1_previous_filtered_sensor_values);
+    FP_sensor_2_sum = APPS2_previous_filtered_sensor_values + ALPHA * (FP_sensor_2_sum - APPS2_previous_filtered_sensor_values);
 
     // Set previous filtered values to current filtered values
     BSE_previous_filtered_sensor_values = BSE_sensor_sum;
@@ -390,7 +380,7 @@ bool check_10PercentAPPS_Fault() {
 *           False -> No Fault
 */
 bool check_Brake_Plausibility_Fault() {
-    if (BSE_sensor_sum >= BRAKING_THRESHOLD + hysteresis &&
+    if (BSE_sensor_sum >= BRAKING_THRESHOLD + HYSTERESIS &&
             Percent_APPS1_Pressed >= 0.25 &&
             Percent_APPS2_Pressed >= 0.25)
     {

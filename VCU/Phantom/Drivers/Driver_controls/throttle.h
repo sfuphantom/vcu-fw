@@ -20,11 +20,24 @@
 
 
 /* For calculating throttle padding */
-#define PADDING_PERCENT     0.08 // Must be between 0.0 and 1.0
+/* Padding will eliminate unintended range faults at 0% or 100% pedal presses */
+#define PADDING_PERCENT         (0.08f) // Must be between 0.0 and 1.0
+#define PADDED_BSE_MIN_VALUE    (BSE_MIN_VALUE * (1U + PADDING_PERCENT))
+#define PADDED_BSE_MAX_VALUE    (BSE_MAX_VALUE * (1U - PADDING_PERCENT))
+#define PADDED_APPS1_MIN_VALUE  (APPS1_MIN_VALUE * (1U + PADDING_PERCENT))
+#define PADDED_APPS1_MAX_VALUE  (APPS1_MAX_VALUE * (1U - PADDING_PERCENT))
+#define PADDED_APPS2_MIN_VALUE  (APPS2_MIN_VALUE * (1U + PADDING_PERCENT))
+#define PADDED_APPS2_MAX_VALUE  (APPS2_MAX_VALUE * (1U - PADDING_PERCENT))
+
+/* Hysteresis */
+#define HYSTERESIS      (200U)
 
 /* Brake Light readability */
 #define BRAKE_LIGHT_ON      0
 #define BRAKE_LIGHT_OFF     1
+
+/* Alpha value for software low pass filter, value can be 0-1 */
+#define ALPHA   (0.5f)
 
 
 void getPedalReadings();

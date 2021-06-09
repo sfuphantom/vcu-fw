@@ -53,16 +53,6 @@ extern SemaphoreHandle_t vcuKey;    // mutex
 
 extern data *VCUDataPtr;
 
-//++ Added by jaypacamarra for execution time measurement
-
-#include <Phantom/support/execution_timer.h>
-
-#define CPU_CLOCK_MHz (float) 160.0  // System clock is 180 Mhz, RTI Clock is 80 Mhz
-volatile unsigned long cycles_PMU_start;    // CPU cycle count at start
-volatile float time_PMU_code_uSecond;   // the calculated time in uSecond.
-
-//++ Added by jaypacamarra for execution time measurement
-
 bool previous_brake_light_state = 1;    // Default = 1. Holds previous brake light state, 1 = ON, 0 = OFF - jaypacamarra
 uint16_t hysteresis = 200;          // change this to tweak hysteresis threshhold - jaypacamarra
 
@@ -84,7 +74,7 @@ void vThrottleTask(void *pvParameters)
 {
 
     TickType_t xLastWakeTime;         // will hold the timestamp at which the task was last unblocked
-    const TickType_t xFrequency = 1; // task frequency in ms
+    const TickType_t xFrequency = 5; // task frequency in ms - need to come up with this number better
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
@@ -100,68 +90,52 @@ void vThrottleTask(void *pvParameters)
         // Wait for the next cycle
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
-#ifdef PMU_CYCLE
-        //Start timer.
-        cycles_PMU_start = timer_Start();
-        gioSetBit(gioPORTA, 5, 1);
-#endif
-
         // Get pedal readings
         getPedalReadings();
 
+        // Signal conditioning - jaypacamarra
+        applyLowPassFilter();
+
         if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(1))==1){ // Protect vcuStructure & wait for 1 milliseconds, if key not available, skip
-            // Update pedal inputs in vcu data structure
+
+            /*********************************************************************************
+              Update pedal inputs in vcu data structure
+             *********************************************************************************/
+
             VCUDataPtr->AnalogIn.APPS1_percentage.value = Percent_APPS1_Pressed;
             VCUDataPtr->AnalogIn.APPS2_percentage.value = Percent_APPS2_Pressed;
             VCUDataPtr->AnalogIn.BSE_percentage.value = Percent_BSE_Pressed;
 
-            // Signal conditioning - jaypacamarra
-            applyLowPassFilter();
 
             /*********************************************************************************
               check for short to GND/VCC on APPS sensor 1
              *********************************************************************************/
-            if(check_APPS1_Range_Fault())
-            {
-                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 1;
-            }
-            else
-            {
-                VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
-            }
+
+             VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = check_APPS1_Range_Fault();
+
 
             /*********************************************************************************
               check for short to GND/VCC on APPS sensor 2
              *********************************************************************************/
-            if(check_APPS2_Range_Fault())
-            {
-                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 1;
-            }
-            else
-            {
-                VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
-            }
+
+             VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = check_APPS2_Range_Fault();
+
 
             /*********************************************************************************
               check for short to GND/VCC on BSE
              *********************************************************************************/
-            if(check_BSE_Range_Fault())
-            {
-                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
-            }
-            else
-            {
-                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
-            }
+
+             VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = check_BSE_Range_Fault();
+
 
             /*********************************************************************************
               brake light
              *********************************************************************************/
             if (previous_brake_light_state == 0 &&
-                BSE_sensor_sum > BRAKING_THRESHOLD + hysteresis)
+                BSE_sensor_sum > BRAKING_THRESHOLD + HYSTERESIS)
             {
                 // turn on brake lights
-                gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 0);
+                gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, BRAKE_LIGHT_ON);
 
                 // update brake light enable in the vcu data structure
                 VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 1;
@@ -170,10 +144,10 @@ void vThrottleTask(void *pvParameters)
                 previous_brake_light_state = 1;
             }
             else if (previous_brake_light_state == 1 &&
-                    BSE_sensor_sum < BRAKING_THRESHOLD - hysteresis)
+                    BSE_sensor_sum < BRAKING_THRESHOLD - HYSTERESIS)
             {
                 // turn off brake lights
-                gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, 1);
+                gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, BRAKE_LIGHT_OFF);
 
                 // update brake light enable in the vcu data structure
                 VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
@@ -185,36 +159,26 @@ void vThrottleTask(void *pvParameters)
             /*********************************************************************************
               Check if APPS1 and APPS2 are within 10% of each other
              *********************************************************************************/
-            if(check_10PercentAPPS_Fault())
-            {
-                VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 1; // Set fault flag in vcu data structure;
-            }
-            else
-            {
-                VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0;
-            }
+
+            VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = check_10PercentAPPS_Fault();
+
 
             /*********************************************************************************
               Check if brakes are pressed and accelerator pedal
               is pressed greater than or equal to 25%
              *********************************************************************************/
-            if(check_Brake_Plausibility_Fault())
-            {
-                VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 1;
-            }
-            else
-            {
-                VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
-            }
 
+            VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = check_Brake_Plausibility_Fault();
+
+            // Give vcu key back
             xSemaphoreGive(vcuKey);
         }
 
 
         // debugging - jaypacamarra
         // manually setting state to RUNNING and setting THROTTLE_AVAILABLE to true to test DAC - jaypacamarra
-        state = RUNNING;
-        THROTTLE_AVAILABLE = true;
+//        state = RUNNING;
+//        THROTTLE_AVAILABLE = true;
 
         /*********************************************************************************
           Set Throttle
@@ -237,11 +201,5 @@ void vThrottleTask(void *pvParameters)
             MCP48FV_Set_Value(0);
             THROTTLE_AVAILABLE = false;
         }
-
-#ifdef PMU_CYCLE
-        //Start timer.
-        time_PMU_code_uSecond = timer_Stop(cycles_PMU_start, CPU_CLOCK_MHz);
-        gioSetBit(gioPORTA, 5, 0);
-#endif
     }
 }
