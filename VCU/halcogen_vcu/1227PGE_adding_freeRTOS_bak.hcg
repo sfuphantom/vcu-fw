@@ -197,9 +197,7 @@
       <HDRRTI>
         <NAME>rti.h</NAME>
       </HDRRTI>
-      <SRCRTI>
-        <NAME>rti.c</NAME>
-      </SRCRTI>
+      <SRCRTI/>
       <HDRGIO_R>
         <NAME>reg_gio.h</NAME>
       </HDRGIO_R>
@@ -428,7 +426,7 @@
         <PATH>include\rti.h</PATH>
       </HDRRTI>
       <SRCRTI>
-        <PATH>source\rti.c</PATH>
+        <PATH/>
       </SRCRTI>
     </FILENAMES>
   </RTI>

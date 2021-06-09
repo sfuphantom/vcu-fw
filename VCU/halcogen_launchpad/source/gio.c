@@ -173,6 +173,7 @@ void gioInit(void)
                       | (uint32)((uint32)0U << 7U); /* Bit 7 */
 
 /* USER CODE BEGIN (3) */
+
 /* USER CODE END */
 
     /** @b initialize @b interrupts */

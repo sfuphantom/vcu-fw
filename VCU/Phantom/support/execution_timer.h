@@ -9,23 +9,13 @@
 #define PHANTOM_SUPPORT_EXECUTION_TIMER_H_
 
 #include "sys_pmu.h"
-
+#include "../Drivers/EEPROM/eeprom_driver.h"
 
 
 #define PMU_CYCLE
 
-/*
- *  Pragma and Define for switching between User mode and Supervisor Mode.
- *
- *  Need to be in Supervisor Mode to write to Fee Bank.  -> Inside main function you're already in Supervisor mode, inside a task you're in user mode.
- *
- *  User can do a SVC call to switch to user or privileged mode.
- */
 
-#define USER_MODE   0x10U
-#define SYSTEM_MODE 0x1FU
-#pragma SWI_ALIAS(swiSwitchToMode, 1)
-extern void swiSwitchToMode(uint32 mode);   // need to be in supervised mode
+extern void swiSwitchToMode(uint32 mode);
 
 /*
  *  Note: PMU has 3 event counters and 1 counter dedicated for only CPU cycles.
