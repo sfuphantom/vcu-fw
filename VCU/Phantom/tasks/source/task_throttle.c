@@ -5,7 +5,7 @@
  *      Author: gabriel
  */
 
-#include <Phantom/Drivers/Driver_controls/throttle.h>   // Added THROTTLE DRIVER - jaypacamarra (5/5/2021)
+#include <Phantom/Drivers/Throttle/throttle.h>   // Added THROTTLE DRIVER - jaypacamarra (5/5/2021)
 #include "adc.h"
 #include "FreeRTOS.h"
 #include "os_queue.h"

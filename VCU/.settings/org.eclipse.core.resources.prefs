@@ -1,8 +1,6 @@
 eclipse.preferences.version=1
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/DAC_SPI/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/DAC_SPI/subdir_vars.mk=UTF-8
-encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/Driver_controls/subdir_rules.mk=UTF-8
-encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/Driver_controls/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/EEPROM/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/EEPROM/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/IMD/subdir_rules.mk=UTF-8
@@ -15,6 +13,8 @@ encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/RTD_Buzzer/subdir_rules.mk=
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/RTD_Buzzer/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/RTOS/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/RTOS/subdir_vars.mk=UTF-8
+encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/Throttle/subdir_rules.mk=UTF-8
+encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/Throttle/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/UART/subdir_rules.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/Drivers/UART/subdir_vars.mk=UTF-8
 encoding//BuildConfig_Launchpad-1224/Phantom/data_structures/subdir_rules.mk=UTF-8

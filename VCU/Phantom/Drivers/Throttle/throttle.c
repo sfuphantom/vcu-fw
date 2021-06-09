@@ -5,7 +5,7 @@
  *      Author: jaypacamarra
  */
 
-#include "throttle.h"
+#include <Phantom/Drivers/Throttle/throttle.h>
 
 adcData_t FP_data[3];
 adcData_t *FP_data_ptr = FP_data;
