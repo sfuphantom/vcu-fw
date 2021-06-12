@@ -24,6 +24,7 @@
 
 #include "vcu_data.h"
 
+#include "throttle.h"
 
 extern State state;
 extern TimerHandle_t xTimers[];                 //jaypacamarra
@@ -37,10 +38,10 @@ extern unsigned int volatile FP_sensor_1_sum;
 extern unsigned int volatile FP_sensor_2_sum;
 
 // timer started is false to begin with
-extern bool APPS1_range_fault_timer_started = false;
-extern bool APPS2_range_fault_timer_started = false;
-extern bool BSE_range_fault_timer_started   = false;
-extern bool FP_diff_fault_timer_started     = false;
+extern bool APPS1_range_fault_timer_started;
+extern bool APPS2_range_fault_timer_started;
+extern bool BSE_range_fault_timer_started;
+extern bool FP_diff_fault_timer_started;
 
 // To store percent pressed of foot pedals
 extern float Percent_APPS1_Pressed;
@@ -78,12 +79,6 @@ void vThrottleTask(void *pvParameters)
 
     // Initialize the xLastWakeTime variable with the current time;
     xLastWakeTime = xTaskGetTickCount();
-
-    // timer started is false to begin with
-    APPS1_range_fault_timer_started = false;
-    APPS2_range_fault_timer_started = false;
-    BSE_range_fault_timer_started   = false;
-    FP_diff_fault_timer_started     = false;
 
     while (true)
     {

@@ -37,10 +37,10 @@ uint32_t fault_APPS2_Range_counter_ms = 0;          // hold duration of fault in
 
 extern TimerHandle_t xTimers[NUMBER_OF_TIMERS];
 
-extern bool APPS1_range_fault_timer_started;
-extern bool APPS2_range_fault_timer_started;
-extern bool BSE_range_fault_timer_started;
-extern bool FP_diff_fault_timer_started;
+bool APPS1_range_fault_timer_started = false;
+bool APPS2_range_fault_timer_started = false;
+bool BSE_range_fault_timer_started   = false;
+bool FP_diff_fault_timer_started     = false;
 
 extern bool APPS1_RANGE_FAULT_TIMER_EXPIRED;   //jaypacamarra
 extern bool APPS2_RANGE_FAULT_TIMER_EXPIRED;   //jaypacamarra
