@@ -187,7 +187,11 @@ void vThrottleTask(void *pvParameters)
         {
             // update throttle percentage in vcu data structure
             apps_percent_avg = (Percent_APPS1_Pressed + Percent_APPS2_Pressed) / 2;
-            VCUDataPtr->AnalogOut.throttle_percentage.value = apps_percent_avg;
+
+            if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(1))==1){
+                VCUDataPtr->AnalogOut.throttle_percentage.value = apps_percent_avg;
+                xSemaphoreGive(vcuKey); // Give vcu key back
+            }
 
             // send DAC to inverter
             throttle = 390 * apps_percent_avg + 60;        // equation mapping the averaged signals to 0->500 for the DAC driver
