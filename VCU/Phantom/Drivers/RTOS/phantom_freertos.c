@@ -8,8 +8,8 @@
 
 #include "phantom_freertos.h"
 #include "gio.h"
+#include "throttle.h"   //++ added by jay, the getter function for bse sensor sum is used here now
 
-extern unsigned int BSE_sensor_sum;    // needs to be stored in VCU data structure and referenced from there, Jay externed this because its defined in the throttle task
 bool INTERRUPT_AVAILABLE;
 bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has gone for 2 seconds
 bool APPS1_RANGE_FAULT_TIMER_EXPIRED;   //added by jaypacamarra
@@ -355,7 +355,7 @@ void gioNotification(gioPORT_t *port, uint32 bit)
         UARTSend(PC_UART, "---------Interrupt Active\r\n");
         if (VCUDataPtr->DigitalVal.RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
         {
-            if (BSE_sensor_sum < 2000)
+            if (Throttle_getBSESensorSum() < 2000)
             {
                 gioSetBit(gioPORTA, 6, 1);
                 VCUDataPtr->DigitalVal.RTDS = 1; // CHANGE STATE TO RUNNING
