@@ -70,6 +70,30 @@ void getPedalReadings() {
     calculatePedalPercents();
 }
 
+/** @fn unsigned int Throttle_getAPPS1SensorSum(void)
+*   @brief Getter for APPS1 ADC sensor reading value
+*   @Return unsigned int
+*/
+unsigned int Throttle_getAPPS1SensorSum() {
+    return FP_sensor_1_sum;
+}
+
+/** @fn unsigned int Throttle_getAPPS2SensorSum(void)
+*   @brief Getter for APPS2 ADC sensor reading value
+*   @Return unsigned int
+*/
+unsigned int Throttle_getAPPS2SensorSum() {
+    return FP_sensor_2_sum;
+}
+
+/** @fn unsigned int Throttle_getBSESensorSum(void)
+*   @brief Getter for BSE ADC sensor reading value
+*   @Return unsigned int
+*/
+unsigned int Throttle_getBSESensorSum() {
+    return BSE_sensor_sum;
+}
+
 /** @fn float get_APPS1_Pedal_Percent(void)
 *   @brief Getter for APPS1 pedal percent
 *   @Return pedal percent as float
