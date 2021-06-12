@@ -37,12 +37,6 @@ extern unsigned int volatile BSE_sensor_sum;
 extern unsigned int volatile FP_sensor_1_sum;
 extern unsigned int volatile FP_sensor_2_sum;
 
-// timer started is false to begin with
-extern bool APPS1_range_fault_timer_started;
-extern bool APPS2_range_fault_timer_started;
-extern bool BSE_range_fault_timer_started;
-extern bool FP_diff_fault_timer_started;
-
 // To store percent pressed of foot pedals
 extern float Percent_APPS1_Pressed;
 extern float Percent_APPS2_Pressed;
@@ -55,11 +49,6 @@ extern SemaphoreHandle_t vcuKey;    // mutex
 extern data *VCUDataPtr;
 
 bool previous_brake_light_state = 1;    // Default = 1. Holds previous brake light state, 1 = ON, 0 = OFF - jaypacamarra
-uint16_t hysteresis = 200;          // change this to tweak hysteresis threshhold - jaypacamarra
-
-// for calculating throttle to the DAC
-float apps_percent_avg;
-unsigned int throttle;
 
 /***********************************************************
  * @function                - vThrottleTask
@@ -181,7 +170,7 @@ void vThrottleTask(void *pvParameters)
         if (state == RUNNING && THROTTLE_AVAILABLE)
         {
             // update throttle percentage in vcu data structure
-            apps_percent_avg = (Percent_APPS1_Pressed + Percent_APPS2_Pressed) / 2;
+            float apps_percent_avg = (Percent_APPS1_Pressed + Percent_APPS2_Pressed) / 2;
 
             if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(1))==1){
                 VCUDataPtr->AnalogOut.throttle_percentage.value = apps_percent_avg;
@@ -189,7 +178,7 @@ void vThrottleTask(void *pvParameters)
             }
 
             // send DAC to inverter
-            throttle = 390 * apps_percent_avg + 60;        // equation mapping the averaged signals to 0->500 for the DAC driver
+            unsigned int throttle = 390 * apps_percent_avg + 60;        // equation mapping the averaged signals to 0->500 for the DAC driver
             // ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
             // i.e. map from 0.6V (60) to 4.5V (450) or something like that, instead of 0->500 (0V -> 5V)
             MCP48FV_Set_Value(throttle); // send throttle value to DAC driver
