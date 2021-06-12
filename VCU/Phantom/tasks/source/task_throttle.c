@@ -37,11 +37,6 @@ extern unsigned int volatile BSE_sensor_sum;
 extern unsigned int volatile FP_sensor_1_sum;
 extern unsigned int volatile FP_sensor_2_sum;
 
-// To store percent pressed of foot pedals
-extern float Percent_APPS1_Pressed;
-extern float Percent_APPS2_Pressed;
-extern float Percent_BSE_Pressed;
-
 extern bool THROTTLE_AVAILABLE;
 
 extern SemaphoreHandle_t vcuKey;    // mutex
@@ -86,9 +81,9 @@ void vThrottleTask(void *pvParameters)
               Update pedal inputs in vcu data structure
              *********************************************************************************/
 
-            VCUDataPtr->AnalogIn.APPS1_percentage.value = Percent_APPS1_Pressed;
-            VCUDataPtr->AnalogIn.APPS2_percentage.value = Percent_APPS2_Pressed;
-            VCUDataPtr->AnalogIn.BSE_percentage.value = Percent_BSE_Pressed;
+            VCUDataPtr->AnalogIn.APPS1_percentage.value = get_APPS1_Pedal_Percent();
+            VCUDataPtr->AnalogIn.APPS2_percentage.value = get_APPS2_Pedal_Percent();
+            VCUDataPtr->AnalogIn.BSE_percentage.value = get_BSE_Pedal_Percent();
 
 
             /*********************************************************************************
@@ -170,7 +165,7 @@ void vThrottleTask(void *pvParameters)
         if (state == RUNNING && THROTTLE_AVAILABLE)
         {
             // update throttle percentage in vcu data structure
-            float apps_percent_avg = (Percent_APPS1_Pressed + Percent_APPS2_Pressed) / 2;
+            float apps_percent_avg = (get_APPS1_Pedal_Percent() + get_APPS2_Pedal_Percent()) / 2;
 
             if(xSemaphoreTake(vcuKey,pdMS_TO_TICKS(1))==1){
                 VCUDataPtr->AnalogOut.throttle_percentage.value = apps_percent_avg;

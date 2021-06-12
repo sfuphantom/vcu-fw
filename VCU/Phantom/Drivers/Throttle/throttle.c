@@ -70,6 +70,30 @@ void getPedalReadings() {
     calculatePedalPercents();
 }
 
+/** @fn float get_APPS1_Pedal_Percent(void)
+*   @brief Getter for APPS1 pedal percent
+*   @Return pedal percent as float
+*/
+float get_APPS1_Pedal_Percent() {
+    return Percent_APPS1_Pressed;
+}
+
+/** @fn float get_APPS2_Pedal_Percent(void)
+*   @brief Getter for APPS2 pedal percent
+*   @Return pedal percent as float
+*/
+float get_APPS2_Pedal_Percent() {
+    return Percent_APPS2_Pressed;
+}
+
+/** @fn float get_BSE_Pedal_Percent(void)
+*   @brief Getter for BSE pedal percent
+*   @Return pedal percent as float
+*/
+float get_BSE_Pedal_Percent() {
+    return Percent_BSE_Pressed;
+}
+
 /** @fn void calculatePedalPercents(void)
 *   @brief Calculates the percent pressed of the brake pedal
 *          and the accelerator pedal

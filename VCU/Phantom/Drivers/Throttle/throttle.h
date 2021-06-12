@@ -41,6 +41,9 @@
 
 
 void getPedalReadings();
+float get_APPS1_Pedal_Percent();
+float get_APPS2_Pedal_Percent();
+float get_BSE_Pedal_Percent();
 void calculatePedalPercents();
 void applyLowPassFilter();
 bool check_BSE_Range_Fault();
