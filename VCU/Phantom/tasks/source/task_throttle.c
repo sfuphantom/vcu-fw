@@ -45,6 +45,8 @@ extern data *VCUDataPtr;
 
 bool previous_brake_light_state = 1;    // Default = 1. Holds previous brake light state, 1 = ON, 0 = OFF - jaypacamarra
 
+unsigned int throttle;
+
 /***********************************************************
  * @function                - vThrottleTask
  *
@@ -156,8 +158,8 @@ void vThrottleTask(void *pvParameters)
 
         // debugging - jaypacamarra
         // manually setting state to RUNNING and setting THROTTLE_AVAILABLE to true to test DAC - jaypacamarra
-//        state = RUNNING;
-//        THROTTLE_AVAILABLE = true;
+        state = RUNNING;
+        THROTTLE_AVAILABLE = true;
 
         /*********************************************************************************
           Set Throttle
@@ -173,7 +175,7 @@ void vThrottleTask(void *pvParameters)
             }
 
             // send DAC to inverter
-            unsigned int throttle = 390 * apps_percent_avg + 60;        // equation mapping the averaged signals to 0->500 for the DAC driver
+            throttle = 390 * apps_percent_avg + 60;        // equation mapping the averaged signals to 0->500 for the DAC driver
             // ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
             // i.e. map from 0.6V (60) to 4.5V (450) or something like that, instead of 0->500 (0V -> 5V)
             MCP48FV_Set_Value(throttle); // send throttle value to DAC driver
