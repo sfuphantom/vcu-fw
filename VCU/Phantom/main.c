@@ -82,7 +82,7 @@ void main(void)
     /* Phantom Library Initialization */
     //initData(VCUDataPtr);       // Initialize VCU Data Structure
     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
-    RGB_LED_Init();             // Initialize RGB LEDs to start off
+//    RGB_LED_Init();             // Initialize RGB LEDs to start off
     MCP48FV_Init();             // Initialize DAC Library
 
 #if LV_MONITOR

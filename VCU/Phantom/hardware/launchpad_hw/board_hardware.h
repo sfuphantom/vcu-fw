@@ -53,8 +53,8 @@
 
 /****************** BRAKE LIGHT *************************/
 #define BRAKING_THRESHOLD     1500 // threshold for turning on brake light
-#define BRAKE_LIGHT_PORT      gioPORTA
-#define BRAKE_LIGHT_PIN       6
+#define BRAKE_LIGHT_PORT      hetPORT1
+#define BRAKE_LIGHT_PIN       12
 
 /*********   UART PORTS   ****************/
 #define PC_UART               scilinREG
