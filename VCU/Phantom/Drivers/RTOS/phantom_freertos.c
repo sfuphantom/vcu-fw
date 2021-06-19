@@ -17,10 +17,16 @@ bool THROTTLE_AVAILABLE = false; // used to only enable throttle after the buzze
 
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
-
 xQueueHandle VCUDataQueue;
 
-extern data* VCUDataPtr;
+// ++ Added by jjkhan
+TaskHandle_t testingEepromHandler = NULL; // Eeprom Test Task Task Handler
+TaskHandle_t stateMachineHandler = NULL;  // State machine Task Handler
+TaskHandle_t eepromHandler = NULL;  // Eeprom Task Task Handler
+SemaphoreHandle_t vcuKey;        // Mutex to protect VCU data structure
+SemaphoreHandle_t powerfailureFlagKey;  // still using this? - jjkhan
+xQueueHandle eepromMessages;
+// -- Added by jjkhan
 
 void phantom_freeRTOSInit(void)
 {
@@ -116,14 +122,21 @@ void phantom_freeRTOStaskInit(void)
      // this will be useful when passing the VCU data structure in between different tasks
 
      VCUDataQueue = xQueueCreate(5, sizeof(long)); // what does this 5 mean?
+     eepromMessages = xQueueCreate(10, sizeof(char)*60U);
 
      // can I already shove the VCU data structure into here? or do i need to do that within a task
 
      // need to do an "if queue != NULL"
 
+     // ++ Added by jjkhan
+
+     vcuKey = xSemaphoreCreateMutex(); // vcuKey to protect VCUData
+
+     // -- Added by jjkhan
+
 
      // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
-     if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
+     if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  150, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -132,7 +145,7 @@ void phantom_freeRTOStaskInit(void)
      }
 
 
-     if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  240, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
+     if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  150, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -141,7 +154,7 @@ void phantom_freeRTOStaskInit(void)
      }
 
 
-     if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  240, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
+     if (xTaskCreate(vSensorReadTask, (const char*)"SensorReadTask",  150, NULL,  (SENSOR_READ_TASK_PRIORITY), NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -150,7 +163,7 @@ void phantom_freeRTOStaskInit(void)
      }
 
 
-     if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  240, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
+     if (xTaskCreate(vDataLoggingTask, (const char*)"DataLoggingTask",  150, NULL,  (DATA_LOGGING_TASK_PRIORITY), NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -158,7 +171,7 @@ void phantom_freeRTOStaskInit(void)
          while(1);
      }
 
-     if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  240, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
+     if (xTaskCreate(vWatchdogTask, (const char*)"WatchdogTask",  150, NULL,  WATCHDOG_TASK_PRIORITY, NULL) != pdTRUE)
      {
          // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
          // probably need a better error handler
@@ -166,6 +179,25 @@ void phantom_freeRTOStaskInit(void)
          while(1);
      }
 
+     /* ++ Added by jjkhan */
+
+        if (xTaskCreate(vEeprom, (const char*)"EepromTask",  250, NULL,  EEPROM_TASK_PRIORITY, &eepromHandler) != pdTRUE)
+        {
+                uint8 message[]="EEPROM task Creation Failed.\r\n";
+                sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
+                while(1);
+        }
+
+// TEST_EEPROM is defined in phantom_freertos.h, change it to 0 to skip the following task creation
+#if TEST_EEPROM == 1
+        if (xTaskCreate(testEeprom, (const char*)"testEeprom",  150, NULL,  tskIDLE_PRIORITY+1, &testingEepromHandler) != pdTRUE)
+        {
+                uint8 message[]="Test task Creation Failed.\r\n";
+                sciSend(PC_UART,(uint32)sizeof(message),&message[0]);
+                while(1);
+        }
+#endif
+      /* -- Added by jjkhan */
 
      // all tasks have been created successfully
      UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"

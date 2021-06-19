@@ -9,6 +9,7 @@
 
 /* Include Files */
 
+#include <Phantom/support/execution_timer.h>  // Code Execution Timer Module written Junaid Khan
 #include "adc.h"
 #include "gio.h"
 #include "het.h"
@@ -53,6 +54,18 @@
 //#include <Phantom/hardware/vcu_hw/board_hardware.h>
 
 
+#include "execution_timer.h"
+
+State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and referenced from there
+data VCUData;
+data* VCUDataPtr = &VCUData;
+
+
+// ++ Added by jjkhan:
+     // Uncomment the following directive if the current sensor module is connected.
+    // VCU has it on-board, launchpad doesn't -> will get stuck in lv_monitorInit()
+//#define LV_MONITOR
+// -- Added by jjkhan
 
 /* USER CODE END */
 
@@ -128,12 +141,14 @@ long xStatus;
 
 /* USER CODE END */
 
-
-
-int main(void)
+void main(void)
 {
 /* USER CODE BEGIN (3) */
 
+#ifdef PMU_CYCLE
+       // Initialize code execution timer
+       timer_Init();
+#endif
     /* Halcogen Initialization */
 
 /*********************************************************************************
@@ -146,10 +161,14 @@ int main(void)
     gioInit();                  // Initialize GPIO halcogen driver
     adcInit();                  // Initialize ADC halcogen driver
     hetInit();                  // Initialize HET (PWM) halcogen driver
+    eepromBlocking_Init();      // Initialization EEPROM Memory - added by jjkhan
 
+#ifdef PMU_CYCLE
+        // Set Port GIO_PORTA_5 as output pin - using it to confirm PMU timer value is in range of I/O toggle
+       gioSetDirection(gioPORTA, 32);
+#endif
     /* Phantom Library Initialization */
-
-    initData(VCUDataPtr);       // Initialize VCU Data Structure
+    //initData(VCUDataPtr);       // Initialize VCU Data Structure
     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_LED_Init();             // Initialize RGB LEDs to start off
     MCP48FV_Init();             // Initialize DAC Library
@@ -163,17 +182,15 @@ int main(void)
     ShutdownInit();             // Initialize Shutdown Driver
 
     /* freeRTOS Initialization */
-
     phantom_freeRTOSInit();     // Initialize freeRTOS timers, queues, and tasks
 
     pwmSetDuty(BUZZER_PORT, READY_TO_DRIVE_BUZZER, 0); //hetInits turns on the buzzer pin; reset to 0 before starting scheduler
 
     vTaskStartScheduler();      // start freeRTOS task scheduler
-
+   
     // infinite loop to prevent code from ending. The scheduler will now pre-emptively switch between tasks.
     while(1);
 /* USER CODE END */
-    return 0;
 }
 /* USER CODE BEGIN (4) */
 
@@ -194,16 +211,16 @@ void vApplicationGetIdleTaskMemory( StaticTask_t **ppxIdleTaskTCBBuffer,
                                     uint32_t *pulIdleTaskStackSize )
 {
 /* If the buffers to be provided to the Idle task are declared inside this
-function then they must be declared static – otherwise they will be allocated on
+function then they must be declared static ï¿½ otherwise they will be allocated on
 the stack and so not exists after this function exits. */
 static StaticTask_t xIdleTaskTCB;
 static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
 
-    /* Pass out a pointer to the StaticTask_t structure in which the Idle task’s
+    /* Pass out a pointer to the StaticTask_t structure in which the Idle taskï¿½s
     state will be stored. */
     *ppxIdleTaskTCBBuffer = &xIdleTaskTCB;
 
-    /* Pass out the array that will be used as the Idle task’s stack. */
+    /* Pass out the array that will be used as the Idle taskï¿½s stack. */
     *ppxIdleTaskStackBuffer = uxIdleTaskStack;
 
     /* Pass out the size of the array pointed to by *ppxIdleTaskStackBuffer.
@@ -211,7 +228,7 @@ static StackType_t uxIdleTaskStack[ configMINIMAL_STACK_SIZE ];
     configMINIMAL_STACK_SIZE is specified in words, not bytes. */
     *pulIdleTaskStackSize = configMINIMAL_STACK_SIZE;
 }
-/*———————————————————–*/
+/*ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½*/
 
 /* configSUPPORT_STATIC_ALLOCATION and configUSE_TIMERS are both set to 1, so the
 application must provide an implementation of vApplicationGetTimerTaskMemory()
@@ -221,16 +238,16 @@ void vApplicationGetTimerTaskMemory( StaticTask_t **ppxTimerTaskTCBBuffer,
                                      uint32_t *pulTimerTaskStackSize )
 {
 /* If the buffers to be provided to the Timer task are declared inside this
-function then they must be declared static – otherwise they will be allocated on
+function then they must be declared static ï¿½ otherwise they will be allocated on
 the stack and so not exists after this function exits. */
 static StaticTask_t xTimerTaskTCB;
 static StackType_t uxTimerTaskStack[ configTIMER_TASK_STACK_DEPTH ];
 
     /* Pass out a pointer to the StaticTask_t structure in which the Timer
-    task’s state will be stored. */
+    taskï¿½s state will be stored. */
     *ppxTimerTaskTCBBuffer = &xTimerTaskTCB;
 
-    /* Pass out the array that will be used as the Timer task’s stack. */
+    /* Pass out the array that will be used as the Timer taskï¿½s stack. */
     *ppxTimerTaskStackBuffer = uxTimerTaskStack;
 
     /* Pass out the size of the array pointed to by *ppxTimerTaskStackBuffer.
