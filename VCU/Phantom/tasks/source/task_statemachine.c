@@ -131,8 +131,16 @@ void vStateMachineTask(void *pvParameters)
                 else if (TSAL_ON && RTDS_SET && !FAULTS)
                 {
                     newState = RUNNING;
-                }else{
+
+                }else if (TSAL_ON && !RTDS_SET && FAULTS){
+
+                    newState = stateUpdate();
+
+                }else if (!TSAL_ON && !RTDS_SET && !FAULTS){
                     newState = TRACTIVE_OFF;
+
+                }else{
+                    newState = SEVERE_FAULT;
                 }
 
             }
@@ -308,6 +316,13 @@ int checkCAN(void)
     return NOFAULT;
 }
 
+int checkTSAL_FAULTS(){
+    if(VCUDataPtr->DigitalVal.TSAL_WELDED_AIRS_FAULT){
+        return FAULT;
+    }
+    return NOFAULT;
+}
+
 inline bool isRTDS(void)
 {
     if (VCUDataPtr->DigitalVal.RTDS)
@@ -325,6 +340,8 @@ inline bool isTSAL_ON(void)
     }
     return !ON;
 }
+
+
 
 /***********************************************************
  * @function                - faultLocation
@@ -375,6 +392,10 @@ uint16_t faultLocation(void)
     {
         systemFaultIndicator |= 1U << IMD_SYSTEM_FAULT;
     }
+
+    if(checkTSAL_FAULTS()){
+        systemFaultIndicator |= 1U << TSAL_FAULTS;
+    }
     return systemFaultIndicator;
 
 }
@@ -394,7 +415,7 @@ uint16_t faultLocation(void)
 inline bool anyFaults(void)
 {
     if (checkSDC() || checkCAN() || checkIMD() || checkBSE_APPS()
-            || CheckHVLVSensor())
+            || CheckHVLVSensor() || checkTSAL_FAULTS())
     {
         return FAULT;
     }
@@ -411,6 +432,7 @@ inline bool isSevereFault(void){
     {
         //temp_state = SEVERE_FAULT;
         isSevere = true;
+        return isSevere;
     }
 
     // Check BSE APPS Faults
@@ -422,6 +444,7 @@ inline bool isSevereFault(void){
             // if the fault isn't the Minor Fault, then set SEVERE_FAULT, don't need to check for minor
             //temp_state = SEVERE_FAULT;
             isSevere = true;
+            return isSevere;
         }
     }
     // Check HV Range Faults and set flags iff this isnt the first time (i.e. timers already started.)
@@ -438,6 +461,7 @@ inline bool isSevereFault(void){
                     isSevere = true;
                     HV_VoltageTimerStarted = false; // Reset Timer
                     HV_VOLTAGE_TIMER_EXPIRED = false;
+                    return isSevere;
                 }else{
                     // timer not expired yet
                     isSevere = false;
@@ -452,18 +476,28 @@ inline bool isSevereFault(void){
                     isSevere = true;
                     HV_CurrentTimerStarted = false; // Reset Timer
                     HV_CURRENT_TIMER_EXPIRED = false;
+                    return isSevere;
 
                 }else{
                     // timer not expired yet
                     isSevere = false;
                 }
             }
-            if(VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR
-                    && currentState==RUNNING)
-            {
-                isSevere = true;
-            }
 
+        }
+        if(VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR
+                            && currentState==RUNNING)
+        {
+            isSevere = true;
+            return isSevere;
+        }
+
+    }
+
+    if(faultNumber & (1U << TSAL_FAULTS)){
+        if(currentState==RUNNING || currentState==TRACTIVE_ON ){
+            isSevere = true;
+            return isSevere;
         }
     }
 
@@ -474,6 +508,7 @@ inline bool isSevereFault(void){
         if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1)
         { // Severe Fault message from CAN, so don't need to check other faults, change currentState and yield task
             isSevere = true;
+            return isSevere;
         }
     }
 
@@ -504,6 +539,7 @@ inline bool isMinorFault(void){
                     HV_CurrentTimerStarted = true;
                     //temp_state = MINOR_FAULT;
                     isMinor = true;
+                    return isMinor;
                 }
             }else{
 
@@ -528,6 +564,7 @@ inline bool isMinorFault(void){
                     HV_VoltageTimerStarted = true;
                     //temp_state = MINOR_FAULT;
                     isMinor = true;
+                    return isMinor;
                 }
             }else{
 
@@ -536,32 +573,28 @@ inline bool isMinorFault(void){
                 isMinor = false;
             }
         }
-        if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE)
+        if (VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE || VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE )
         {
             isMinor = true;
-        }
-        if (VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE)
-        {
-            isMinor = true;
-        }
-        if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
-        {
-            if (!isMinor && RTDS_SET && TSAL_ON && currentState==TRACTIVE_ON)
-            {
-                isMinor = false;
-            }
-            else
-            {
-                isMinor = true;
-            }
+            return isMinor;
         }
     }
+
+    if(faultNumber & (1U << BSE_APPS_FAULT)){
+        if (VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT)
+            {
+                    isMinor = true;
+                    return isMinor;
+            }
+    }
+
 
     if ((faultNumber & (1U << CAN_FAULT)))
     {
         if (VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2)
         {
             isMinor = true;
+            return isMinor;
         }
     }
 

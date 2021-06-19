@@ -30,6 +30,7 @@
 #define HV_LV_FAULT            2U
 #define CAN_FAULT              3U
 #define IMD_SYSTEM_FAULT       4U
+#define TSAL_FAULTS            5U
 
 
 
@@ -51,6 +52,7 @@ int checkIMD(void);
 int checkBSE_APPS(void);
 int CheckHVLVSensor(void);
 int checkCAN(void);
+int checkTSAL_FAULTS(void);
 uint16_t faultLocation(void);
 
 /* Task */
