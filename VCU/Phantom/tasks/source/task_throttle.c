@@ -127,6 +127,7 @@ void vThrottleTask(void *pvParameters){
             // thresholds
 
             // check for short to GND/5V on BSE
+            /*
             if (BSE_sensor_sum < BSE_MIN_VALUE)
             {
                 // if it's less than 0.5V, then assume shorted to GND as this is not normal range
@@ -143,6 +144,7 @@ void vThrottleTask(void *pvParameters){
                 // should be in normal range
                 VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
             }
+            */
 
             // moving average signal conditioning.. worth it to graph this out and find a good filter time constant
     //        FP_sensor_1_avg = FP_sensor_1_sum/10;

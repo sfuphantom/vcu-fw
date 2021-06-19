@@ -59,8 +59,6 @@ void initData(data* VCUDataPtr)
     VCUDataPtr->DigitalVal.BMS_GPIO_FAULT = 0;
     VCUDataPtr->DigitalVal.IMD_FAULT = 0;
     VCUDataPtr->DigitalVal.BSPD_FAULT = 0;
-    //VCUDataPtr->DigitalVal.BSE_FAULT= 0;
-    //VCUDataPtr->DigitalVal.APPS_FAULT = 0;
     VCUDataPtr->DigitalVal.TSAL_ON = 0;
 
     /* ++ New Faults*/
