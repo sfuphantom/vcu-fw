@@ -25,4 +25,10 @@
 		<nature>org.eclipse.cdt.core.ccnature</nature>
 		<nature>org.eclipse.cdt.managedbuilder.core.ScannerConfigNature</nature>
 	</natures>
+	<variableList>
+		<variable>
+			<name>HERCULES_FOLDER</name>
+			<value>$%7BHERCULES_MAC%7D</value>
+		</variable>
+	</variableList>
 </projectDescription>
