@@ -15,7 +15,6 @@
 #include "os_semphr.h"
 #include "os_timer.h"
 
-
 #include "Phantom_sci.h"
 
 #include "task_data_logging.h"
@@ -34,8 +33,6 @@
 #define TEST_EEPROM     0
 #include "../test_eeprom/testEeprom.h" // Included for testing eeprom -> should remove later.
 
-#define TEST_STATEMACHINE 0
-#include "../test_statemachine/stateMachineTaskTest.h" // Included for testing Statemachine -> should remove later
 //-- Added by jjkhan
 
 
