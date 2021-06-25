@@ -5,7 +5,7 @@
  *      Author: jaypacamarra
  */
 
-#include <Phantom/Drivers/Throttle/throttle.h>
+#include <throttle.h>
 
 adcData_t FP_data[3];
 adcData_t *FP_data_ptr = FP_data;
@@ -450,4 +450,3 @@ bool check_Brake_Plausibility_Fault() {
 
     return is_there_brake_plausibility_fault;
 }
-
