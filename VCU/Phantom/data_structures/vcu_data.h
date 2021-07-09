@@ -49,6 +49,14 @@ typedef struct digitalValues
     uint8_t BSE_FAULT;          // if 0, then BSE is healthy, if 1 then BSE fault
     uint8_t APPS_FAULT;         // if 0, then APPS is healthy, if 1 then APPS fault
 
+    // ++ Added by Jay Pacamarra
+    uint8_t BSE_SEVERE_RANGE_FAULT;             // if 0, then BSE is healthy, if 1 then BSE fault - jaypacamarra
+    uint8_t BSE_APPS_MINOR_SIMULTANEOUS_FAULT;  // if 0, then brake&accelerator NOT pressed together, if 1 then brake&accelerator pressed together - jaypacamarra
+    uint8_t APPS_SEVERE_10DIFF_FAULT;           // if 0, then APPS is healthy, if 1 then APPS1 and APPS2 disagree by more than 10% - jaypacamarra
+    uint8_t APPS1_SEVERE_RANGE_FAULT;           // if 0, then APPS is healthy, if 1 then APPS fault - jaypacamarra
+    uint8_t APPS2_SEVERE_RANGE_FAULT;           // if 0, then APPS is healthy, if 1 then APPS fault - jaypacamarra
+    // ++ Added by Jay Pacamarra
+
     // many other faults..
 } digitalValues;
 
@@ -61,9 +69,9 @@ typedef struct digitalOutputs
 typedef struct data
 {
     /* Note: -> DO NOT change the place of vcuState structure in this file because:
-         *  In eepromTask, we're reading vcuState from FEE bank using an OFFSET of 72 bytes.
-         *  i.e. 73rd byte is the value corresponding to vcuState, based on the setup on
-         *  the placement order of "data" structure below.
+     *  In eepromTask, we're reading vcuState from FEE bank using an OFFSET of 72 bytes.
+     *  i.e. 73rd byte is the value corresponding to vcuState, based on the setup on
+     *  the placement order of "data" structure below.
      */
 
     analogInputs AnalogIn;
