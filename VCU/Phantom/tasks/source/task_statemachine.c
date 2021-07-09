@@ -119,6 +119,11 @@ void vStateMachineTask(void *pvParameters)
             else if (currentState == TRACTIVE_ON)
             {
                  RGB_LED_drive(RGB_CYAN);
+
+                 if (STATE_PRINT)
+                 {
+                     UARTSend(PC_UART, "********TRACTIVE_ON********");
+                 }
                 if (TSAL_ON && !RTDS_SET && !FAULTS)
                 {
                     newState = TRACTIVE_ON;
@@ -147,6 +152,8 @@ void vStateMachineTask(void *pvParameters)
             }
             else if (currentState == RUNNING)
             {
+
+
                 if (FAULTS)
                 {
                     // Update state depending on severity of fault
