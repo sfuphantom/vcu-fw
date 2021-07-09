@@ -3,6 +3,7 @@
  *
  *  Created on: Mar 17, 2020
  *      Author: gabriel
+ *
  */
 
 /* USER CODE BEGIN (0) */
@@ -34,10 +35,8 @@
 
 #include "execution_timer.h"
 
-State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and referenced from there
 data VCUData;
 data* VCUDataPtr = &VCUData;
-
 
 // ++ Added by jjkhan:
      // Uncomment the following directive if the current sensor module is connected.
@@ -58,10 +57,10 @@ data* VCUDataPtr = &VCUData;
 /* USER CODE BEGIN (2) */
 /* USER CODE END */
 
+
 void main(void)
 {
-/* USER CODE BEGIN (3) */
-
+    /* USER CODE BEGIN (3) */
 #ifdef PMU_CYCLE
        // Initialize code execution timer
        timer_Init();

@@ -26,7 +26,7 @@
 
 #include "priorities.h"
 
-extern State state;
+State state;
 
 /*********************************************************************************
                  ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
@@ -87,6 +87,10 @@ void vThrottleTask(void *pvParameters){
     while(true)
     {
         if(initializationOccured){
+
+            // Added by jjkhan: moved "state" inside VCU Data structure;
+            state = VCUDataPtr->vcuState; // Get current VCU state
+
             // Wait for the next cycle
             vTaskDelayUntil(&xLastWakeTime, THROTTLE_TASK_PERIOD_MS);
 
@@ -123,22 +127,24 @@ void vThrottleTask(void *pvParameters){
             // thresholds
 
             // check for short to GND/5V on BSE
+            /*
             if (BSE_sensor_sum < BSE_MIN_VALUE)
             {
                 // if it's less than 0.5V, then assume shorted to GND as this is not normal range
-                VCUDataPtr->DigitalVal.BSE_FAULT = 1;
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
 
             }
             else if (BSE_sensor_sum > BSE_MAX_VALUE) // change from magic number to a #define BSE_MAX_VALUE
             {
                 // if it's greater than 4.5V, then assume shorted to 5V as this is not normal range
-                VCUDataPtr->DigitalVal.BSE_FAULT = 1;
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 1;
             }
             else
             {
                 // should be in normal range
-                VCUDataPtr->DigitalVal.BSE_FAULT = 0;
+                VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
             }
+            */
 
             // moving average signal conditioning.. worth it to graph this out and find a good filter time constant
     //        FP_sensor_1_avg = FP_sensor_1_sum/10;

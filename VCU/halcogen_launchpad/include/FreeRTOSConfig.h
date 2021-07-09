@@ -133,9 +133,9 @@
 
 /* Timers */
 #define configUSE_TIMERS                1
-#define configTIMER_TASK_PRIORITY		( 1 )
-#define configTIMER_QUEUE_LENGTH		4
-#define configTIMER_TASK_STACK_DEPTH	(configMINIMAL_STACK_SIZE*2)
+#define configTIMER_TASK_PRIORITY		(1)
+#define configTIMER_QUEUE_LENGTH		10         // We have two timer tasks - added by jjkhan
+#define configTIMER_TASK_STACK_DEPTH	(configMINIMAL_STACK_SIZE*2)   // Fixed by jjkhan -> Without Task Stack Depth, no task will be created.
 
 /* USER CODE BEGIN (3) */
 /* USER CODE END */
