@@ -31,10 +31,6 @@ extern TimerHandle_t xTimers[];                 //jaypacamarra
 /*********************************************************************************
   ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
  *********************************************************************************/
-// variables to store foot pedal adc values
-extern unsigned int volatile BSE_sensor_sum;
-extern unsigned int volatile FP_sensor_1_sum;
-extern unsigned int volatile FP_sensor_2_sum;
 
 extern bool THROTTLE_AVAILABLE;
 
@@ -112,7 +108,7 @@ void vThrottleTask(void *pvParameters)
               brake light
              *********************************************************************************/
             if (previous_brake_light_state == 0 &&
-                BSE_sensor_sum > BRAKING_THRESHOLD + HYSTERESIS)
+                Throttle_getBSESensorSum() > BRAKING_THRESHOLD + HYSTERESIS)
             {
                 // turn on brake lights
                 gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, BRAKE_LIGHT_ON);
@@ -124,7 +120,7 @@ void vThrottleTask(void *pvParameters)
                 previous_brake_light_state = 1;
             }
             else if (previous_brake_light_state == 1 &&
-                    BSE_sensor_sum < BRAKING_THRESHOLD - HYSTERESIS)
+                    Throttle_getBSESensorSum() < BRAKING_THRESHOLD - HYSTERESIS)
             {
                 // turn off brake lights
                 gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, BRAKE_LIGHT_OFF);
