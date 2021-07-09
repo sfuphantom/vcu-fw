@@ -22,6 +22,7 @@
 #include "vcu_data.h"
 #include "task_statemachine.h"
 #include <stdbool.h>
+#include "RGB_LED.h" // needed to drive LEDs for each machine state
 
 /*
  *  task_eeprom.c initializes the VCUData structure based on last stored VCU state in eeprom.
@@ -117,7 +118,7 @@ void vStateMachineTask(void *pvParameters)
             }
             else if (currentState == TRACTIVE_ON)
             {
-
+                 RGB_LED_drive(RGB_CYAN);
                 if (TSAL_ON && !RTDS_SET && !FAULTS)
                 {
                     newState = TRACTIVE_ON;
@@ -135,7 +136,7 @@ void vStateMachineTask(void *pvParameters)
                 }else if (TSAL_ON && !RTDS_SET && FAULTS){
 
                     newState = stateUpdate();
-
+                    
                 }else if (!TSAL_ON && !RTDS_SET && !FAULTS){
                     newState = TRACTIVE_OFF;
 
@@ -173,6 +174,8 @@ void vStateMachineTask(void *pvParameters)
                 {
                     UARTSend(PC_UART, "********MINOR_FAULT********");
                 }
+                
+                RGB_LED_drive(RGB_MAGENTA);
 
                 if (FAULTS)
                 {
@@ -244,7 +247,7 @@ void vStateMachineTask(void *pvParameters)
 
             // Block Task
             vTaskDelayUntil(&xLastWakeTime, STATE_MACHINE_TASK_PERIOD_MS);
-
+            RGB_LED_drive(RGB_GREEN);        
         }
         else
         {
