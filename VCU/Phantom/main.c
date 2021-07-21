@@ -54,7 +54,8 @@
 //#include <Phantom/hardware/vcu_hw/board_hardware.h>
 
 
-#include "execution_timer.h"
+//#include "execution_timer.h"
+#include <Phantom/support/execution_timer.h>
 
 State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and referenced from there
 data VCUData;
@@ -78,66 +79,10 @@ data* VCUDataPtr = &VCUData;
 */
 /* USER CODE BEGIN (2) */
 
-/*********************************************************************************
- *                          TASK HEADER DECLARATIONS
- *********************************************************************************/
-//static void vStateMachineTask(void *);  // This task will evaluate the state machine and decide whether or not to change states
-//static void vSensorReadTask(void *);    // This task will read all the sensors in the vehicle (except for the APPS which requires more critical response)
-//static void vThrottleTask(void *);      // This task reads the APPS, performs signal plausibility, and controls the inverter through a DAC
-//static void vDataLoggingTask(void *);   // This task will send any important data over CAN to the dashboard for logging onto the SD card
-//static void vWatchdogTask(void *);      // This task will monitor all the threads and make sure they are all running, if not (code hangs/freezes or task doesn't get run)
-                                        // it will fail to pet the watchdog and the watchdog timer will reset the MCU
-
-// task handle creation??? shouldn't they need to be passed into the xTaskCreate function?
-
-/*********************************************************************************
- *                          SOFTWARE TIMER INITIALIZATION
- *********************************************************************************/
-//moved to phantom_freertos.c -rafguevara14
-
-/*********************************************************************************
- *                          STATE ENUMERATION
- *********************************************************************************/
-//typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
-State state = TRACTIVE_OFF;
-
-/*********************************************************************************
- *                          QUEUE HANDLE CREATION
- *********************************************************************************/
-//moved to phantom_freertos.c -rafguevara14
-/*********************************************************************************
- *                          GLOBAL VARIABLE DECLARATIONS
- *********************************************************************************/
-
-/*********************************************************************************
- *                          INITIALIZE DATA STRUCTURE...
- *                          or can this be done and outputted in the init function.. hm
- *********************************************************************************/
-
-data VCUData;
-
-data* VCUDataPtr = &VCUData;
-
 uint8 i;//what the hell is this tho -rafguevara14
 long xStatus;
 
-/*********************************************************************************
- *                               SYSTEM STATE FLAGS
- *********************************************************************************/
-//uint8_t TSAL = 0;
-//uint8_t RTDS = 0;
-//long RTDS_RAW = 0; //moved to phantom_freertos.c - rafguevara14
-//uint8_t BMS  = 1;
-//uint8_t IMD = 1;
-//uint8_t BSPD = 1;
-//uint8_t BSE_FAULT = 0;
 
-// ^^^^^^^^^^^^^^^ these should all be inside the data structure now
-
-/*********************************************************************************
-                 ADC FOOT PEDAL AND APPS STUFF (SHOULD GENERALIZE THIS)
- *********************************************************************************/
-//moved to phantom_freertos.c - rafguevara14
 
 /* USER CODE END */
 
@@ -168,7 +113,7 @@ void main(void)
        gioSetDirection(gioPORTA, 32);
 #endif
     /* Phantom Library Initialization */
-    //initData(VCUDataPtr);       // Initialize VCU Data Structure
+    initData(VCUDataPtr);       // Initialize VCU Data Structure
     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_LED_Init();             // Initialize RGB LEDs to start off
     MCP48FV_Init();             // Initialize DAC Library

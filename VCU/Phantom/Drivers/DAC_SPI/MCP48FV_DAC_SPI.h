@@ -9,9 +9,9 @@
 #define INCLUDE_DAC_SPI_MCP48FV_DAC_SPI_H_
 
 #include <halcogen_launchpad/include/mibspi.h>
-#include <Phantom/hardware/launchpad_hw/board_hardware.h>   // contains hardware defines for specific board used (i.e. VCU or launchpad)
+//#include <Phantom/hardware/launchpad_hw/board_hardware.h>   // contains hardware defines for specific board used (i.e. VCU or launchpad)
 //#include <Phantom/hardware/vcu_hw/board_hardware.h>
-
+#include "board_hardware.h"
 #include "stdbool.h"
 
 

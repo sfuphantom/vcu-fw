@@ -102,7 +102,7 @@
 #ifndef _PLATFORM_TYPES_H_
 #define _PLATFORM_TYPES_H_
 #endif
-#include "F021.h"
+#include <C:\ti\Hercules\F021 Flash API\02.01.01\include\F021.h>
 #include "hal_stdtypes.h"
 #include "Device_types.h"
 

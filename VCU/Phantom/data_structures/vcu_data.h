@@ -41,9 +41,9 @@ typedef struct analogOutputs
 typedef struct digitalValues
 {
     uint8_t RTDS;               // if 1, ready to drive is set, if 0 then not ready to drive
-    uint8_t BMS_FAULT;         // if 1, then BMS is healthy, if 0 then BMS fault
-    uint8_t IMD_FAULT;         // if 1, then IMD is healthy, if 0 then IMD fault
-    uint8_t BSPD_FAULT;        // if 1, then BSPD is healthy, if 0 then BSPD fault
+//    uint8_t BMS_FAULT;         // if 1, then BMS is healthy, if 0 then BMS fault
+//    uint8_t IMD_FAULT;         // if 1, then IMD is healthy, if 0 then IMD fault
+//    uint8_t BSPD_FAULT;        // if 1, then BSPD is healthy, if 0 then BSPD fault
 
     uint8_t TSAL_FAULT;        // if 1, then TSAL is on and AIRs are closed, if 0 then TSAL is off and AIRs should be open
     uint8_t BSE_FAULT;          // if 0, then BSE is healthy, if 1 then BSE fault
@@ -52,6 +52,17 @@ typedef struct digitalValues
     uint8_t HVCURRENT_OUT_OF_RANGE;// if 1, then HV current exceeds maximum current range
 
     uint8_t RESET_STATUS;          //if 1, SET/RESET has been pushed, else it has not
+
+
+    uint8_t TSAL_STATUS; //current status of pin value
+
+    uint8_t BMS_STATUS; //current status of pin value
+
+    uint8_t IMD_STATUS; //current status of pin value
+
+    uint8_t BSPD_STATUS; //current status of pin value
+
+
 
     //the latched faults of the Shutdown Circuit
 

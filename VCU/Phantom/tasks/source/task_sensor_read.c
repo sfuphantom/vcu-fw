@@ -89,8 +89,8 @@ void vSensorReadTask(void *pvParameters){
                 VCUDataPtr->DigitalVal.RTDS = 0;
             }
 
-            VCUDataPtr->DigitalVal.RTDS = !isSevereFault();
-
+            //RTDS = RTDS if no severe faults else 0
+            VCUDataPtr->DigitalVal.RTDS = ( !isSevereFault() && VCUDataPtr->DigitalVal.RTDS );
 
             //throttle still allowed w/ minor fault...
 
@@ -122,18 +122,7 @@ void vSensorReadTask(void *pvParameters){
 
             IMDData_t dataIMD = getIMDData();
 
-            //determine state OF IMD flags
-            //        VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
-            //
-            //        VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
-            //
-            //        VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT =  (dataIMD.IMDState == Device_Error);
-            //
-            //        VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT =  (dataIMD.IMDState == Bad_Info);
-            //
-            //        VCUDataPtr->DigitalVal.IMD_UNDEF_ERR =  (dataIMD.IMDState == Undefined_fault);
-            //
-            //        VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
+//            setIMDStates(dataIMD);
 
 
             //        pwmSetDuty(BUZZER_PORT,READY_TO_DRIVE_BUZZER,50);
@@ -158,4 +147,23 @@ void vSensorReadTask(void *pvParameters){
 
     }//while loop
 }
+
+void setIMDStates(IMDData_t dataIMD){
+
+
+    //determine state OF IMD flags
+//    VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT = (dataIMD.IMDState == Normal_25 || dataIMD.IMDState == Isolation_Failure); //double check this line later....
+//
+//    VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT = (dataIMD.IMDState == Short_Circuit);
+//
+//    VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT =  (dataIMD.IMDState == Device_Error);
+//
+//    VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT =  (dataIMD.IMDState == Bad_Info);
+//
+//    VCUDataPtr->DigitalVal.IMD_UNDEF_ERR =  (dataIMD.IMDState == Undefined_fault);
+//
+//    VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT =  (dataIMD.IMDState == Unknown);
+
+}
+
 

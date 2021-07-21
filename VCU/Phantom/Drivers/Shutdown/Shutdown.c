@@ -36,6 +36,7 @@ bool isSevereFault(){
             );
 }
 
+//Called when reset signal received
 void resetShutdownSignals(){
 
     //All Severe Faults get reset here...

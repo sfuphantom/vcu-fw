@@ -15,9 +15,11 @@
 #include "os_semphr.h"
 #include "stdio.h"
 
-#include "eeprom_driver.h"
+//#include "eeprom_driver.h"
+#include <Phantom/Drivers/EEPROM/eeprom_driver.h>
 #include "vcu_data.h"
-#include "F021.h"
+//#include "F021.h"
+#include <C:\ti\Hercules\F021 Flash API\02.01.01\include\F021.h>
 #include "board_hardware.h"
 #include "Phantom_sci.h"
 

@@ -22,12 +22,19 @@
 #define IMD_FAULT_PIN         5
 #define BMS_FAULT_PIN         6
 
+
+#define SHUTDOWN_REGISTER     hetREG1
 #define BSPD_FAULT_PORT       hetPORT1
 #define BSPD_FAULT_PIN        20
 #define BSPDedge              0
+
 #define RESETPort             hetPORT1
 #define RESETPin              18
 #define RESETedge             1
+
+
+
+
 
 
 /***************  TSAL GPIO  *********************/
