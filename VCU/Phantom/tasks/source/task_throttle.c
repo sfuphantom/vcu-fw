@@ -153,8 +153,8 @@ void vThrottleTask(void *pvParameters)
 
         // debugging - jaypacamarra
         // manually setting state to RUNNING and setting THROTTLE_AVAILABLE to true to test DAC - jaypacamarra
-        state = RUNNING;
-        THROTTLE_AVAILABLE = true;
+//        state = RUNNING;
+//        THROTTLE_AVAILABLE = true;
 
         /*********************************************************************************
           Set Throttle

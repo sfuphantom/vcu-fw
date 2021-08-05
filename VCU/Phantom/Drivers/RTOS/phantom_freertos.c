@@ -8,7 +8,7 @@
 
 #include "phantom_freertos.h"
 #include "gio.h"
-//#include "throttle.h"   //++ added by jay, the getter function for bse sensor sum is used here now
+#include "throttle.h"   //++ added by jay, the getter function for bse sensor sum is used here now
 
 bool INTERRUPT_AVAILABLE;
 bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has gone for 2 seconds
