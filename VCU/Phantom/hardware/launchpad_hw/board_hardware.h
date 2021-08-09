@@ -84,7 +84,7 @@
 /*********************************************************************************
  *                          STATE ENUMERATION
  *********************************************************************************/
-typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
+//typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING, FAULT} State;
 
 
 #endif /* PHANTOM_HARDWARE_LAUNCHPAD_HW_BOARD_HARDWARE_H_ */
