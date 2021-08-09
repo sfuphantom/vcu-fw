@@ -15,13 +15,11 @@ bool THROTTLE_AVAILABLE; // used to only enable throttle after the buzzer has go
 
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
-xQueueHandle VCUDataQueue;
 
 // ++ Added by jjkhan
 TaskHandle_t testingEepromHandler = NULL; // Eeprom Test Task Task Handler
 TaskHandle_t stateMachineHandler = NULL;  // State machine Task Handler
 TaskHandle_t eepromHandler = NULL;  // Eeprom Task Task Handler
-SemaphoreHandle_t vcuKey;        // Mutex to protect VCU data structure
 SemaphoreHandle_t powerfailureFlagKey;  // still using this? - jjkhan
 xQueueHandle eepromMessages;
 // -- Added by jjkhan
@@ -119,7 +117,6 @@ void phantom_freeRTOStaskInit(void)
     // create a freeRTOS queue to pass data between tasks
      // this will be useful when passing the VCU data structure in between different tasks
 
-     VCUDataQueue = xQueueCreate(5, sizeof(long)); // what does this 5 mean?
      eepromMessages = xQueueCreate(10, sizeof(char)*60U);
 
      // can I already shove the VCU data structure into here? or do i need to do that within a task
@@ -127,8 +124,6 @@ void phantom_freeRTOStaskInit(void)
      // need to do an "if queue != NULL"
 
      // ++ Added by jjkhan
-
-     vcuKey = xSemaphoreCreateMutex(); // vcuKey to protect VCUData
 
      // -- Added by jjkhan
 
