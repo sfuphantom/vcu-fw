@@ -34,10 +34,6 @@
 
 #include "execution_timer.h"
 
-State state = TRACTIVE_OFF;   // needs to be stored in VCU data structure and referenced from there
-data VCUData;
-data* VCUDataPtr = &VCUData;
-
 
 // ++ Added by jjkhan:
      // Uncomment the following directive if the current sensor module is connected.
@@ -80,7 +76,7 @@ void main(void)
        gioSetDirection(gioPORTA, 32);
 #endif
     /* Phantom Library Initialization */
-    //initData(VCUDataPtr);       // Initialize VCU Data Structure
+    VCUData_init();             // Initialize VCU Data Structure
     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_LED_Init();             // Initialize RGB LEDs to start off
     MCP48FV_Init();             // Initialize DAC Library
