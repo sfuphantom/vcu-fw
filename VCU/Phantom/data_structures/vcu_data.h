@@ -20,6 +20,8 @@ typedef enum {
     BSE_percentage,
     APPS1_percentage,
     APPS2_percentage,
+
+    // output data
     throttle_percentage,
 
     // leave this as the last item in enum
@@ -47,8 +49,23 @@ typedef enum {
 
 // function prototypes
 
-void VCUData_init(data* VCUDataPtr);
+void VCUData_init(void);
 
+analogData VCUData_getAnalogData(AnalogValueIndex keyword);
+bool VCUData_setAnalogData(AnalogValueIndex keyword, analogData newData);
 
+bool VCUData_getRTDSignal(void);
+bool VCUData_setRTDSignal(bool newSignal);
+
+bool VCUData_getBrakeLightSignal(void);
+bool VCUData_setBrakeLightSignal(bool newSignal);
+
+uint8 VCUData_readFaults(uint8 mask);
+bool VCUData_turnOnFaults(uint8 mask);
+bool VCUData_turnOffFaults(uint8 mask);
+bool VCUData_setFaults(uint8 newFaultBitSet);
+
+State VCUData_getState(void);
+bool VCUData_setState(State newState);
 
 #endif /* PHANTOM_DATA_STRUCTURES_VCU_DATA_H_ */

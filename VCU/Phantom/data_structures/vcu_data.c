@@ -10,6 +10,9 @@
 
 #include "vcu_data.h"
 
+#define MUTEX_POLLING_TIME_MS   10
+static SemaphoreHandle_t VCU_Key = NULL;
+
 static analogData analogDataArray[_ANALOG_DATA_LENGTH];
 
 /* DIGITAL DATA */
@@ -19,9 +22,6 @@ static bool brake_light_signal; // originally named BRAKE_LIGHT_ENABLED
 static uint8 fault_flags; // fault_flags can hold 8 different faults
 
 static State VCU_state;
-
-#define MUTEX_POLLING_TIME_MS   10
-static SemaphoreHandle_t VCU_Key = NULL;
 
 /*
 typedef struct data
@@ -60,12 +60,12 @@ void VCUData_init(void)
 
 
 /* ANALOG DATA FUNCTIONS */
-analogData VCU_getAnalogData(AnalogValueIndex keyword)
+analogData VCUData_getAnalogData(AnalogValueIndex keyword)
 {
     return analogDataArray[keyword];
 }
 
-bool VCU_setAnalogData(AnalogValueIndex keyword, analogData newData)
+bool VCUData_setAnalogData(AnalogValueIndex keyword, analogData newData)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
