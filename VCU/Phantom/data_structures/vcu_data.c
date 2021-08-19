@@ -2,9 +2,8 @@
  * vcu_data.c
  *
  *  Created on: Apr 18, 2020
- *      Author: soroush
+ *      Author: soroush, Josh Guo
  */
-#include "hal_stdtypes.h"
 #include "FreeRTOS.h"
 #include "os_semphr.h"
 
@@ -33,7 +32,7 @@ typedef struct data
 
          *  Where did this 72 bytes number come from? Also, what is it offsetting from?
 
-    Note: Wow, this method needs to change. Reading from a raw memory position, while it may work
+    Note: Ok, this method needs to change. Reading from a raw memory position, while it may work
         if and only if the position is correct, is a terribly dangerous and unstable way to read
         the data you need. This method also completely restricts where and what the data structure
         can be and can hold without the headache of actually having to find where in physical memory it is.
@@ -53,7 +52,9 @@ void VCUData_init(void)
         analogDataArray[i] = (analogData) {0.0, 0.0};
     }
 
-    signal_flags = RTD_SIGNAL_MASK;
+    RTD_signal = true;
+    brake_light_signal = false;
+
     fault_flags = 0U;
     VCU_state = TRACTIVE_OFF;
 }

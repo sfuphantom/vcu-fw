@@ -7,6 +7,9 @@
 
 #ifndef PHANTOM_DATA_STRUCTURES_VCU_DATA_H_
 #define PHANTOM_DATA_STRUCTURES_VCU_DATA_H_
+
+#include "hal_stdtypes.h"
+
 typedef struct {
     float adc_value;
     float value; // in the unit of measurement
