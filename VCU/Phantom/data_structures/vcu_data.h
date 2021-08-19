@@ -16,22 +16,6 @@ typedef struct {
 } analogData;
 
 typedef enum {
-    currentHV_A,
-    voltageHV_V,
-    currentLV_A,
-    voltageLV_V,
-    BSE_percentage,
-    APPS1_percentage,
-    APPS2_percentage,
-
-    // output data
-    throttle_percentage,
-
-    // leave this as the last item in enum
-    _ANALOG_DATA_LENGTH
-} AnalogValueIndex;
-
-typedef enum {
     BMS_FAULT_MASK = 1U,      // if 0, then BMS is healthy, if 1 then BMS fault
     IMD_FAULT_MASK = 2U,      // if 0, then IMD is healthy, if 1 then IMD fault
     BSPD_FAULT_MASK = 4U,      // if 0, then BSPD is healthy, if 1 then BSPD fault
@@ -50,25 +34,68 @@ typedef enum {
 } State;
 
 
+// Any module that needs direct access
+// to the VCU data structure needs to 
+// #define PRIVLEDGED_ACCESS in their file
+#ifdef PRIVLEDGED_ACCESS
+
+typedef struct {
+    analogData currentHV_A;
+    analogData voltageHV_V;
+    analogData currentLV_A;
+    analogData voltageLV_V;
+    analogData BSE_percentage;
+    analogData APPS1_percentage;
+    analogData APPS2_percentage;
+    
+    analogData throttle_percentage;
+
+    uint8 RTD_signal;
+    uint8 fault_flags;
+
+    uint8 brake_light_signal;
+
+    State VCU_state;
+} VCUData;
+
+VCUData* VCUData_getVolatileData(void);
+
+#endif
+
 // function prototypes
-
 void VCUData_init(void);
-
-analogData VCUData_getAnalogData(AnalogValueIndex keyword);
-bool VCUData_setAnalogData(AnalogValueIndex keyword, analogData newData);
-
-bool VCUData_getRTDSignal(void);
-bool VCUData_setRTDSignal(bool newSignal);
-
-bool VCUData_getBrakeLightSignal(void);
-bool VCUData_setBrakeLightSignal(bool newSignal);
 
 uint8 VCUData_readFaults(uint8 mask);
 bool VCUData_turnOnFaults(uint8 mask);
 bool VCUData_turnOffFaults(uint8 mask);
 bool VCUData_setFaults(uint8 newFaultBitSet);
 
+
+uint8 VCUData_getRTDSignal(void);
+uint8 VCUData_getBrakeLightSignal(void);
 State VCUData_getState(void);
+
+bool VCUData_setRTDSignal(uint8 newSignal);
+bool VCUData_setBrakeLightSignal(uint8 newSignal);
 bool VCUData_setState(State newState);
+
+
+analogData VCUData_getCurrentHV_A(void);
+analogData VCUData_getVoltageHV_V(void);
+analogData VCUData_getCurrentLV_A(void);
+analogData VCUData_getVoltageLV_V(void);
+analogData VCUData_getBSEPercentage(void);
+analogData VCUData_getAPPS1Percentage(void);
+analogData VCUData_getAPPS2Percentage(void);
+analogData VCUData_getThrottlePercentage(void);
+
+bool VCUData_setCurrentHV_A(analogData newData);
+bool VCUData_setVoltageHV_V(analogData newData);
+bool VCUData_setCurrentLV_A(analogData newData);
+bool VCUData_setVoltageLV_V(analogData newData);
+bool VCUData_setBSEPercentage(analogData newData);
+bool VCUData_setAPPS1Percentage(analogData newData);
+bool VCUData_setAPPS2Percentage(analogData newData);
+bool VCUData_setThrottlePercentage(analogData newData);
 
 #endif /* PHANTOM_DATA_STRUCTURES_VCU_DATA_H_ */

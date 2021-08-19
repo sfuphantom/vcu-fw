@@ -7,21 +7,13 @@
 #include "FreeRTOS.h"
 #include "os_semphr.h"
 
+#define PRIVLEDGED_ACCESS
 #include "vcu_data.h"
 
 #define MUTEX_POLLING_TIME_MS   10
 static SemaphoreHandle_t VCU_Key = NULL;
 
-static analogData analogDataArray[_ANALOG_DATA_LENGTH];
-
-/* DIGITAL DATA */
-static bool RTD_signal;
-static bool brake_light_signal; // originally named BRAKE_LIGHT_ENABLED
-
-static uint8 fault_flags; // fault_flags can hold 8 different faults
-
-static State VCU_state;
-
+static VCUData data;
 /*
 typedef struct data
 {
@@ -40,92 +32,46 @@ typedef struct data
 } data;
 */
 
-/*******************************************************************
-* NOTES : This function must be called before any operation on the VCU
-*         data structure. Otherwise, undefined behaviour will happen.
+/*
+* NOTE : This function must be called before any operation on the VCU
+*        data structure. Otherwise, undefined behaviour will happen.
 */
 void VCUData_init(void)
 {
     VCU_Key = xSemaphoreCreateMutex();
 
-    for (int i = 0; i < _ANALOG_DATA_LENGTH; i++) {
-        analogDataArray[i] = (analogData) {0.0, 0.0};
-    }
-
-    RTD_signal = true;
-    brake_light_signal = false;
-
-    fault_flags = 0U;
-    VCU_state = TRACTIVE_OFF;
+    data = (VCUData) {
+        // Analog Readings
+        (analogData) {0.0, 0.0},    // currentHV_A
+        (analogData) {0.0, 0.0},    // voltageHV_V
+        (analogData) {0.0, 0.0},    // currentLV_A
+        (analogData) {0.0, 0.0},    // voltageLV_V
+        (analogData) {0.0, 0.0},    // BSE_percentage
+        (analogData) {0.0, 0.0},    // APPS1_percentage
+        (analogData) {0.0, 0.0},    // APPS2_percentage
+        // Analog Output
+        (analogData) {0.0, 0.0},    // throttle_percentage
+        // Digital Readings
+        1U,                         // RTD_signal
+        0U,                         // fault_flags
+        // Digital Output
+        0U,                         // brake_light_signal
+        // Machine State
+        TRACTIVE_OFF                // VCU_state
+    };
 }
-
-
-/* ANALOG DATA FUNCTIONS */
-analogData VCUData_getAnalogData(AnalogValueIndex keyword)
-{
-    return analogDataArray[keyword];
-}
-
-bool VCUData_setAnalogData(AnalogValueIndex keyword, analogData newData)
-{
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
-
-        analogDataArray[keyword] = newData;
-
-        return xSemaphoreGive(VCU_Key);
-    } else {
-        return false;
-    }
-}
-
-
-/* SIGNAL FUNCTIONS */
-bool VCUData_getRTDSignal(void)
-{
-    return RTD_signal;
-}
-
-bool VCUData_setRTDSignal(bool newSignal)
-{
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
-
-        RTD_signal = newSignal;
-
-        return xSemaphoreGive(VCU_Key);
-    } else {
-        return false;
-    }
-}
-
-bool VCUData_getBrakeLightSignal(void)
-{
-    return brake_light_signal;
-}
-
-bool VCUData_setBrakeLightSignal(bool newSignal)
-{
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
-
-        brake_light_signal = newSignal;
-
-        return xSemaphoreGive(VCU_Key);
-    } else {
-        return false;
-    }
-}
-
 
 /* FAULT FUNCTIONS */
 uint8 VCUData_readFaults(uint8 mask)
 {
-    return fault_flags & mask;
+    return data.fault_flags & mask;
 }
 
 bool VCUData_turnOnFaults(uint8 mask)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        fault_flags |= mask;
+        data.fault_flags |= mask;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -137,7 +83,7 @@ bool VCUData_turnOffFaults(uint8 mask)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        fault_flags &= ~mask;
+        data.fault_flags &= ~mask;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -149,7 +95,42 @@ bool VCUData_setFaults(uint8 newFaultBitSet)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        fault_flags = newFaultBitSet;
+        data.fault_flags = newFaultBitSet;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+/* SIGNAL FUNCTIONS */
+uint8 VCUData_getRTDSignal(void)
+{
+    return data.RTD_signal;
+}
+
+bool VCUData_setRTDSignal(uint8 newSignal)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.RTD_signal = newSignal;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+uint8 VCUData_getBrakeLightSignal(void)
+{
+    return data.brake_light_signal;
+}
+
+bool VCUData_setBrakeLightSignal(uint8 newSignal)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.brake_light_signal = newSignal;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -161,17 +142,161 @@ bool VCUData_setFaults(uint8 newFaultBitSet)
 /* STATE FUNCTIONS */
 State VCUData_getState(void)
 {
-    return VCU_state;
+    return data.VCU_state;
 }
 
 bool VCUData_setState(State newState)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        VCU_state = newState;
+        data.VCU_state = newState;
 
         return xSemaphoreGive(VCU_Key);
     } else {
         return false;
     }
+}
+
+
+/* ANALOG DATA FUNCTIONS */
+analogData VCUData_getCurrentHV_A(void)
+{
+    return data.currentHV_A;
+}
+
+bool VCUData_setCurrentHV_A(analogData newData)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.currentHV_A = newData;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+analogData VCUData_getVoltageHV_V(void)
+{
+    return data.voltageHV_V;
+}
+
+bool VCUData_setVoltageHV_V(analogData newData)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.voltageHV_V = newData;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+analogData VCUData_getCurrentLV_A(void)
+{
+    return data.currentLV_A;
+}
+
+bool VCUData_setCurrentLV_A(analogData newData)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.currentLV_A = newData;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+analogData VCUData_getVoltageLV_V(void)
+{
+    return data.voltageLV_V;
+}
+
+bool VCUData_setVoltageLV_V(analogData newData)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.voltageLV_V = newData;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+analogData VCUData_getBSEPercentage(void)
+{
+    return data.BSE_percentage;
+}
+
+bool VCUData_setBSEPercentage(analogData newData)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.BSE_percentage = newData;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+analogData VCUData_getAPPS1Percentage(void)
+{
+    return data.APPS1_percentage;
+}
+
+bool VCUData_setAPPS1Percentage(analogData newData)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.APPS1_percentage = newData;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+analogData VCUData_getAPPS2Percentage(void)
+{
+    return data.APPS2_percentage;
+}
+
+bool VCUData_setAPPS2Percentage(analogData newData)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.APPS2_percentage = newData;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+analogData VCUData_getThrottlePercentage(void)
+{
+    return data.throttle_percentage;
+}
+
+bool VCUData_setThrottlePercentage(analogData newData)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.throttle_percentage = newData;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
+
+// FOR PRIVLEDGED ACCESS ONLY (like EEPROM)
+VCUData* VCUData_getVolatileData(void)
+{
+    return &data;
 }
