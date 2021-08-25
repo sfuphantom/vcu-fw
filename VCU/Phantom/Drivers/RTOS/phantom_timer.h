@@ -1,3 +1,9 @@
+/*
+ * phantom_timer.h
+ *
+ *  Created on: Aug. 25, 2021
+ *      Author: Josh Guo
+ */
 #ifndef PHANTOM_TIMER_H_
 #define PHANTOM_TIMER_H_
 
