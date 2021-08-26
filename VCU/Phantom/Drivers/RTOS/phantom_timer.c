@@ -1,12 +1,19 @@
+/*
+ * phantom_timer.c
+ *
+ *  Created on: Aug. 25, 2021
+ *      Author: Josh Guo
+ */
+#include "sys_common.h"
 #include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
 #include "os_timer.h"
-#include "board_hardware.h"
 
 #include "phantom_timer.h"
 
-#define MAX_NUMBER_OF_TIMERS   2
+// #define DEBUG    // uncomment this line for ASSERT statements to work
 
+#define MAX_NUMBER_OF_TIMERS   2
 static TimerHandle_t xTimers[MAX_NUMBER_OF_TIMERS];
 static int xTimersSize = 0;
 
@@ -18,15 +25,15 @@ static int xTimersSize = 0;
     counterPtr:         Pointer to a number which increments whenever the timer expires, initialized to 0.
     callbackFunction:   Callback function that is called when the timer expires.
 */
-int Phantom_createTimer(char* timerName, 
-                        unsigned int periodMS, 
-                        int isAutoReloading, 
-                        void* counterPtr, 
-                        TimerCallbackFunction_t callbackFunction)
+TimerHandle_t Phantom_createTimer(char* const timerName, 
+                                  unsigned int periodMS, 
+                                  int isAutoReloading, 
+                                  void* counterPtr, 
+                                  TimerCallbackFunction_t callbackFunction)
 {
     if (xTimersSize >= MAX_NUMBER_OF_TIMERS) {
         // TODO: Print to console an error message
-        return pdFAIL;
+        return NULL;
     }
 
     TimerHandle_t newTimer = xTimerCreate( 
@@ -39,16 +46,16 @@ int Phantom_createTimer(char* timerName,
 
     if (newTimer == NULL) {
         // TODO: Print to console an error message
-        return pdFAIL;
+        return NULL;
+    }
+
+    if (xTimerStart(newTimer, 0) != pdPASS) {
+        // TODO: Print to console an error message
+        return NULL;
     }
 
     xTimers[xTimersSize] = newTimer;
     xTimersSize++;
 
-    if (xTimerStart(newTimer, 0) != pdPASS) {
-        // TODO: Print to console an error message
-        return pdFAIL;
-    }
-
-    return pdPASS;
+    return newTimer;
 }
