@@ -8,12 +8,14 @@
 #define PHANTOM_TASK_H_
 
 #include "hal_stdtypes.h"
-#include "os_projdefs.h"
+typedef struct {
+    TaskFunction_t functionPtr;
+    uint32 frequencyMs;
+} Task;
 
-int Phantom_createTask(TaskFunction_t taskFnPtr,
-					   char* const taskName,
-					   uint16 stackSize,
-					   void* const fnParameters,
-					   uint32 taskPriority);
+void Phantom_createTask(Task* task, char* const taskName, uint16 stackSize, uint32 taskPriority);
+
+void Phantom_startTaskScheduler(void);
+void Phantom_endTaskScheduler(void);
 
 #endif

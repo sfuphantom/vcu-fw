@@ -13,32 +13,48 @@
 
 // #define DEBUG    // uncomment this line for ASSERT (not talking about configASSERT) statements to work
 
-#define MAX_NUMBER_OF_TASKS 7
-static TaskHandle_t taskHandles[MAX_NUMBER_OF_TASKS];
-static int taskHandlesSize = 0;
+static void taskSkeleton(void* task);
 
-int Phantom_createTask(TaskFunction_t taskFnPtr,
+void Phantom_createTask(Task* task,
 					   char* const taskName,
 					   uint16 stackSize,
-					   void* const fnParameters,
 					   uint32 taskPriority)
 {
-    if (taskHandlesSize >= MAX_NUMBER_OF_TASKS) {
-        // TODO: Print to console an error message
-        return -1;
-    }
+    TaskHandle_t taskHandle = NULL;
+    BaseType_t result = xTaskCreate(taskSkeleton, taskName, stackSize, task, taskPriority, &taskHandle);
 
-    BaseType_t result = xTaskCreate(taskFnPtr, taskName, stackSize, fnParameters, taskPriority, &taskHandles[taskHandlesSize]);
     if (result != pdPASS) {
         // TODO: Print to console an error message
         return -1;
     }
 
-    if (taskHandles[taskHandlesSize]) {
+    if (taskHandle == NULL) {
         // TODO: Print to console an error message
         return -1;
     }
 
     // TODO: Print to console a success message
-    return taskHandlesSize++;
+}
+
+void Phantom_startTaskScheduler(void)
+{
+    vTaskStartScheduler();
+}
+
+void Phantom_endTaskScheduler(void)
+{
+    vTaskEndScheduler();
+}
+
+static void taskSkeleton(void* task)
+{
+    const TaskFunction_t taskFnPtr = ((Task*) task)->functionPtr;
+    const TickType_t xFrequency = ((Task*) task)->frequencyMs;
+    
+    TickType_t xLastWakeTime = xTaskGetTickCount();
+    while (1) {
+        vTaskDelayUntil(&xLastWakeTime, xFrequency);
+
+        taskFnPtr(NULL);
+    }
 }
