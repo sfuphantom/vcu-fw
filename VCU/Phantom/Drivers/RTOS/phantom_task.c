@@ -15,7 +15,7 @@
 
 static void taskSkeleton(void* task);
 
-void Phantom_createTask(Task* task,
+TaskHandle_t Phantom_createTask(Task* task,
 					   char* const taskName,
 					   uint16 stackSize,
 					   uint32 taskPriority)
@@ -28,12 +28,8 @@ void Phantom_createTask(Task* task,
         return -1;
     }
 
-    if (taskHandle == NULL) {
-        // TODO: Print to console an error message
-        return -1;
-    }
-
     // TODO: Print to console a success message
+    return taskHandle;
 }
 
 void Phantom_startTaskScheduler(void)
