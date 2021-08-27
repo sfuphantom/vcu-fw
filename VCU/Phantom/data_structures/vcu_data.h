@@ -33,35 +33,6 @@ typedef enum {
     SEVERE_FAULT
 } State;
 
-
-// Any module that needs direct access
-// to the VCU data structure needs to 
-// #define PRIVLEDGED_ACCESS in their file
-#ifdef PRIVLEDGED_ACCESS
-
-typedef struct {
-    analogData currentHV_A;
-    analogData voltageHV_V;
-    analogData currentLV_A;
-    analogData voltageLV_V;
-    analogData BSE_percentage;
-    analogData APPS1_percentage;
-    analogData APPS2_percentage;
-    
-    analogData throttle_percentage;
-
-    uint8 RTD_signal;
-    uint8 fault_flags;
-
-    uint8 brake_light_signal;
-
-    State VCU_state;
-} VCUData;
-
-VCUData* VCUData_getVolatileData(void);
-
-#endif
-
 // function prototypes
 void VCUData_init(void);
 
@@ -97,5 +68,33 @@ bool VCUData_setBSEPercentage(analogData newData);
 bool VCUData_setAPPS1Percentage(analogData newData);
 bool VCUData_setAPPS2Percentage(analogData newData);
 bool VCUData_setThrottlePercentage(analogData newData);
+
+// Any module that needs direct access
+// to the VCU data structure needs to 
+// #define VCUDATA_PRIVLEDGED_ACCESS in their file
+#ifdef VCUDATA_PRIVLEDGED_ACCESS
+
+typedef struct {
+    analogData currentHV_A;
+    analogData voltageHV_V;
+    analogData currentLV_A;
+    analogData voltageLV_V;
+    analogData BSE_percentage;
+    analogData APPS1_percentage;
+    analogData APPS2_percentage;
+    
+    analogData throttle_percentage;
+
+    uint8 RTD_signal;
+    uint8 fault_flags;
+
+    uint8 brake_light_signal;
+
+    State VCU_state;
+} VCUData;
+
+VCUData* VCUData_getVolatileData(void);
+
+#endif
 
 #endif /* PHANTOM_DATA_STRUCTURES_VCU_DATA_H_ */

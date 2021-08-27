@@ -7,7 +7,7 @@
 #include "FreeRTOS.h"
 #include "os_semphr.h"
 
-#define PRIVLEDGED_ACCESS
+#define VCUDATA_PRIVLEDGED_ACCESS
 #include "vcu_data.h"
 
 #define MUTEX_POLLING_TIME_MS   10
