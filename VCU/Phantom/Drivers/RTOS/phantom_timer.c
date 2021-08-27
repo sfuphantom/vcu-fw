@@ -5,8 +5,8 @@
  *      Author: Josh Guo
  */
 #include "sys_common.h"
-#include "FreeRTOSConfig.h"
 #include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
 #include "os_timer.h"
 
 #include "phantom_timer.h"

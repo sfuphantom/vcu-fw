@@ -8,7 +8,9 @@
 #define PHANTOM_TIMER_H_
 
 #include "hal_stdtypes.h"
-#include "os_timer.h"
+
+typedef void *TimerHandle_t;
+typedef void (*TimerCallbackFunction_t)(TimerHandle_t xTimer);
 
 /*
     timerName:          Just a text name, not used by the RTOS kernel.
