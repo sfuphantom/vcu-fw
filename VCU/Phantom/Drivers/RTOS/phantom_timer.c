@@ -4,7 +4,6 @@
  *  Created on: Aug. 25, 2021
  *      Author: Josh Guo
  */
-#include "sys_common.h"
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
 #include "os_timer.h"
@@ -13,10 +12,10 @@
 
 // #define DEBUG    // uncomment this line for ASSERT statements to work
 
-#define MAX_NUMBER_OF_TIMERS   2
-static TimerHandle_t xTimers[MAX_NUMBER_OF_TIMERS];
-static int xTimersSize = 0;
+#define WAIT_TIME_MS    1
+#define MAX_NUMBER_OF_TIMERS    10
 
+static int numOfTimers = 0;
 
 /*
     timerName:          Just a text name, not used by the RTOS kernel.
@@ -31,8 +30,7 @@ TimerHandle_t Phantom_createTimer(char* const timerName,
                                   void* counterPtr, 
                                   TimerCallbackFunction_t callbackFunction)
 {
-    if (xTimersSize >= MAX_NUMBER_OF_TIMERS) {
-        // TODO: Print to console an error message
+    if (numOfTimers >= MAX_NUMBER_OF_TIMERS) {
         return NULL;
     }
 
@@ -44,18 +42,33 @@ TimerHandle_t Phantom_createTimer(char* const timerName,
         callbackFunction
     );
 
-    if (newTimer == NULL) {
-        // TODO: Print to console an error message
-        return NULL;
-    }
-
-    if (xTimerStart(newTimer, 0) != pdPASS) {
-        // TODO: Print to console an error message
-        return NULL;
-    }
-
-    xTimers[xTimersSize] = newTimer;
-    xTimersSize++;
-
+    numOfTimers += (newTimer != NULL);
     return newTimer;
+}
+
+uint8 Phantom_startTimer(TimerHandle_t timer)
+{
+    return xTimerStart(timer, pdMS_TO_TICKS(WAIT_TIME_MS));
+}
+
+uint8 Phantom_stopTimer(TimerHandle_t timer)
+{
+    return xTimerStop(timer, pdMS_TO_TICKS(WAIT_TIME_MS));
+}
+
+uint8 Phantom_deleteTimer(TimerHandle_t timer)
+{
+    uint8 result = xTimerDelete(timer, pdMS_TO_TICKS(WAIT_TIME_MS));
+    numOfTimers -= (result == pdPASS);
+    return result;
+}
+
+int Phantom_getNumberOfTimers(void)
+{
+    return numOfTimers;
+}
+
+uint8 Phantom_isTimerActive(TimerHandle_t timer)
+{
+    return xTimerIsTimerActive(timer);
 }
