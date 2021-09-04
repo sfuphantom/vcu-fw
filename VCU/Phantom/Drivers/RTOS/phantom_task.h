@@ -8,9 +8,12 @@
 #define PHANTOM_TASK_H_
 
 #include "hal_stdtypes.h"
+#include "FreeRTOSConfig.h"
 
 typedef void (*TaskFunction_t)(void *);
 typedef void *TaskHandle_t;
+
+#define MIN_STACK_SIZE configMINIMAL_STACK_SIZE
 
 typedef struct {
     TaskFunction_t functionPtr;
