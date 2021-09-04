@@ -20,8 +20,8 @@ typedef void (*TimerCallbackFunction_t)(TimerHandle_t xTimer);
     callbackFunction:   Callback function that is called when the timer expires.
 */
 TimerHandle_t Phantom_createTimer(char* const timerName, 
-                                  unsigned int periodMS, 
-                                  int isAutoReloading, 
+                                  uint32 periodMS, 
+                                  bool isAutoReloading, 
                                   void* counterPtr, 
                                   TimerCallbackFunction_t callbackFunction);
 
@@ -30,6 +30,6 @@ uint8 Phantom_stopTimer(TimerHandle_t timer);
 // uint8 Phantom_deleteTimer(TimerHandle_t timer)
 
 int Phantom_getNumberOfTimers(void);
-uint8 Phantom_isTimerActive(TimerHandle_t timer)
+bool Phantom_isTimerActive(TimerHandle_t timer);
 
 #endif

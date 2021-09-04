@@ -25,8 +25,8 @@ static int numOfTimers = 0;
     callbackFunction:   Callback function that is called when the timer expires.
 */
 TimerHandle_t Phantom_createTimer(char* const timerName, 
-                                  unsigned int periodMS, 
-                                  int isAutoReloading, 
+                                  uint32 periodMS, 
+                                  bool isAutoReloading, 
                                   void* counterPtr, 
                                   TimerCallbackFunction_t callbackFunction)
 {
@@ -68,7 +68,7 @@ int Phantom_getNumberOfTimers(void)
     return numOfTimers;
 }
 
-uint8 Phantom_isTimerActive(TimerHandle_t timer)
+bool Phantom_isTimerActive(TimerHandle_t timer)
 {
     return xTimerIsTimerActive(timer);
 }
