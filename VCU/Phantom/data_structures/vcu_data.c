@@ -13,7 +13,7 @@
 #define MUTEX_POLLING_TIME_MS   10
 static SemaphoreHandle_t VCU_Key = NULL;
 
-static VCUData data;
+static volatile VCUData data;
 /*
 typedef struct data
 {
