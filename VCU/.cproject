@@ -127,7 +127,9 @@
 		<cconfiguration id="com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1111767534">
 			<storageModule buildSystemId="org.eclipse.cdt.managedbuilder.core.configurationDataProvider" id="com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1111767534" moduleId="org.eclipse.cdt.core.settings" name="BuildConfig_Launchpad-1224">
 				<macros>
-					<stringMacro name="HERCULES_FOLDER" type="VALUE_PATH_DIR" value="/Applications/ti/Hercules"/>
+					<stringMacro name="WIN_HERCULES" type="VALUE_PATH_DIR" value="C:\ti\Hercules"/>
+					<stringMacro name="HERCULES_FOLDER" type="VALUE_PATH_DIR" value="${WIN_HERCULES}"/>
+					<stringMacro name="UNIX_HERCULES" type="VALUE_PATH_DIR" value="/Applications/ti/Hercules"/>
 				</macros>
 				<externalSettings/>
 				<extensions>
