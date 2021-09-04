@@ -25,4 +25,11 @@ TimerHandle_t Phantom_createTimer(char* const timerName,
                                   void* counterPtr, 
                                   TimerCallbackFunction_t callbackFunction);
 
+uint8 Phantom_startTimer(TimerHandle_t timer);
+uint8 Phantom_stopTimer(TimerHandle_t timer);
+// uint8 Phantom_deleteTimer(TimerHandle_t timer)
+
+int Phantom_getNumberOfTimers(void);
+uint8 Phantom_isTimerActive(TimerHandle_t timer)
+
 #endif
