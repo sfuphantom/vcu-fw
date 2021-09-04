@@ -1,4 +1,6 @@
-
+// INA226 Current Sense Amplifier Library written by David Cao
+#ifndef PHANTOM_DRIVERS_LV_MONITOR_H_
+#define PHANTOM_DRIVERS_LV_MONITOR_H_
 //#include "sys_common.h"
 #include <halcogen_vcu/include/i2c.h>
 //#include "het.h"
@@ -6,7 +8,7 @@
 //#include "stdlib.h"
 //#include "sci.h"
 
-
+#define LV_MONITOR
 
 #define LV_DATA_COUNT  2
 
@@ -43,3 +45,4 @@ LV_reading(LV_current_register);
 
 
 */
+#endif
