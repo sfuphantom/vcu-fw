@@ -8,10 +8,10 @@
  */
 #include "phantom_task.h"
 #include "phantom_timer.h"
-
+#include "gio.h"
 #include "vcu_data.h"
-#include "priorities.h"
 
+#include "priorities.h"
 #include "task_test.h"
 
 // pre-define static functions first
@@ -35,10 +35,17 @@ void testTaskInit(void)
 
 static void testTimerCallback(TimerHandle_t timer)
 {
-    // do something to VCU Data
+    uint8 faults = VCUData_readFaults(ALL_FAULTS_MASK);
+    if (!faults) {  // prefer to avoid anything with mutexes in a timer callback
+        VCUData_turnOnFaults(BMS_FAULT_MASK | BSPD_FAULT_MASK | BSE_FAULT_MASK);
+    } else {
+        VCUData_turnOffFaults(BMS_FAULT_MASK | BSPD_FAULT_MASK | BSE_FAULT_MASK);
+    }
 }
 
 static void vTestTask(void* arg)
 {
-    // check VCU Data for changes
+    uint8 faults = VCUData_readFaults(ALL_FAULTS_MASK);
+
+    gioSetBit(gioPORTB, 1, (bool) faults);
 }
