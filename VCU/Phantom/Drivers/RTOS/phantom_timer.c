@@ -6,6 +6,9 @@
  */
 #include "FreeRTOS.h"
 #include "FreeRTOSConfig.h"
+
+// this needs to be here because os_timer.h does not include this despite trying to reference it
+typedef void *TaskHandle_t; 
 #include "os_timer.h"
 
 #include "phantom_timer.h"
