@@ -14,4 +14,4 @@
 void testTaskInit(void);
 
 
-#endif /* PHANTOM_TASKS_TASK_STATEMACHINE_H_ */
+#endif
