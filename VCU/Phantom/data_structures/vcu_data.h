@@ -23,7 +23,7 @@ typedef enum {
     BSE_FAULT_MASK = 16U,     // if 0, then BSE is healthy, if 1 then BSE fault
     APPS_FAULT_MASK = 32U,     // if 0, then APPS is healthy, if 1 then APPS fault
     ALL_FAULTS_MASK = (~0U)   // All 1s to let all faults through the mask
-} FaultMasks;
+} FaultMask;
 
 typedef enum {
     TRACTIVE_OFF, 
@@ -36,10 +36,10 @@ typedef enum {
 // function prototypes
 void VCUData_init(void);
 
-uint8 VCUData_readFaults(uint8 mask);
-bool VCUData_turnOnFaults(uint8 mask);
-bool VCUData_turnOffFaults(uint8 mask);
-bool VCUData_setFaults(uint8 newFaultBitSet);
+uint32 VCUData_readFaults(uint32 mask);
+bool VCUData_turnOnFaults(uint32 mask);
+bool VCUData_turnOffFaults(uint32 mask);
+bool VCUData_setFaults(uint32 newFaultBitSet);
 
 
 uint8 VCUData_getRTDSignal(void);
@@ -86,14 +86,14 @@ typedef struct {
     analogData throttle_percentage;
 
     uint8 RTD_signal;
-    uint8 fault_flags;
+    uint32 fault_flags;
 
     uint8 brake_light_signal;
 
     State VCU_state;
 } VCUData;
 
-VCUData* VCUData_getVolatileData(void);
+VCUData* VCUData_getPointer(void);
 
 #endif
 

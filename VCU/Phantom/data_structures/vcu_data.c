@@ -13,7 +13,7 @@
 #define MUTEX_POLLING_TIME_MS   10
 static SemaphoreHandle_t VCU_Key = NULL;
 
-static volatile VCUData data;
+static VCUData data;
 /*
 typedef struct data
 {
@@ -62,12 +62,12 @@ void VCUData_init(void)
 }
 
 /* FAULT FUNCTIONS */
-uint8 VCUData_readFaults(uint8 mask)
+uint32 VCUData_readFaults(uint32 mask)
 {
     return data.fault_flags & mask;
 }
 
-bool VCUData_turnOnFaults(uint8 mask)
+bool VCUData_turnOnFaults(uint32 mask)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
@@ -79,7 +79,7 @@ bool VCUData_turnOnFaults(uint8 mask)
     }
 }
 
-bool VCUData_turnOffFaults(uint8 mask)
+bool VCUData_turnOffFaults(uint32 mask)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
@@ -91,7 +91,7 @@ bool VCUData_turnOffFaults(uint8 mask)
     }
 }
 
-bool VCUData_setFaults(uint8 newFaultBitSet)
+bool VCUData_setFaults(uint32 newFaultBitSet)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
@@ -296,7 +296,7 @@ bool VCUData_setThrottlePercentage(analogData newData)
 }
 
 // FOR PRIVLEDGED ACCESS ONLY (like EEPROM)
-VCUData* VCUData_getVolatileData(void)
+VCUData* VCUData_getPointer(void)
 {
     return &data;
 }
