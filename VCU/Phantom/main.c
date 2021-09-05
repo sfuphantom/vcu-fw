@@ -37,20 +37,6 @@
 
 /* USER CODE END */
 
-void main(void)
-{
-/* USER CODE BEGIN (3) */
-    
-    halcogenInit();
-    phantomDriversInit();
-    phantomTasksInit();
-
-    // Phantom_startTaskScheduler is Blocking
-    Phantom_startTaskScheduler();
-   
-/* USER CODE END */
-}
-
 /* USER CODE BEGIN (4) */
 void halcogenInit()
 {
@@ -89,3 +75,17 @@ void phantomTasksInit()
     testTaskInit();
 }
 /* USER CODE END */
+
+void main(void)
+{
+/* USER CODE BEGIN (3) */
+    
+    halcogenInit();
+    phantomDriversInit();
+    phantomTasksInit();
+
+    // Phantom_startTaskScheduler is Blocking
+    Phantom_startTaskScheduler();
+   
+/* USER CODE END */
+}
