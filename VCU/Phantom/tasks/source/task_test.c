@@ -8,8 +8,8 @@
  */
 #include "phantom_task.h"
 #include "phantom_timer.h"
-#include "gio.h"
 #include "vcu_data.h"
+#include "RGB_LED.h"
 
 #include "priorities.h"
 #include "task_test.h"
@@ -51,5 +51,9 @@ static void vTestTask(void* arg)
 {
     uint8 faults = VCUData_readFaults(ALL_FAULTS_MASK);
 
-    gioSetBit(gioPORTB, 1, (bool) faults);
+    if (faults) {
+        RGB_LED_drive(RGB_YELLOW);
+    } else {
+        RGB_LED_drive(RGB_OFF);
+    }
 }
