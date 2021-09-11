@@ -1,0 +1,35 @@
+/*
+ *
+ *  Task Template
+ * 
+ *  Created on: Sept. 3, 2021
+ *      Author: Joshua Guo
+ */
+#include "phantom_task.h"
+#include "phantom_timer.h"
+
+
+#include "priorities.h"
+// #include your_task_header_file
+
+// pre-define static functions first
+static void vTestTask(void* arg);
+
+static Task testTask = {vYourTask, YOUR_TASK_PERIOD_MS};
+static TaskHandle_t taskHandle; 
+
+// static TimerHandle_t timerHandle;
+
+void TaskInit(void)
+{
+    // Phantom_createTask should block infinitely if task creation failed
+    taskHandle = Phantom_createTask(&testTask, "TestTask", TEST_TASK_STACK_SIZE, TEST_TASK_PRIORITY);
+
+}
+
+static void vTestTask(void* arg)
+{
+    // your task stuff
+}
+
+// Other helper functions and callbacks

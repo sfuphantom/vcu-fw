@@ -1,0 +1,3 @@
+// INCLUDE GUARDS
+
+void TaskInit(void);
