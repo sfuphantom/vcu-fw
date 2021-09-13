@@ -102,8 +102,8 @@ void updateIMDData()
 * Purpose: Sends the current Frequency and Duty Cycle read from the IMD
 */
 void serialSendData() {
-    NumberofCharsFreq = ltoa(freq_value, (char*) freq_data);
-    NumberofCharsDuty = ltoa(duty_value, (char*) duty_data);
+    //NumberofCharsFreq = ltoa(freq_value, (char*) freq_data);
+    //NumberofCharsDuty = ltoa(duty_value, (char*) duty_data);
 
     sciSend(PC_UART, NumberofCharsFreq, freq_data);
     sciSend(PC_UART, 4, (unsigned char*)" Hz ");
