@@ -13,10 +13,10 @@
 #include "het.h"
 
 #include "RGB_LED.h"            // RGB LED wrapper written by Joshua Guo
-#include "RTD_Buzzer.h"         // Ready to Drive buzzer wrapper written by Gabriel Soares
-#include "MCP48FV_DAC_SPI.h"    // DAC library written by Ataur Rehman
+// #include "RTD_Buzzer.h"         // Ready to Drive buzzer wrapper written by Gabriel Soares
+// #include "MCP48FV_DAC_SPI.h"    // DAC library written by Ataur Rehman
 // #include "LV_monitor.h"         // COMMENT OUT IF USING LAUNCHPAD
-#include "IMD.h"                // Bender IR155 IMD Library written by Sumreen Rattan
+// #include "IMD.h"                // Bender IR155 IMD Library written by Sumreen Rattan
 // #include "eeprom_driver.h"      // EEPROM driver written by Junaid Khan
 
 #include "board_hardware.h"     // contains hardware defines for specific board used (i.e. VCU or launchpad)

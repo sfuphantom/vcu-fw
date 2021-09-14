@@ -18,33 +18,25 @@
 static void vTestTask(void* arg);
 static void testTimerCallback(TimerHandle_t timer);
 
-static Task testTask = {vTestTask, TEST_TASK_PERIOD_MS};
+static Task testTask;
 // static TaskHandle_t taskHandle;
 
-// static TimerHandle_t testTimer;
+static TimerHandle_t testTimer;
 static long testTimerCounter = 0;
 
 void testTaskInit(void)
 {
+    testTask = (Task) {vTestTask, TEST_TASK_PERIOD_MS};
     // Phantom_createTask should block infinitely if task creation failed
     /*taskHandle = */Phantom_createTask(&testTask, "TestTask", TEST_TASK_STACK_SIZE, TEST_TASK_PRIORITY);
 
     // create recurring timers here...
-    /*testTimer = */Phantom_createTimer("testTimer", 1000, true, &testTimerCounter, testTimerCallback);
+    testTimer = Phantom_createTimer("testTimer", 1000, AUTO_RELOAD, &testTimerCounter, testTimerCallback);
+    Phantom_startTimer(testTimer);
 
     // so compiler won't complain about unused variables
     // taskHandle;
     // testTimer;
-}
-
-static void testTimerCallback(TimerHandle_t timer)
-{
-    uint8 faults = VCUData_readFaults(ALL_FAULTS_MASK);
-    if (!faults) {  // prefer to avoid anything with mutexes in a timer callback
-        VCUData_turnOnFaults(BMS_FAULT_MASK | BSPD_FAULT_MASK | BSE_FAULT_MASK);
-    } else {
-        VCUData_turnOffFaults(BMS_FAULT_MASK | BSPD_FAULT_MASK | BSE_FAULT_MASK);
-    }
 }
 
 static void vTestTask(void* arg)
@@ -55,5 +47,15 @@ static void vTestTask(void* arg)
         RGB_LED_drive(RGB_YELLOW);
     } else {
         RGB_LED_drive(RGB_OFF);
+    }
+}
+
+static void testTimerCallback(TimerHandle_t timer)
+{
+    uint8 faults = VCUData_readFaults(ALL_FAULTS_MASK);
+    if (!faults) {  // prefer to avoid anything with mutexes in a timer callback
+        VCUData_turnOnFaults(BMS_FAULT_MASK | BSPD_FAULT_MASK | BSE_FAULT_MASK);
+    } else {
+        VCUData_turnOffFaults(BMS_FAULT_MASK | BSPD_FAULT_MASK | BSE_FAULT_MASK);
     }
 }

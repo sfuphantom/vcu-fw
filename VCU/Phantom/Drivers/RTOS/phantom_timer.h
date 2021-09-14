@@ -12,6 +12,9 @@
 typedef void *TimerHandle_t;
 typedef void (*TimerCallbackFunction_t)(TimerHandle_t xTimer);
 
+#define AUTO_RELOAD true
+#define NO_RELOAD   false 
+
 /*
     timerName:          Just a text name, not used by the RTOS kernel.
     periodMS:           The timer period in ticks, must be greater than 0.
