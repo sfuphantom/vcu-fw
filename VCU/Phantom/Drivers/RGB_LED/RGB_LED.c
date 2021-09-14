@@ -55,9 +55,9 @@ void RGB_LED_reset()
     RGB_LED_drive(DEFAULT_COLOR);
 }
 
-void RGB_LED_drive(uint32_t redLedPwm, uint32_t greenLedPwm, uint32_t blueLedPwm)
+void RGB_LED_drive(Color color)
 {
-    pwmSetDuty(RGB_LED_PORT, RED_LED, redLedPwm + 1);
-    pwmSetDuty(RGB_LED_PORT, GREEN_LED, greenLedPwm + 1);
-    pwmSetDuty(RGB_LED_PORT, BLUE_LED, blueLedPwm + 1);
+    pwmSetDuty(RGB_LED_PORT, RED_LED, color.red + 1);
+    pwmSetDuty(RGB_LED_PORT, GREEN_LED, color.green + 1);
+    pwmSetDuty(RGB_LED_PORT, BLUE_LED, color.blue + 1);
 }
