@@ -44,9 +44,9 @@ static void vTestTask(void* arg)
     uint8 faults = VCUData_readFaults(ALL_FAULTS_MASK);
 
     if (faults) {
-        RGB_LED_drive(RGB_YELLOW);
+        RGB_drive(RGB_YELLOW);
     } else {
-        RGB_LED_drive(RGB_OFF);
+        RGB_drive(RGB_OFF);
     }
 }
 

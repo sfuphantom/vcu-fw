@@ -61,7 +61,7 @@ void phantomDriversInit()
     /* Phantom Library Initialization */
     VCUData_init();             // Initialize VCU Data Structure
     // RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
-    RGB_LED_Init();             // Initialize RGB LEDs to start off
+    RGB_init();             // Initialize RGB LEDs to start off
     // MCP48FV_Init();             // Initialize DAC Library
 #ifdef LV_MONITOR
     lv_monitorInit();           // Initialize LV Monitor Library
