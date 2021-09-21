@@ -19,6 +19,8 @@
 #include "stdlib.h"          // stdlib.h has ltoa() which we use for our simple SCI printing routine.
 #include <stdio.h>
 #include "reg_het.h"
+#include "mibspi.h"
+#include "sys_core.h"
 
 
 #include "MCP48FV_DAC_SPI.h" // DAC library written by Ataur Rehman
@@ -27,6 +29,7 @@
 #include "RTD_Buzzer.h"      // Ready to Drive buzzer wrapper written by Gabriel Soares
 #include "RGB_LED.h"         // RGB LED wrapper
 #include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
+#include "hv_driver.h"       // HV_VS library written by Yash Vijay
 
 #include "phantom_freertos.h" // contains functions for freertos startup, timer setup, and task creation
 #include "vcu_data.h"         // holds VCU data structure
@@ -74,6 +77,9 @@ void main(void)
     adcInit();                  // Initialize ADC halcogen driver
     hetInit();                  // Initialize HET (PWM) halcogen driver
     eepromBlocking_Init();      // Initialization EEPROM Memory - added by jjkhan
+    mibspiInit();
+    sciInit();
+    unitTesting();
 
 #ifdef PMU_CYCLE
         // Set Port GIO_PORTA_5 as output pin - using it to confirm PMU timer value is in range of I/O toggle
@@ -95,7 +101,9 @@ void main(void)
     vTaskStartScheduler();      // start freeRTOS task scheduler
    
     // infinite loop to prevent code from ending. The scheduler will now pre-emptively switch between tasks.
+
     while(1);
+
 /* USER CODE END */
 }
 /* USER CODE BEGIN (4) */

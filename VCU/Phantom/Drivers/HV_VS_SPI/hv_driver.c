@@ -17,6 +17,7 @@
 #include "sci.h"
 #include "string.h"
 #include "stdio.h"
+#include "mibspi.h"
 
 /*============================================================================*/
 /* Function Prototypes           */
@@ -26,14 +27,47 @@ static void decToBinary(int n);;
 static int binTwosComplementToSignedDecimal(uint8 binary[],uint8 significantBits);
 static float Interpolate_input (int adc_input);
 void UARTprintf(const char *_format, ...);
+void adcVoltageRamp();
+void adcSlaveDataSetup();
+void masterDataTranser();
 
 /*============================================================================*/
 /* Defintions           */
 /*============================================================================*/
+#define TransferGroup0 0
+#define TransferGroup1 1
 # define MAX_DATA_BITS  (12u)
 # define SLOPE          (0.01173261f)
 # define Y_INTERCEPT    (144.285f)
 # define START_INDEX    (1u)
+
+/* Transfer Group 0 */
+/* Initial data to be sent the very first time on power up to the ADC
+ * NOTE: May or may not need to be changed
+ */
+uint16 TX_Data_Master[1] = {0xAAAA};
+uint16 TX_Data_Slave[1]  = {0};
+uint16 RX_Data_Master[1] = {0};
+uint16 RX_Data_Slave[1]  = {0};
+
+/* Transfer Group 1 */
+/* Continuous data to send to the ADC
+ *
+ */
+uint16 TX_Yash_Master[1]   = {0xF77F}; // how many bits do we need to send? 14 bits only are sent out
+                                       // 1111 0111 0111 1111
+                                       // 0011 1101 1101 1111     (chopped off last 2 bits)
+uint16 TX_ADS7044_Slave[1] = {0};
+uint16 RX_Yash_Master[1]   = {0};
+uint16 RX_ADS7044_Slave[1] = {0};
+
+int sign = 1;
+
+bool TX_AVAILABLE = false;  // flags to only transfer mibspi data from slave when current transfer has finished
+bool tx_master = false;     // flags to only transfer mibspi data from master when current transfer has finished
+
+int i = 0;
+float adc_output = 0.0;
 
 /*============================================================================*/
 /* Global variables          */
@@ -43,6 +77,115 @@ static uint8 binaryNum[12];
 /*============================================================================*/
 /* Function Declarations        */
 /*============================================================================*/
+
+void masterDataTranser(){
+    //    /* Master Data */
+        /* Here you are sending data from master to the slave, TX_Data_Master is the array being sent, what should be in there? */
+        /* How many bits should you be sending? */
+        /* Why are we sending this first data ONCE in transfergroup0 and then switching to sending different transfergroup1 data in an infinite while loop? */
+        mibspiSetData(mibspiREG1, TransferGroup0, TX_Data_Master);
+        mibspiEnableGroupNotification(mibspiREG1, TransferGroup0, 0);
+        mibspiTransfer(mibspiREG1, TransferGroup0);
+
+    if (TX_AVAILABLE == true) /* Needed to enable slave data send */
+            {
+                TX_AVAILABLE = false;
+                adcVoltageRamp(); /* Slave function: used for ramping up and down the measured voltage simulated by the ADC */
+
+                /* Master Data Sending */
+                if (tx_master == true)
+                {
+                    /* Here you are sending data from master to the slave, TX_Yash_Master is the array being sent, what should be in there? */
+                    /* How many bits should you be sending? */
+                    mibspiSetData(mibspiREG1, TransferGroup1, TX_Yash_Master);
+                    mibspiEnableGroupNotification(mibspiREG1, TransferGroup1, 0);
+                    mibspiTransfer(mibspiREG1, TransferGroup1);
+
+                    tx_master = false;
+                }
+
+                adc_output =  getADCdata(RX_Yash_Master[0]);
+
+                // what do i do with RX_Yash_Master array now?
+
+                // 14 bit array, 12 of those bits are actual data..
+
+                // get those 12 bits from there..
+
+                // convert that value into HV Bus voltage
+
+                // print out for now: SCI scilinSend()
+            }
+}
+
+void mibspiGroupNotification(mibspiBASE_t *mibspi, uint32 group)
+    {
+
+        if (mibspi == mibspiREG1 && group == TransferGroup0)
+         {
+             mibspiDisableGroupNotification(mibspiREG1, TransferGroup0);
+             mibspiGetData(mibspi, group, RX_Data_Master);
+             tx_master = true;
+         }
+
+        if (mibspi == mibspiREG1 && group == TransferGroup1)
+        {
+            mibspiDisableGroupNotification(mibspiREG1, TransferGroup1);
+            mibspiGetData(mibspi, group, RX_Yash_Master);
+            tx_master = true;
+        }
+
+        /**********************************
+         *  TESTING FOR SLAVE FUNCTIONALITY
+         ***********************************/
+            if (mibspi == mibspiREG3 && group == TransferGroup1)
+            {
+                mibspiDisableGroupNotification(mibspiREG3, TransferGroup1);
+                mibspiGetData(mibspi, group, RX_ADS7044_Slave);
+                TX_AVAILABLE = true;
+            }
+
+            if (mibspi == mibspiREG3 && group == TransferGroup0)
+            {
+                mibspiDisableGroupNotification(mibspiREG3, TransferGroup0);
+                TX_AVAILABLE = true;
+            }
+    }
+
+    /*****************************************************************************
+     *                 ADC SLAVE SETUP FUNCTIONS - DO NOT MODIFY
+     *****************************************************************************/
+    /* used for ramping up and down the measured voltage simulated by the ADC */
+void adcVoltageRamp()
+    {
+        TX_ADS7044_Slave[0] = 0x077F;
+
+        mibspiSetData(mibspiREG3, TransferGroup1, TX_ADS7044_Slave);
+        mibspiEnableGroupNotification(mibspiREG3, TransferGroup1, 0);
+        mibspiTransfer(mibspiREG3, TransferGroup1);
+
+
+    //
+    //    if (TX_ADS7044_Slave[0] >= 4000)
+    //    {
+    //        sign = -1;
+    //    }
+    //    else if (TX_ADS7044_Slave[0] <= 100)
+    //    {
+    //        sign = 1;
+    //    }
+    //    else
+    //    {
+    //        /* sign remains same */
+    //    }
+    }
+
+void adcSlaveDataSetup()
+    {
+        mibspiSetData(mibspiREG3, TransferGroup0, TX_Data_Slave);
+        mibspiEnableGroupNotification(mibspiREG3, TransferGroup0, 0);
+        mibspiTransfer(mibspiREG3, TransferGroup0);
+    }
 
 // Function to extract k bits from p position
 // and returns the extracted value as integer */
