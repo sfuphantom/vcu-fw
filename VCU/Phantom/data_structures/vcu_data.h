@@ -22,6 +22,21 @@ typedef enum {
     TSAL_FAULT_MASK = 8U,      // if 0, then TSAL is on and AIRs are closed, if 1 then TSAL is off and AIRs should be open
     BSE_FAULT_MASK = 16U,     // if 0, then BSE is healthy, if 1 then BSE fault
     APPS_FAULT_MASK = 32U,     // if 0, then APPS is healthy, if 1 then APPS fault
+    // VCUDataPtr->DigitalVal.TSAL_FAULT = 1;
+    // VCUDataPtr->DigitalVal.BSE_FAULT = 0;
+    // VCUDataPtr->DigitalVal.APPS_FAULT = 0;
+
+    // // ++ Added by Jay Pacamarra
+    // VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
+    // VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
+    // VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0;
+    // VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
+    // VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
+    // // ++ Added by Jay Pacamarra
+
+    // // ++ Added by jjkhan
+    // VCUDataPtr->vcuState = TRACTIVE_OFF;
+    // // -- Added by jjkhan
     ALL_FAULTS_MASK = (~0U)   // All 1s to let all faults through the mask
 } FaultMask;
 

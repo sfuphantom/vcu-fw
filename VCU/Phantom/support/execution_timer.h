@@ -12,7 +12,7 @@
 #include "../Drivers/EEPROM/eeprom_driver.h"
 
 
-#define PMU_CYCLE
+//#define PMU_CYCLE
 
 
 extern void swiSwitchToMode(uint32 mode);

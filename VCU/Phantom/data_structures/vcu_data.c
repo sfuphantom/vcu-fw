@@ -24,10 +24,7 @@ typedef struct data
 
          *  Where did this 72 bytes number come from? Also, what is it offsetting from?
 
-    Note: Ok, this method needs to change. Reading from a raw memory position, while it may work
-        if and only if the position is correct, is a terribly dangerous and unstable way to read
-        the data you need. This method also completely restricts where and what the data structure
-        can be and can hold without the headache of actually having to find where in physical memory it is.
+    Note: Now that the data structure has changed, how would the FEE bank know where vcu state is?
 
 } data;
 */
