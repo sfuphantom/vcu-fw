@@ -10,7 +10,7 @@
 #define VCUDATA_PRIVLEDGED_ACCESS
 #include "vcu_data.h"
 
-#define MUTEX_POLLING_TIME_MS   10
+#define MUTEX_POLLING_TIME_MS   10  // this can be adjusted if too slow or fast
 static SemaphoreHandle_t VCU_Key = NULL;
 
 static VCUData data;
@@ -39,20 +39,21 @@ void VCUData_init(void)
 
     data = (VCUData) {
         // Analog Readings
-        (analogData) {0.0, 0.0},    // currentHV_A
-        (analogData) {0.0, 0.0},    // voltageHV_V
-        (analogData) {0.0, 0.0},    // currentLV_A
-        (analogData) {0.0, 0.0},    // voltageLV_V
-        (analogData) {0.0, 0.0},    // BSE_percentage
-        (analogData) {0.0, 0.0},    // APPS1_percentage
-        (analogData) {0.0, 0.0},    // APPS2_percentage
+        (analogData) {0.0F, 0.0F},    // currentHV_A
+        (analogData) {0.0F, 0.0F},    // voltageHV_V
+        (analogData) {0.0F, 0.0F},    // currentLV_A
+        (analogData) {0.0F, 0.0F},    // voltageLV_V
+        (analogData) {0.0F, 0.0F},    // BSE_percentage
+        (analogData) {0.0F, 0.0F},    // APPS1_percentage
+        (analogData) {0.0F, 0.0F},    // APPS2_percentage
         // Analog Output
         (analogData) {0.0, 0.0},    // throttle_percentage
         // Digital Readings
-        1U,                         // RTD_signal
+        true,                         // RTD_signal
+        false,                         // throttle_available
         0U,                         // fault_flags
         // Digital Output
-        0U,                         // brake_light_signal
+        false,                         // brake_light_signal
         // Machine State
         TRACTIVE_OFF                // VCU_state
     };
@@ -88,11 +89,11 @@ bool VCUData_turnOffFaults(uint32 mask)
     }
 }
 
-bool VCUData_setFaults(uint32 newFaultBitSet)
+bool VCUData_setFaults(uint32 mask)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        data.fault_flags = newFaultBitSet;
+        data.fault_flags = mask;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -101,12 +102,12 @@ bool VCUData_setFaults(uint32 newFaultBitSet)
 }
 
 /* SIGNAL FUNCTIONS */
-uint8 VCUData_getRTDSignal(void)
+bool VCUData_getRTDSignal(void)
 {
     return data.RTD_signal;
 }
 
-bool VCUData_setRTDSignal(uint8 newSignal)
+bool VCUData_setRTDSignal(bool newSignal)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
@@ -118,12 +119,12 @@ bool VCUData_setRTDSignal(uint8 newSignal)
     }
 }
 
-uint8 VCUData_getBrakeLightSignal(void)
+bool VCUData_getBrakeLightSignal(void)
 {
     return data.brake_light_signal;
 }
 
-bool VCUData_setBrakeLightSignal(uint8 newSignal)
+bool VCUData_setBrakeLightSignal(bool newSignal)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
@@ -135,6 +136,22 @@ bool VCUData_setBrakeLightSignal(uint8 newSignal)
     }
 }
 
+bool VCUData_getThrottleAvailableSignal(void)
+{
+    return data.throttle_available;
+}
+
+bool VCUData_setThrottleAvailableSignal(bool newSignal)
+{
+    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.throttle_available = newSignal;
+
+        return xSemaphoreGive(VCU_Key);
+    } else {
+        return false;
+    }
+}
 
 /* STATE FUNCTIONS */
 State VCUData_getState(void)

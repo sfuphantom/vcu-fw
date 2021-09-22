@@ -16,28 +16,19 @@ typedef struct {
 } analogData;
 
 typedef enum {
-    BMS_FAULT_MASK = 1U,      // if 0, then BMS is healthy, if 1 then BMS fault
-    IMD_FAULT_MASK = 2U,      // if 0, then IMD is healthy, if 1 then IMD fault
-    BSPD_FAULT_MASK = 4U,      // if 0, then BSPD is healthy, if 1 then BSPD fault
-    TSAL_FAULT_MASK = 8U,      // if 0, then TSAL is on and AIRs are closed, if 1 then TSAL is off and AIRs should be open
-    BSE_FAULT_MASK = 16U,     // if 0, then BSE is healthy, if 1 then BSE fault
-    APPS_FAULT_MASK = 32U,     // if 0, then APPS is healthy, if 1 then APPS fault
-    // VCUDataPtr->DigitalVal.TSAL_FAULT = 1;
-    // VCUDataPtr->DigitalVal.BSE_FAULT = 0;
-    // VCUDataPtr->DigitalVal.APPS_FAULT = 0;
+    BMS_FAULT = (1U << 0),                      // if 0, then BMS is healthy, if 1 then BMS fault
+    IMD_FAULT = (1U << 1),                      // if 0, then IMD is healthy, if 1 then IMD fault
+    BSPD_FAULT = (1U << 2),                     // if 0, then BSPD is healthy, if 1 then BSPD fault
+    TSAL_FAULT = (1U << 3),                     // if 0, then TSAL is on and AIRs are closed, if 1 then TSAL is off and AIRs should be open
+    BSE_FAULT = (1U << 4),                      // if 0, then BSE is healthy, if 1 then BSE fault
 
-    // // ++ Added by Jay Pacamarra
-    // VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
-    // VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
-    // VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0;
-    // VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
-    // VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
-    // // ++ Added by Jay Pacamarra
+    BSE_APPS_SIMULTANEOUS_FAULT = (1U << 5),    // MINOR
+    BSE_RANGE_FAULT = (1U << 6),                // SEVERE
+    APPS_10DIFF_FAULT = (1U << 7),              // SEVERE
+    APPS1_RANGE_FAULT = (1U << 8),              // SEVERE
+    APPS2_RANGE_FAULT = (1U << 9),              // SEVERE
 
-    // // ++ Added by jjkhan
-    // VCUDataPtr->vcuState = TRACTIVE_OFF;
-    // // -- Added by jjkhan
-    ALL_FAULTS_MASK = (~0U)   // All 1s to let all faults through the mask
+    ALL_FAULTS = (~0U)   // All 1s to let all faults through the mask
 } FaultMask;
 
 typedef enum {
@@ -54,15 +45,17 @@ void VCUData_init(void);
 uint32 VCUData_readFaults(uint32 mask);
 bool VCUData_turnOnFaults(uint32 mask);
 bool VCUData_turnOffFaults(uint32 mask);
-bool VCUData_setFaults(uint32 newFaultBitSet);
+bool VCUData_setFaults(uint32 mask);
 
 
-uint8 VCUData_getRTDSignal(void);
-uint8 VCUData_getBrakeLightSignal(void);
+bool VCUData_getRTDSignal(void);
+bool VCUData_getBrakeLightSignal(void);
+bool VCUData_getThrottleAvailableSignal(void);
 State VCUData_getState(void);
 
-bool VCUData_setRTDSignal(uint8 newSignal);
-bool VCUData_setBrakeLightSignal(uint8 newSignal);
+bool VCUData_setRTDSignal(bool newSignal);
+bool VCUData_setBrakeLightSignal(bool newSignal);
+bool VCUData_setThrottleAvailableSignal(bool newSignal);
 bool VCUData_setState(State newState);
 
 
@@ -100,10 +93,11 @@ typedef struct {
     
     analogData throttle_percentage;
 
-    uint8 RTD_signal;
+    bool RTD_signal;
+    bool throttle_available;
     uint32 fault_flags;
 
-    uint8 brake_light_signal;
+    bool brake_light_signal;
 
     State VCU_state;
 } VCUData;
