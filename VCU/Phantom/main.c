@@ -72,7 +72,7 @@ void phantomDriversInit()
 void phantomTasksInit()
 {
     // initalizations of tasks
-    testTaskInit();
+    Task_testInit();
 }
 /* USER CODE END */
 
