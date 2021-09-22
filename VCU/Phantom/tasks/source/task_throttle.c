@@ -27,6 +27,12 @@ static TimerHandle_t APPS2RangeFaultTimer;
 static TimerHandle_t BSERangeFaultTimer;
 static TimerHandle_t FPDiffFaultTimer;
 
+typedef struct {
+    uint32_t BSE_sensor_sum;
+    uint32_t FP_sensor_2_sum;
+    uint32_t FP_sensor_1_sum;
+} PedalReadings;
+
 /* For calculating throttle padding */
 /* Padding will eliminate unintended range faults at 0% or 100% pedal presses */
 #define PADDING_PERCENT         (0.08f) // Must be between 0.0 and 1.0
@@ -52,19 +58,6 @@ static bool APPS1_RANGE_FAULT_TIMER_EXPIRED = false;   //added by jaypacamarra
 static bool APPS2_RANGE_FAULT_TIMER_EXPIRED = false;   //added by jaypacamarra
 static bool BSE_RANGE_FAULT_TIMER_EXPIRED = false;     //added by jaypacamarra
 static bool FP_DIFF_FAULT_TIMER_EXPIRED = false;       //added by jaypacamarra
-
-adcData_t FP_data[3];
-unsigned int volatile BSE_sensor_sum;   // = 0;
-unsigned int volatile FP_sensor_1_sum;  // = 0;
-unsigned int volatile FP_sensor_2_sum;  // = 0;
-
-float volatile Percent_APPS1_Pressed;
-float volatile Percent_APPS2_Pressed;
-float volatile Percent_BSE_Pressed;
-
-float BSE_previous_filtered_sensor_values = 0;   // previous BSE filtered output - jaypacamarra
-float APPS1_previous_filtered_sensor_values = 0; // previous APPS1 filtered output - jaypacamarra
-float APPS2_previous_filtered_sensor_values = 0; // previous BSE filtered output - jaypacamarra
 
 static void vThrottleTask(void* arg);
 static void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);
@@ -93,59 +86,67 @@ static void vThrottleTask(void* arg)
     // arg will always be NULL, so ignore it.
 
     // Get pedal readings
-    getPedalReadings();
+    volatile PedalReadings pedalReadings = getPedalReadings();
 
+    float apps1PedalPercent = calculatePedalPercent(pedalReadings.FP_sensor_1_sum, PADDED_APPS1_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
+    float apps2PedalPercent = calculatePedalPercent(pedalReadings.FP_sensor_2_sum, PADDED_APPS2_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
+    float bsePedalPercent = calculatePedalPercent(pedalReadings.BSE_sensor_sum, PADDED_BSE_MIN_VALUE, PADDED_BSE_MAX_VALUE);
+    
     // Signal conditioning - jaypacamarra
-    applyLowPassFilter();
-
-
+    applyLowPassFilter(&pedalReadings);
 
     // Update pedal inputs in vcu data structure
-    analogData APPS1_pedal_percent = (analogData) {0.0F, get_APPS1_Pedal_Percent()};
-    analogData APPS2_pedal_percent = (analogData) {0.0F, get_APPS2_Pedal_Percent()};
-    analogData BSE_pedal_percent = (analogData) {0.0F, get_BSE_Pedal_Percent()};
+    float APPS1_pedal_percent = get_APPS1_Pedal_Percent();
+    float APPS2_pedal_percent = get_APPS2_Pedal_Percent();
+    float BSE_pedal_percent = get_BSE_Pedal_Percent();
 
     VCUData_setAPPS1Percentage(APPS1_pedal_percent);
     VCUData_setAPPS2Percentage(APPS2_pedal_percent);
     VCUData_setBSEPercentage(BSE_pedal_percent);
 
-    uint32_t currentFaults = 0U;
     // check for short to GND/VCC on APPS sensor 1
-    currentFaults |= (check_APPS1_Range_Fault() && 1) * APPS1_RANGE_FAULT;
+    bool apps1Fault = check_Pedal_Range_Fault(pedalReadings.FP_sensor_1_sum, APPS1_MIN_VALUE, APPS1_MAX_VALUE, APPS1RangeFaultTimer, &APPS1_RANGE_FAULT_TIMER_EXPIRED);
     // check for short to GND/VCC on APPS sensor 2
-    currentFaults |= (check_APPS2_Range_Fault() && 1) * APPS2_RANGE_FAULT;
+    bool apps2Fault = check_Pedal_Range_Fault(pedalReadings.FP_sensor_2_sum, APPS2_MIN_VALUE, APPS2_MAX_VALUE, APPS2RangeFaultTimer, &APPS2_RANGE_FAULT_TIMER_EXPIRED);
     // check for short to GND/VCC on BSE
-    currentFaults |= (check_BSE_Range_Fault() && 1) * BSE_RANGE_FAULT;
+    bool bseFault   = check_Pedal_Range_Fault(pedalReadings.BSE_sensor_sum, BSE_MIN_VALUE, BSE_MAX_VALUE, BSERangeFaultTimer, &BSE_RANGE_FAULT_TIMER_EXPIRED);
     // Check if APPS1 and APPS2 are within 10% of each other
-    currentFaults |= (check_10PercentAPPS_Fault() && 1) * APPS_10DIFF_FAULT;
+    bool diffFault  = check_10PercentAPPS_Fault(APPS1_pedal_percent, APPS2_pedal_percent);
     // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25%
-    currentFaults |= (check_Brake_Plausibility_Fault() && 1) * BSE_APPS_SIMULTANEOUS_FAULT;
+    bool simulFault = check_Brake_Plausibility_Fault(pedalReadings.BSE_sensor_sum, APPS1_pedal_percent, APPS2_pedal_percent);
 
-    // Fill the unrelevant bits with existing flags and write to vcu data
-    currentFaults |= VCUData_readFaults(~THROTTLE_FAULTS_MASK);
+    // Fill the unrelevant bits with flags from vcu data
+    uint32_t currentFaults = VCUData_readFaults(~THROTTLE_FAULTS_MASK);
+
+    currentFaults |= (apps1Fault && 1) * APPS1_RANGE_FAULT;
+    currentFaults |= (apps2Fault && 1) * APPS2_RANGE_FAULT;
+    currentFaults |= (bseFault && 1) * BSE_RANGE_FAULT;
+    currentFaults |= (diffFault && 1) * APPS_10DIFF_FAULT;
+    currentFaults |= (simulFault && 1) * BSE_APPS_SIMULTANEOUS_FAULT;
+
     VCUData_setFaults(currentFaults);
 
     /*********************************************************************************
       brake light
      *********************************************************************************/
-    uint32_t BSESensorSum = Throttle_getBSESensorSum();
+    uint32_t BSESensorSum = pedalReadings.BSE_sensor_sum;
     if (!previous_brake_light_state && BSESensorSum > (BRAKING_THRESHOLD + HYSTERESIS))
     {
         // turn on brake lights
         gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, BRAKE_LIGHT_ON);
         // update brake light enable in the vcu data structure
-        VCUData_setBrakeLightSignal(1);
+        VCUData_setBrakeLightSignal(true);
         // update brake light state
-        previous_brake_light_state = 1;
+        previous_brake_light_state = true;
     }
     else if (previous_brake_light_state && BSESensorSum < (BRAKING_THRESHOLD - HYSTERESIS))
     {
         // turn off brake lights
         gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, BRAKE_LIGHT_OFF);
         // update brake light enable in the vcu data structure
-        VCUData_setBrakeLightSignal(0);
+        VCUData_setBrakeLightSignal(false);
         // update brake light state
-        previous_brake_light_state = 0;
+        previous_brake_light_state = false;
     }
 
     // debugging - jaypacamarra
@@ -162,8 +163,7 @@ static void vThrottleTask(void* arg)
         // update throttle percentage in vcu data structure
         float apps_percent_avg = (get_APPS1_Pedal_Percent() + get_APPS2_Pedal_Percent()) / 2;
 
-        analogData throttle_percent = (analogData) {0.0F, apps_percent_avg};
-        VCUData_setThrottlePercentage(throttle_percent);
+        VCUData_setThrottlePercentage(apps_percent_avg);
         // send DAC to inverter
         int16_t throttle = 390 * apps_percent_avg + 60;        // equation mapping the averaged signals to 0->500 for the DAC driver
         // ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
@@ -211,16 +211,20 @@ static void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers)
 *               - FP_sensor_1_sum
 *               - FP_sensor_2_sum
 */
-void getPedalReadings() {
+PedalReadings getPedalReadings() {
+    adcData_t FP_data[3];
+
     adcStartConversion(adcREG1, adcGROUP1);
     while (!adcIsConversionComplete(adcREG1, adcGROUP1));
     adcGetData(adcREG1, adcGROUP1, FP_data);
-    BSE_sensor_sum = (unsigned int)FP_data[0].value;   // BSE
-    FP_sensor_2_sum = (unsigned int)FP_data[1].value;  // APPS2
-    FP_sensor_1_sum = (unsigned int)FP_data[2].value;  // APPS1
 
-    // Update pedal percentages
-    calculatePedalPercents();
+    PedalReadings readings = (PedalReadings) {
+        (uint32_t) FP_data[0].value,
+        (uint32_t) FP_data[1].value,
+        (uint32_t) FP_data[2].value,
+    };
+
+    return readings;
 }
 
 /** @fn void calculatePedalPercents(void)
@@ -229,30 +233,13 @@ void getPedalReadings() {
 *   @Return This function does not return anything, it only
 *           updates the VCU data structure
 */
-void calculatePedalPercents() {
-    // APPS1
-    if(FP_sensor_1_sum < PADDED_APPS1_MIN_VALUE)
-        Percent_APPS1_Pressed = 0;
-    else if(FP_sensor_1_sum > PADDED_APPS1_MAX_VALUE)
-        Percent_APPS1_Pressed = 1.0;
+float calculatePedalPercent(uint32_t pedalValue, float minValue, float maxValue) {
+    if (pedalValue < minValue)
+        return 0.0F;
+    else if (pedalValue > maxValue)
+        return 1.0F;
     else
-        Percent_APPS1_Pressed = (FP_sensor_1_sum - PADDED_APPS1_MIN_VALUE) / (float)(PADDED_APPS1_MAX_VALUE - PADDED_APPS1_MIN_VALUE);
-
-    // APPS2
-    if(FP_sensor_2_sum < PADDED_APPS2_MIN_VALUE)
-        Percent_APPS2_Pressed = 0;
-    else if(FP_sensor_2_sum > PADDED_APPS2_MAX_VALUE)
-        Percent_APPS2_Pressed = 1.0;
-    else
-        Percent_APPS2_Pressed = (FP_sensor_2_sum - PADDED_APPS2_MIN_VALUE) / (float)(PADDED_APPS2_MAX_VALUE - PADDED_APPS2_MIN_VALUE);
-
-    // BSE
-    if(BSE_sensor_sum < PADDED_BSE_MIN_VALUE)
-        Percent_BSE_Pressed = 0;
-    else if(BSE_sensor_sum > PADDED_BSE_MAX_VALUE)
-        Percent_BSE_Pressed = 1.0;
-    else
-        Percent_BSE_Pressed = (BSE_sensor_sum - PADDED_BSE_MIN_VALUE) / (float)(PADDED_BSE_MAX_VALUE - PADDED_BSE_MIN_VALUE);
+        return (pedalValue - minValue) / (maxValue - minValue);
 }
 
 /** @fn void applyLowPassFilter(void)
@@ -266,107 +253,50 @@ void calculatePedalPercents() {
 *               - FP_sensor_1_sum
 *               - FP_sensor_2_sum
 */
-void applyLowPassFilter() {
+void applyLowPassFilter(PedalReadings* pedalValues) {
+    static float BSE_previous_filtered_sensor_values = 0;   // previous BSE filtered output - jaypacamarra
+    static float APPS1_previous_filtered_sensor_values = 0; // previous APPS1 filtered output - jaypacamarra
+    static float APPS2_previous_filtered_sensor_values = 0; // previous BSE filtered output - jaypacamarra
+
     // Filter the raw BSE,APPS1, and APPS2 sensor values
-    BSE_sensor_sum = BSE_previous_filtered_sensor_values + ALPHA * (BSE_sensor_sum - BSE_previous_filtered_sensor_values);
-    FP_sensor_1_sum = APPS1_previous_filtered_sensor_values + ALPHA * (FP_sensor_1_sum - APPS1_previous_filtered_sensor_values);
-    FP_sensor_2_sum = APPS2_previous_filtered_sensor_values + ALPHA * (FP_sensor_2_sum - APPS2_previous_filtered_sensor_values);
+    pedalValues->BSE_sensor_sum = BSE_previous_filtered_sensor_values + ALPHA * (pedalValues->BSE_sensor_sum - BSE_previous_filtered_sensor_values);
+    pedalValues->FP_sensor_1_sum = APPS1_previous_filtered_sensor_values + ALPHA * (pedalValues->FP_sensor_1_sum - APPS1_previous_filtered_sensor_values);
+    pedalValues->FP_sensor_2_sum = APPS2_previous_filtered_sensor_values + ALPHA * (pedalValues->FP_sensor_2_sum - APPS2_previous_filtered_sensor_values);
 
     // Set previous filtered values to current filtered values
-    BSE_previous_filtered_sensor_values = BSE_sensor_sum;
-    APPS1_previous_filtered_sensor_values = FP_sensor_1_sum;
-    APPS2_previous_filtered_sensor_values = FP_sensor_2_sum;
+    BSE_previous_filtered_sensor_values = pedalValues->BSE_sensor_sum;
+    APPS1_previous_filtered_sensor_values = pedalValues->FP_sensor_1_sum;
+    APPS2_previous_filtered_sensor_values = pedalValues->FP_sensor_2_sum;
 }
 
-/** @fn bool check_BSE_Range_Fault(void)
-*   @brief Checks if the BSE is in the right voltage range
+/** @fn bool check_Pedal_Range_Fault(void)
+*   @brief Checks if the Pedal is in the right voltage range
 *   @Return This function returns:
 *           True -> Fault
 *           False -> No Fault
 */
-bool check_BSE_Range_Fault() {
-    bool is_there_BSE_range_fault = false;
+bool check_Pedal_Range_Fault(uint32_t pedalValue, uint32_t minValue, uint32_t maxValue, TimerHandle_t faultTimer, bool* timerFlag) {
+    bool is_there_pedal_range_fault = false;
 
-    if (BSE_sensor_sum < BSE_MIN_VALUE || BSE_sensor_sum > BSE_MAX_VALUE) // BSE assumed shorted to GND or shorted to VCC
+    if (pedalValue < minValue || pedalValue > maxValue) // BSE assumed shorted to GND or shorted to VCC
     {
-        if(!Phantom_isTimerActive(BSERangeFaultTimer))
+        if(!Phantom_isTimerActive(faultTimer))
         {
-            if(!Phantom_startTimer(BSERangeFaultTimer, 50)) // start software timer for bse range fault
+            if(!Phantom_startTimer(faultTimer, 50)) // start software timer for bse range fault
             {
                 for(;;); // TODO: when watchdog is worked on, remember to also change this
             }
         }
-        is_there_BSE_range_fault = BSE_RANGE_FAULT_TIMER_EXPIRED;
+        is_there_pedal_range_fault = *timerFlag;
     }
     else
     {
         // Stop fault timer
-        Phantom_stopTimer(BSERangeFaultTimer, MAX_WAIT_TIME_MS);
-        BSE_RANGE_FAULT_TIMER_EXPIRED = false;
+        Phantom_stopTimer(faultTimer, MAX_WAIT_TIME_MS);
+        *timerFlag = false;
     }
 
-    return is_there_BSE_range_fault;
-}
-
-/** @fn bool check_APPS1_Range_Fault(void)
-*   @brief Checks if the APPS1 sensor is in the right voltage range
-*   @Return This function returns:
-*           True -> Fault
-*           False -> No Fault
-*/
-bool check_APPS1_Range_Fault() {
-    bool is_there_APPS1_range_fault = false;
-
-    if (FP_sensor_1_sum < APPS1_MIN_VALUE || FP_sensor_1_sum > APPS1_MAX_VALUE) // APPS1 assumed shorted to GND or shorted to VCC
-    {
-
-        if(!Phantom_isTimerActive(APPS1RangeFaultTimer))
-        {
-            if(!Phantom_startTimer(APPS1RangeFaultTimer, 50)) // start software timer for apps1 range fault
-            {
-                for(;;); // TODO: when watchdog is worked on, remember to also change this
-            }
-        }
-        is_there_APPS1_range_fault = APPS1_RANGE_FAULT_TIMER_EXPIRED;
-    }
-    else
-    {
-        // Stop fault timer
-        Phantom_stopTimer(APPS1RangeFaultTimer, MAX_WAIT_TIME_MS);
-        APPS1_RANGE_FAULT_TIMER_EXPIRED = false;
-    }
-
-    return is_there_APPS1_range_fault;
-}
-
-/** @fn bool check_APPS2_Range_Fault(void)
-*   @brief Checks if the APPS2 sensor is in the right voltage range
-*   @Return This function returns:
-*           True -> Fault
-*           False -> No Fault
-*/
-bool check_APPS2_Range_Fault() {
-    bool is_there_APPS2_range_fault = false;
-
-    if (FP_sensor_2_sum < APPS2_MIN_VALUE || FP_sensor_2_sum > APPS2_MAX_VALUE) // APPS2 assumed shorted to GND or shorted to VCC
-    {
-        if(!Phantom_isTimerActive(APPS2RangeFaultTimer))
-        {
-            if(!Phantom_startTimer(APPS2RangeFaultTimer, 50)) // start software timer for apps2 range fault
-            {
-                for(;;); // TODO: when watchdog is worked on, remember to also change this
-            }
-        }
-        is_there_APPS2_range_fault = APPS2_RANGE_FAULT_TIMER_EXPIRED;
-    }
-    else
-    {
-        // Stop fault timer
-        Phantom_stopTimer(APPS2RangeFaultTimer, MAX_WAIT_TIME_MS);
-        APPS2_RANGE_FAULT_TIMER_EXPIRED = false;
-    }
-
-    return is_there_APPS2_range_fault;
+    return is_there_pedal_range_fault;
 }
 
 /** @fn bool check10PercentAPPS(void)
@@ -376,7 +306,7 @@ bool check_APPS2_Range_Fault() {
 *           True -> Fault
 *           False -> No Fault
 */
-bool check_10PercentAPPS_Fault() {
+bool check_10PercentAPPS_Fault(float Percent_APPS1_Pressed, float Percent_APPS2_Pressed) {
     bool is_there_10DIFF_fault = false;
     float FP_sensor_diff = fabsf(Percent_APPS2_Pressed - Percent_APPS1_Pressed); // Calculate absolute difference between APPS1 and APPS2 readings
 
@@ -408,7 +338,7 @@ bool check_10PercentAPPS_Fault() {
 *           True -> Fault
 *           False -> No Fault
 */
-bool check_Brake_Plausibility_Fault() {
+bool check_Brake_Plausibility_Fault(uint32_t BSE_sensor_sum, float Percent_APPS1_Pressed, float Percent_APPS2_Pressed) {
     static bool is_there_brake_plausibility_fault = false;
 
     if (BSE_sensor_sum >= BRAKING_THRESHOLD + HYSTERESIS &&
@@ -416,7 +346,6 @@ bool check_Brake_Plausibility_Fault() {
     {
         // Set fault
         is_there_brake_plausibility_fault = true;
-
     }
     else if (Percent_APPS1_Pressed < 0.05 && Percent_APPS2_Pressed < 0.05)
     {
