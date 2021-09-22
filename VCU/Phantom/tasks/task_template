@@ -2,7 +2,7 @@
  *  Task Template made by Joshua Guo
  * 
  *  Created on:
- *      Author:
+ *      Author: Joshua Guo, 
  */
 #include "phantom_task.h"
 // #include "phantom_timer.h"   // if you need to use timers
