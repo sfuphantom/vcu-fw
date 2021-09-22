@@ -1,17 +1,17 @@
 /*
- * priorities.h
+ * task_config.h
  *
  *  Created on: Mar 16, 2020
  *      Author: gabriel, junaid, josh
  */
 
-#ifndef TASKS_PRIORITIES_H_
-#define TASKS_PRIORITIES_H_
+#ifndef TASKS_CONFIG_H_
+#define TASKS_CONFIG_H_
 
 /*********************************************************************************
  *                              TASK TIMINGS
  *********************************************************************************/
-#define THROTTLE_TASK_PERIOD_MS         10    // 10ms
+#define THROTTLE_TASK_PERIOD_MS         5    // 10ms
 #define SENSOR_READ_TASK_PERIOD_MS      100   // 100ms
 #define STATE_MACHINE_TASK_PERIOD_MS    100
 #define EEPROM_TASK_PERIOD_MS           10
