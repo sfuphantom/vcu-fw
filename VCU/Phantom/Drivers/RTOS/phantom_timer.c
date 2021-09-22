@@ -15,7 +15,6 @@ typedef void *TaskHandle_t;
 
 // #define DEBUG    // uncomment this line for ASSERT statements to work
 
-#define WAIT_TIME_MS    1
 #define MAX_NUMBER_OF_TIMERS    10
 
 static int numOfTimers = 0;
@@ -49,19 +48,19 @@ TimerHandle_t Phantom_createTimer(char* const timerName,
     return newTimer;
 }
 
-uint8 Phantom_startTimer(TimerHandle_t timer)
+uint8 Phantom_startTimer(TimerHandle_t timer, uint32 waitTimeMs)
 {
-    return xTimerStart(timer, pdMS_TO_TICKS(WAIT_TIME_MS));
+    return xTimerStart(timer, pdMS_TO_TICKS(waitTimeMs));
 }
 
-uint8 Phantom_stopTimer(TimerHandle_t timer)
+uint8 Phantom_stopTimer(TimerHandle_t timer, uint32 waitTimeMs)
 {
-    return xTimerStop(timer, pdMS_TO_TICKS(WAIT_TIME_MS));
+    return xTimerStop(timer, pdMS_TO_TICKS(waitTimeMs));
 }
 
-uint8 Phantom_deleteTimer(TimerHandle_t timer)
+uint8 Phantom_deleteTimer(TimerHandle_t timer, uint32 waitTimeMs)
 {
-    uint8 result = xTimerDelete(timer, pdMS_TO_TICKS(WAIT_TIME_MS));
+    uint8 result = xTimerDelete(timer, pdMS_TO_TICKS(waitTimeMs));
     numOfTimers -= (result == pdPASS);
     return result;
 }

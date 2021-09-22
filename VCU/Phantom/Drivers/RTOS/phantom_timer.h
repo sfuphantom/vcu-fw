@@ -9,6 +9,8 @@
 
 #include "hal_stdtypes.h"
 
+#define MAX_WAIT_TIME_MS (((uint32_t) ~0) >> 10)
+
 typedef void *TimerHandle_t;
 typedef void (*TimerCallbackFunction_t)(TimerHandle_t xTimer);
 
@@ -28,9 +30,9 @@ TimerHandle_t Phantom_createTimer(char* const timerName,
                                   void* counterPtr, 
                                   TimerCallbackFunction_t callbackFunction);
 
-uint8 Phantom_startTimer(TimerHandle_t timer);
-uint8 Phantom_stopTimer(TimerHandle_t timer);
-// uint8 Phantom_deleteTimer(TimerHandle_t timer)
+uint8 Phantom_startTimer(TimerHandle_t timer, uint32 waitTimeMs);
+uint8 Phantom_stopTimer(TimerHandle_t timer, uint32 waitTimeMs);
+// uint8 Phantom_deleteTimer(TimerHandle_t timer, uint32 waitTimeMs);
 
 int Phantom_getNumberOfTimers(void);
 bool Phantom_isTimerActive(TimerHandle_t timer);
