@@ -11,7 +11,7 @@
 
 
 
-void testTaskInit(void);
+void Task_testInit(void);
 
 
 #endif

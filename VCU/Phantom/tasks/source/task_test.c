@@ -11,7 +11,7 @@
 #include "vcu_data.h"
 #include "RGB_LED.h"
 
-#include "priorities.h"
+#include "task_config.h"
 #include "task_test.h"
 
 // pre-define static functions first
@@ -24,7 +24,7 @@ static Task testTask;
 static TimerHandle_t testTimer;
 static long testTimerCounter = 0;
 
-void testTaskInit(void)
+void Task_testInit(void)
 {
     testTask = (Task) {vTestTask, TEST_TASK_PERIOD_MS};
     // Phantom_createTask should block infinitely if task creation failed
@@ -41,7 +41,7 @@ void testTaskInit(void)
 
 static void vTestTask(void* arg)
 {
-    uint8 faults = VCUData_readFaults(ALL_FAULTS_MASK);
+    uint8 faults = VCUData_readFaults(ALL_FAULTS);
 
     if (faults) {
         RGB_drive(RGB_YELLOW);
@@ -52,10 +52,10 @@ static void vTestTask(void* arg)
 
 static void testTimerCallback(TimerHandle_t timer)
 {
-    uint8 faults = VCUData_readFaults(ALL_FAULTS_MASK);
+    uint8 faults = VCUData_readFaults(ALL_FAULTS);
     if (!faults) {  // prefer to avoid anything with mutexes in a timer callback
-        VCUData_turnOnFaults(BMS_FAULT_MASK | BSPD_FAULT_MASK | BSE_FAULT_MASK);
+        VCUData_turnOnFaults(BMS_FAULT | BSPD_FAULT | BSE_FAULT);
     } else {
-        VCUData_turnOffFaults(BMS_FAULT_MASK | BSPD_FAULT_MASK | BSE_FAULT_MASK);
+        VCUData_turnOffFaults(BMS_FAULT | BSPD_FAULT | BSE_FAULT);
     }
 }
