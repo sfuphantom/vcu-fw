@@ -39,15 +39,15 @@ void VCUData_init(void)
 
     data = (VCUData) {
         // Analog Readings
-        (analogData) {0.0F, 0.0F},    // currentHV_A
-        (analogData) {0.0F, 0.0F},    // voltageHV_V
-        (analogData) {0.0F, 0.0F},    // currentLV_A
-        (analogData) {0.0F, 0.0F},    // voltageLV_V
-        (analogData) {0.0F, 0.0F},    // BSE_percentage
-        (analogData) {0.0F, 0.0F},    // APPS1_percentage
-        (analogData) {0.0F, 0.0F},    // APPS2_percentage
+        0.0F,    // currentHV_A
+        0.0F,    // voltageHV_V
+        0.0F,    // currentLV_A
+        0.0F,    // voltageLV_V
+        0.0F,    // BSE_percentage
+        0.0F,    // APPS1_percentage
+        0.0F,    // APPS2_percentage
         // Analog Output
-        (analogData) {0.0, 0.0},    // throttle_percentage
+        0.0F,    // throttle_percentage
         // Digital Readings
         true,                         // RTD_signal
         false,                         // throttle_available
@@ -173,16 +173,16 @@ bool VCUData_setState(State newState)
 
 
 /* ANALOG DATA FUNCTIONS */
-analogData VCUData_getCurrentHV_A(void)
+float VCUData_getCurrentHV_A(void)
 {
     return data.currentHV_A;
 }
 
-bool VCUData_setCurrentHV_A(analogData newData)
+bool VCUData_setCurrentHV_A(float newValue)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        data.currentHV_A = newData;
+        data.currentHV_A = newValue;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -190,16 +190,16 @@ bool VCUData_setCurrentHV_A(analogData newData)
     }
 }
 
-analogData VCUData_getVoltageHV_V(void)
+float VCUData_getVoltageHV_V(void)
 {
     return data.voltageHV_V;
 }
 
-bool VCUData_setVoltageHV_V(analogData newData)
+bool VCUData_setVoltageHV_V(float newValue)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        data.voltageHV_V = newData;
+        data.voltageHV_V = newValue;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -207,16 +207,16 @@ bool VCUData_setVoltageHV_V(analogData newData)
     }
 }
 
-analogData VCUData_getCurrentLV_A(void)
+float VCUData_getCurrentLV_A(void)
 {
     return data.currentLV_A;
 }
 
-bool VCUData_setCurrentLV_A(analogData newData)
+bool VCUData_setCurrentLV_A(float newValue)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        data.currentLV_A = newData;
+        data.currentLV_A = newValue;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -224,16 +224,16 @@ bool VCUData_setCurrentLV_A(analogData newData)
     }
 }
 
-analogData VCUData_getVoltageLV_V(void)
+float VCUData_getVoltageLV_V(void)
 {
     return data.voltageLV_V;
 }
 
-bool VCUData_setVoltageLV_V(analogData newData)
+bool VCUData_setVoltageLV_V(float newValue)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        data.voltageLV_V = newData;
+        data.voltageLV_V = newValue;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -241,16 +241,16 @@ bool VCUData_setVoltageLV_V(analogData newData)
     }
 }
 
-analogData VCUData_getBSEPercentage(void)
+float VCUData_getBSEPercentage(void)
 {
     return data.BSE_percentage;
 }
 
-bool VCUData_setBSEPercentage(analogData newData)
+bool VCUData_setBSEPercentage(float newValue)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        data.BSE_percentage = newData;
+        data.BSE_percentage = newValue;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -258,16 +258,16 @@ bool VCUData_setBSEPercentage(analogData newData)
     }
 }
 
-analogData VCUData_getAPPS1Percentage(void)
+float VCUData_getAPPS1Percentage(void)
 {
     return data.APPS1_percentage;
 }
 
-bool VCUData_setAPPS1Percentage(analogData newData)
+bool VCUData_setAPPS1Percentage(float newValue)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        data.APPS1_percentage = newData;
+        data.APPS1_percentage = newValue;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -275,16 +275,16 @@ bool VCUData_setAPPS1Percentage(analogData newData)
     }
 }
 
-analogData VCUData_getAPPS2Percentage(void)
+float VCUData_getAPPS2Percentage(void)
 {
     return data.APPS2_percentage;
 }
 
-bool VCUData_setAPPS2Percentage(analogData newData)
+bool VCUData_setAPPS2Percentage(float newValue)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        data.APPS2_percentage = newData;
+        data.APPS2_percentage = newValue;
 
         return xSemaphoreGive(VCU_Key);
     } else {
@@ -292,16 +292,16 @@ bool VCUData_setAPPS2Percentage(analogData newData)
     }
 }
 
-analogData VCUData_getThrottlePercentage(void)
+float VCUData_getThrottlePercentage(void)
 {
     return data.throttle_percentage;
 }
 
-bool VCUData_setThrottlePercentage(analogData newData)
+bool VCUData_setThrottlePercentage(float newValue)
 {
     if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
-        data.throttle_percentage = newData;
+        data.throttle_percentage = newValue;
 
         return xSemaphoreGive(VCU_Key);
     } else {

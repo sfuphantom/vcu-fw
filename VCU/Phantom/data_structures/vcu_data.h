@@ -10,11 +10,6 @@
 
 #include "hal_stdtypes.h"
 
-typedef struct {
-    float adc_value;
-    float value; // in the unit of measurement
-} analogData;
-
 typedef enum {
     BMS_FAULT = (1U << 0),                      // if 0, then BMS is healthy, if 1 then BMS fault
     IMD_FAULT = (1U << 1),                      // if 0, then IMD is healthy, if 1 then IMD fault
@@ -59,23 +54,23 @@ bool VCUData_setThrottleAvailableSignal(bool newSignal);
 bool VCUData_setState(State newState);
 
 
-analogData VCUData_getCurrentHV_A(void);
-analogData VCUData_getVoltageHV_V(void);
-analogData VCUData_getCurrentLV_A(void);
-analogData VCUData_getVoltageLV_V(void);
-analogData VCUData_getBSEPercentage(void);
-analogData VCUData_getAPPS1Percentage(void);
-analogData VCUData_getAPPS2Percentage(void);
-analogData VCUData_getThrottlePercentage(void);
+float VCUData_getCurrentHV_A(void);
+float VCUData_getVoltageHV_V(void);
+float VCUData_getCurrentLV_A(void);
+float VCUData_getVoltageLV_V(void);
+float VCUData_getBSEPercentage(void);
+float VCUData_getAPPS1Percentage(void);
+float VCUData_getAPPS2Percentage(void);
+float VCUData_getThrottlePercentage(void);
 
-bool VCUData_setCurrentHV_A(analogData newData);
-bool VCUData_setVoltageHV_V(analogData newData);
-bool VCUData_setCurrentLV_A(analogData newData);
-bool VCUData_setVoltageLV_V(analogData newData);
-bool VCUData_setBSEPercentage(analogData newData);
-bool VCUData_setAPPS1Percentage(analogData newData);
-bool VCUData_setAPPS2Percentage(analogData newData);
-bool VCUData_setThrottlePercentage(analogData newData);
+bool VCUData_setCurrentHV_A(float newValue);
+bool VCUData_setVoltageHV_V(float newValue);
+bool VCUData_setCurrentLV_A(float newValue);
+bool VCUData_setVoltageLV_V(float newValue);
+bool VCUData_setBSEPercentage(float newValue);
+bool VCUData_setAPPS1Percentage(float newValue);
+bool VCUData_setAPPS2Percentage(float newValue);
+bool VCUData_setThrottlePercentage(float newValue);
 
 // Any module that needs direct access
 // to the VCU data structure needs to 
@@ -83,15 +78,15 @@ bool VCUData_setThrottlePercentage(analogData newData);
 #ifdef VCUDATA_PRIVLEDGED_ACCESS
 
 typedef struct {
-    analogData currentHV_A;
-    analogData voltageHV_V;
-    analogData currentLV_A;
-    analogData voltageLV_V;
-    analogData BSE_percentage;
-    analogData APPS1_percentage;
-    analogData APPS2_percentage;
+    float currentHV_A;
+    float voltageHV_V;
+    float currentLV_A;
+    float voltageLV_V;
+    float BSE_percentage;
+    float APPS1_percentage;
+    float APPS2_percentage;
     
-    analogData throttle_percentage;
+    float throttle_percentage;
 
     bool RTD_signal;
     bool throttle_available;
