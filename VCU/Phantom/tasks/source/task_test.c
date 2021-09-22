@@ -32,7 +32,7 @@ void Task_testInit(void)
 
     // create recurring timers here...
     testTimer = Phantom_createTimer("testTimer", 1000, AUTO_RELOAD, &testTimerCounter, testTimerCallback);
-    Phantom_startTimer(testTimer);
+    Phantom_startTimer(testTimer, 0);
 
     // so compiler won't complain about unused variables
     // taskHandle;
