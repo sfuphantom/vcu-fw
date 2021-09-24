@@ -45,21 +45,21 @@ void masterDataTranser();
 /* Initial data to be sent the very first time on power up to the ADC
  * NOTE: May or may not need to be changed
  */
-uint16 TX_Data_Master[1] = {0xAAAA};
-uint16 TX_Data_Slave[1]  = {0};
-uint16 RX_Data_Master[1] = {0};
-uint16 RX_Data_Slave[1]  = {0};
+static uint16 TX_Data_Master[1] = {0xAAAA};
+static uint16 TX_Data_Slave[1]  = {0};
+static uint16 RX_Data_Master[1] = {0};
+static uint16 RX_Data_Slave[1]  = {0};
 
 /* Transfer Group 1 */
 /* Continuous data to send to the ADC
  *
  */
-uint16 TX_Yash_Master[1]   = {0xF77F}; // how many bits do we need to send? 14 bits only are sent out
+static uint16 TX_Yash_Master[1]   = {0xF77F}; // how many bits do we need to send? 14 bits only are sent out
                                        // 1111 0111 0111 1111
                                        // 0011 1101 1101 1111     (chopped off last 2 bits)
-uint16 TX_ADS7044_Slave[1] = {0};
-uint16 RX_Yash_Master[1]   = {0};
-uint16 RX_ADS7044_Slave[1] = {0};
+static uint16 TX_ADS7044_Slave[1] = {0};
+static uint16 RX_Yash_Master[1]   = {0};
+static uint16 RX_ADS7044_Slave[1] = {0};
 
 int sign = 1;
 

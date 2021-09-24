@@ -79,7 +79,7 @@ void main(void)
     eepromBlocking_Init();      // Initialization EEPROM Memory - added by jjkhan
     mibspiInit();
     sciInit();
-    unitTesting();
+    //unitTesting();
 
 #ifdef PMU_CYCLE
         // Set Port GIO_PORTA_5 as output pin - using it to confirm PMU timer value is in range of I/O toggle
