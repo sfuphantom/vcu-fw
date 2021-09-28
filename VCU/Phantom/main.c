@@ -65,6 +65,8 @@ void main(void)
 {
 /* USER CODE BEGIN (3) */
 
+
+
 #ifdef PMU_CYCLE
        // Initialize code execution timer
        timer_Init();
@@ -78,8 +80,18 @@ void main(void)
     hetInit();                  // Initialize HET (PWM) halcogen driver
     eepromBlocking_Init();      // Initialization EEPROM Memory - added by jjkhan
     mibspiInit();
-    sciInit();
-    //unitTesting();
+
+    // HV_Voltage Sensor Task Testing
+    unitTesting();
+
+    /* Slave Data */
+    adcSlaveDataSetup();
+
+    while (1){
+        masterDataTranser();
+
+    }
+    // test ends
 
 #ifdef PMU_CYCLE
         // Set Port GIO_PORTA_5 as output pin - using it to confirm PMU timer value is in range of I/O toggle
