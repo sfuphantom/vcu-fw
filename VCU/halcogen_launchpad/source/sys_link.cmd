@@ -57,7 +57,7 @@ MEMORY
     FLASH0  (RX) : origin=0x00008020 length=0x00137FE0
     STACKS  (RW) : origin=0x08000000 length=0x00000800
     KRAM    (RW) : origin=0x08000800 length=0x00000800
-    RAM     (RW) : origin=(0x08000800+0x00000800) length=(0x0002F800 - 0x00000800)
+    RAM     (RW) : origin=(0x08000800+0x00000800) length=(0x0002f800 - 0x00000800)
     
 /* USER CODE BEGIN (2) */
 /* USER CODE END */
