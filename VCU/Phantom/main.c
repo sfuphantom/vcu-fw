@@ -81,16 +81,6 @@ void main(void)
     eepromBlocking_Init();      // Initialization EEPROM Memory - added by jjkhan
     mibspiInit();
 
-    // HV_Voltage Sensor Task Testing
-    //unitTesting();
-
-    /* Slave Data */
-    adcSlaveDataSetup();
-    // Function to change slave data
-    adcVoltageRamp();
-    // Function to transfer slave data to master
-    masterDataTranser();
-    // test ends
 
 #ifdef PMU_CYCLE
         // Set Port GIO_PORTA_5 as output pin - using it to confirm PMU timer value is in range of I/O toggle

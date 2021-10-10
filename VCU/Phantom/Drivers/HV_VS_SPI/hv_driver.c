@@ -149,7 +149,7 @@ void mibspiGroupNotification(mibspiBASE_t *mibspi, uint32 group)
     /* used for ramping up and down the measured voltage simulated by the ADC */
 void adcVoltageRamp()
     {
-        TX_ADS7044_Slave[0] =-1644; //0x077F;
+        TX_ADS7044_Slave[0] = 0x077F;
 
         mibspiSetData(mibspiREG3, TransferGroup1, TX_ADS7044_Slave);
         mibspiEnableGroupNotification(mibspiREG3, TransferGroup1, 0);
