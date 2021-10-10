@@ -76,35 +76,37 @@ void masterDataTranser(){
         mibspiEnableGroupNotification(mibspiREG1, TransferGroup0, 0);
         mibspiTransfer(mibspiREG1, TransferGroup0);
 
-    if (TX_AVAILABLE == true) /* Needed to enable slave data send */
-            {
-                TX_AVAILABLE = false;
-                adcVoltageRamp(); /* Slave function: used for ramping up and down the measured voltage simulated by the ADC */
+    while(1){
+        if (TX_AVAILABLE == true) /* Needed to enable slave data send */
+                    {
+                        TX_AVAILABLE = false;
+                        adcVoltageRamp(); /* Slave function: used for ramping up and down the measured voltage simulated by the ADC */
 
-                /* Master Data Sending */
-                if (tx_master == true)
-                {
-                    /* Here you are sending data from master to the slave, TX_Yash_Master is the array being sent, what should be in there? */
-                    /* How many bits should you be sending? */
-                    mibspiSetData(mibspiREG1, TransferGroup1, TX_Yash_Master);
-                    mibspiEnableGroupNotification(mibspiREG1, TransferGroup1, 0);
-                    mibspiTransfer(mibspiREG1, TransferGroup1);
+                        /* Master Data Sending */
+                        if (tx_master == true)
+                        {
+                            /* Here you are sending data from master to the slave, TX_Yash_Master is the array being sent, what should be in there? */
+                            /* How many bits should you be sending? */
+                            mibspiSetData(mibspiREG1, TransferGroup1, TX_Yash_Master);
+                            mibspiEnableGroupNotification(mibspiREG1, TransferGroup1, 0);
+                            mibspiTransfer(mibspiREG1, TransferGroup1);
 
-                    tx_master = false;
-                }
+                            tx_master = false;
+                        }
 
-                adc_output =  getADCdata(RX_Yash_Master[0]);
+                        adc_output =  getADCdata(RX_Yash_Master[0]);
 
-                // what do i do with RX_Yash_Master array now?
+                        // what do i do with RX_Yash_Master array now?
 
-                // 14 bit array, 12 of those bits are actual data..
+                        // 14 bit array, 12 of those bits are actual data..
 
-                // get those 12 bits from there..
+                        // get those 12 bits from there..
 
-                // convert that value into HV Bus voltage
+                        // convert that value into HV Bus voltage
 
-                // print out for now: SCI scilinSend()
-            }
+                        // print out for now: SCI scilinSend()
+                    }
+    }
 }
 
 void mibspiGroupNotification(mibspiBASE_t *mibspi, uint32 group)
@@ -147,7 +149,7 @@ void mibspiGroupNotification(mibspiBASE_t *mibspi, uint32 group)
     /* used for ramping up and down the measured voltage simulated by the ADC */
 void adcVoltageRamp()
     {
-        TX_ADS7044_Slave[0] = 0x077F;
+        TX_ADS7044_Slave[0] =-1644; //0x077F;
 
         mibspiSetData(mibspiREG3, TransferGroup1, TX_ADS7044_Slave);
         mibspiEnableGroupNotification(mibspiREG3, TransferGroup1, 0);

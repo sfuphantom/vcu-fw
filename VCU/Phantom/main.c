@@ -82,15 +82,14 @@ void main(void)
     mibspiInit();
 
     // HV_Voltage Sensor Task Testing
-    unitTesting();
+    //unitTesting();
 
     /* Slave Data */
     adcSlaveDataSetup();
-
-    while (1){
-        masterDataTranser();
-
-    }
+    // Function to change slave data
+    adcVoltageRamp();
+    // Function to transfer slave data to master
+    masterDataTranser();
     // test ends
 
 #ifdef PMU_CYCLE
@@ -106,6 +105,13 @@ void main(void)
 #if LV_MONITOR
     lv_monitorInit();           // Initialize LV Monitor Library
 #endif
+
+#if HV_VS
+    /* Slave Data */
+    adcSlaveDataSetup();
+    masterDataTranser();          // Transfer slave data to master
+#endif
+
     initializeIMD();            // Initialize IMD Library
 
     /* freeRTOS Initialization */
