@@ -37,6 +37,16 @@ void Phantom_endTaskScheduler(void)
     vTaskEndScheduler();
 }
 
+void Phantom_suspendTask(TaskHandle_t taskHandle)
+{
+    vTaskSuspend(taskHandle);
+}
+
+void Phantom_resumeTask(TaskHandle_t taskHandle)
+{
+    vTaskResume(taskHandle);
+}
+
 static void taskSkeleton(void* task)
 {
     const TaskFunction_t taskFnPtr = ((Task*) task)->functionPtr;
