@@ -32,7 +32,7 @@ TimerHandle_t Phantom_createTimer(char* const timerName,
 
 uint8 Phantom_startTimer(TimerHandle_t timer, uint32 waitTimeMs);
 uint8 Phantom_stopTimer(TimerHandle_t timer, uint32 waitTimeMs);
-// uint8 Phantom_deleteTimer(TimerHandle_t timer, uint32 waitTimeMs);
+uint8 Phantom_deleteTimer(TimerHandle_t timer, uint32 waitTimeMs);
 
 int Phantom_getNumberOfTimers(void);
 bool Phantom_isTimerActive(TimerHandle_t timer);
