@@ -8,7 +8,6 @@
 #define PHANTOM_TASK_H_
 
 #include "hal_stdtypes.h"
-#include "os_projdefs.h"
 
 typedef void* TaskHandle_t;
 
@@ -21,6 +20,8 @@ TaskHandle_t Phantom_createTask(Task* task, char* const taskName, uint16 stackSi
 
 /* Phantom_startTaskScheduler is Blocking */
 void Phantom_startTaskScheduler(void);
-// void Phantom_endTaskScheduler(void);
+void Phantom_endTaskScheduler(void);
+void Phantom_suspendTask(TaskHandle_t taskHandle);
+void Phantom_resumeTask(TaskHandle_t taskHandle);
 
 #endif

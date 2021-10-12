@@ -11,7 +11,8 @@
 
 #include "phantom_task.h"
 
-static void taskSkeleton(void* task);
+static void periodicTaskSkeleton(void* task);
+static void continuousTaskSkeleton(void* task);
 
 TaskHandle_t Phantom_createTask(Task* task,
 					   char* const taskName,
@@ -19,6 +20,12 @@ TaskHandle_t Phantom_createTask(Task* task,
 					   uint32 taskPriority)
 {
     TaskHandle_t taskHandle = NULL;
+
+    TaskFunction_t taskSkeleton = periodicTaskSkeleton;
+    if (task->frequencyMs == 0) {
+        taskSkeleton = continuousTaskSkeleton;
+    }
+
     xTaskCreate(taskSkeleton, taskName, stackSize, task, taskPriority, &taskHandle);
 
     // if taskHandle is NULL, configASSERT will block the program indefinitely
@@ -47,7 +54,7 @@ void Phantom_resumeTask(TaskHandle_t taskHandle)
     vTaskResume(taskHandle);
 }
 
-static void taskSkeleton(void* task)
+static void periodicTaskSkeleton(void* task)
 {
     const TaskFunction_t taskFnPtr = ((Task*) task)->functionPtr;
     const TickType_t xFrequency = pdMS_TO_TICKS(((Task*) task)->frequencyMs);
@@ -56,6 +63,15 @@ static void taskSkeleton(void* task)
     while (1) {
         vTaskDelayUntil(&xLastWakeTime, xFrequency);
 
+        taskFnPtr(NULL);
+    }
+}
+
+static void continuousTaskSkeleton(void* task)
+{
+    const TaskFunction_t taskFnPtr = ((Task*) task)->functionPtr;
+
+    while (1) {
         taskFnPtr(NULL);
     }
 }
