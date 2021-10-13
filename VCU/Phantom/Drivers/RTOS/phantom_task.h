@@ -8,6 +8,7 @@
 #define PHANTOM_TASK_H_
 
 #include "hal_stdtypes.h"
+#include "os_projdefs.h"
 
 typedef void* TaskHandle_t;
 
