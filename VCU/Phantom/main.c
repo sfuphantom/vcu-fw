@@ -28,7 +28,7 @@
 // #include "execution_timer.h"
 
 #include "task_test.h"
-// #include "task_throttle.h"
+#include "task_throttle.h"
 // #include "task_sensor_read.h"
 // #include "task_statemachine.h"
 // #include "task_watchdog.h"
@@ -72,7 +72,8 @@ void phantomDriversInit()
 void phantomTasksInit()
 {
     // initalizations of tasks
-    Task_testInit();
+//    Task_testInit();
+    Task_throttleInit();
 }
 /* USER CODE END */
 
