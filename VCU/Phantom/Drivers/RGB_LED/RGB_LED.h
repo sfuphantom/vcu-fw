@@ -34,14 +34,14 @@ typedef struct {
 #define DEFAULT_PWM_DUTY    50
 
 // Preset colors
-#define RGB_OFF     (Color) { 0,  0,  0}
-#define RGB_RED     (Color) {DEFAULT_PWM_DUTY,  0,  0}
-#define RGB_GREEN   (Color) { 0, DEFAULT_PWM_DUTY,  0}
-#define RGB_BLUE    (Color) { 0,  0, DEFAULT_PWM_DUTY}
-#define RGB_YELLOW  (Color) {DEFAULT_PWM_DUTY, DEFAULT_PWM_DUTY,  0}
-#define RGB_MAGENTA (Color) {DEFAULT_PWM_DUTY,  0, DEFAULT_PWM_DUTY}
-#define RGB_CYAN    (Color) { 0, DEFAULT_PWM_DUTY, DEFAULT_PWM_DUTY}
-#define RGB_WHITE   (Color) {DEFAULT_PWM_DUTY/2, DEFAULT_PWM_DUTY, DEFAULT_PWM_DUTY}
+#define RGB_OFF     ((Color) { 0,  0,  0})
+#define RGB_RED     ((Color) {DEFAULT_PWM_DUTY,  0,  0})
+#define RGB_GREEN   ((Color) { 0, DEFAULT_PWM_DUTY,  0})
+#define RGB_BLUE    ((Color) { 0,  0, DEFAULT_PWM_DUTY})
+#define RGB_YELLOW  ((Color) {DEFAULT_PWM_DUTY, DEFAULT_PWM_DUTY,  0})
+#define RGB_MAGENTA ((Color) {DEFAULT_PWM_DUTY,  0, DEFAULT_PWM_DUTY})
+#define RGB_CYAN    ((Color) { 0, DEFAULT_PWM_DUTY, DEFAULT_PWM_DUTY})
+#define RGB_WHITE   ((Color) {DEFAULT_PWM_DUTY/2, DEFAULT_PWM_DUTY, DEFAULT_PWM_DUTY})
 
 // Initialize the driver
 void RGB_init();
