@@ -26,6 +26,7 @@ static TimerHandle_t APPS1RangeFaultTimer;
 static TimerHandle_t APPS2RangeFaultTimer;
 static TimerHandle_t BSERangeFaultTimer;
 static TimerHandle_t FPDiffFaultTimer;
+static TimerHandle_t RTDSTimer;
 
 typedef struct {
     uint32_t BSE_sensor_sum;
@@ -60,10 +61,13 @@ static bool BSE_RANGE_FAULT_TIMER_EXPIRED = false;     //added by jaypacamarra
 static bool FP_DIFF_FAULT_TIMER_EXPIRED = false;       //added by jaypacamarra
 
 static void vThrottleTask(void* arg);
+
+static void RTDS_CALLBACK(TimerHandle_t xTimers);
 static void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);
 static void APPS2_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);
 static void BSE_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);
 static void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers);
+
 static PedalReadings getPedalReadings();
 static float calculatePedalPercent(uint32_t pedalValue, float minValue, float maxValue);
 static void applyLowPassFilter(PedalReadings* pedalValues);
@@ -85,6 +89,7 @@ void Task_throttleInit(void)
     BSERangeFaultTimer = Phantom_createTimer("BSE_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, BSE_SEVERE_RANGE_FAULT_CALLBACK);
     FPDiffFaultTimer = Phantom_createTimer("FP_DIFF_FAULT_Timer", 100, NO_RELOAD, NULL, FP_DIFF_SEVERE_FAULT_CALLBACK);
 
+    RTDSTimer = Phantom_createTimer("RTDS_Timer", 2000, NO_RELOAD, NULL, RTDS_CALLBACK);
     // any other init code you want to put goes here...
 
     (void) taskHandle;
@@ -183,6 +188,10 @@ static void vThrottleTask(void* arg)
 }
 
 // Other helper functions and callbacks goes here...
+static void RTDS_CALLBACK(TimerHandle_t xTimers)
+{
+    VCUData_setThrottleAvailableSignal(true);
+}
 
 //++ Added by Jay Pacamarra
 /* Timer callback when APPS1 Range fault occurs for 100 ms*/
