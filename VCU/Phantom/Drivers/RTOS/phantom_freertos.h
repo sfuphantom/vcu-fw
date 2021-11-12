@@ -33,15 +33,15 @@
 #define TEST_EEPROM     0
 #include "../test_eeprom/testEeprom.h" // Included for testing eeprom -> should remove later.
 
-//-- Added by jjkhan
-
-
-
-#define NUMBER_OF_TIMERS   4        // Updated by jjkhan: State machine Task needs 2 timers.
+#define NUMBER_OF_TIMERS   8
 
 /* This timer is used to debounce the interrupts for the RTDS and SDC signals */
 void Timer_300ms(TimerHandle_t xTimers);
 void Timer_2s(TimerHandle_t xTimers);
+void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);      // prototype for APPS1 severe range fault software timer callback - jaypacamarra
+void APPS2_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);      // prototype for APPS2 severe range fault software timer callback - jaypacamarra
+void BSE_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);        // prototype for BSE severe range fault software timer callback - jaypacamarra
+void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers);          // prototype for FP difference by 10% fault software timer callback - jaypacamarra
 
 // ++ Added by jjkhan: State machine timers
 void Timer_HV_CurrentRange(TimerHandle_t xTimers);
