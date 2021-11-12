@@ -153,6 +153,7 @@ void vStateMachineTask(void *pvParameters)
             else if (currentState == RUNNING)
             {
 
+                RGB_LED_drive(RGB_GREEN);
 
                 if (FAULTS)
                 {
@@ -224,6 +225,8 @@ void vStateMachineTask(void *pvParameters)
                     UARTSend(PC_UART, "********SEVERE_FAULT********");
                 }
 
+                RGB_LED_drive(RGB_RED);
+
                 if (FAULTS)
                 {
                     newState = SEVERE_FAULT;
@@ -254,7 +257,6 @@ void vStateMachineTask(void *pvParameters)
 
             // Block Task
             vTaskDelayUntil(&xLastWakeTime, STATE_MACHINE_TASK_PERIOD_MS);
-            RGB_LED_drive(RGB_GREEN);        
         }
         else
         {

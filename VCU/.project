@@ -28,7 +28,7 @@
 	<variableList>
 		<variable>
 			<name>HERCULES_FOLDER</name>
-			<value>$%7BHERCULES_MAC%7D</value>
+			<value>$%7BHERCULES_WIN%7D</value>
 		</variable>
 	</variableList>
 </projectDescription>
