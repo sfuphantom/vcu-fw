@@ -353,6 +353,7 @@ void phantom_freeRTOStaskInit(void)
     // will need our own hardware defines file to do this for all the ports and pins we use..
     // will need to be different based on the launchpad or VCU being used. This can be changed via build configurations
     // so one build has all the right files/linker included, right debugger, right MCU
+}
 
 /* Timer callback when it expires */
 void Timer_300ms(TimerHandle_t xTimers)
@@ -410,7 +411,7 @@ void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers)
          UARTSend(PC_UART, "---------Interrupt Active\r\n");
          if (VCUDataPtr->DigitalVal.RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
          {
-             if (BSE_sensor_sum < 2000)
+             if (Throttle_getBSESensorSum() < 2000)
              {
                  gioSetBit(gioPORTA, 6, 1);
                  VCUDataPtr->DigitalVal.RTDS = 1; // CHANGE STATE TO RUNNING

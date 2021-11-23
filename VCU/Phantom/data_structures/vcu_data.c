@@ -101,11 +101,6 @@ void initData(data* VCUDataPtr)
 
     VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
 
-    /* Default VCU State at Start-up. */
-    VCUDataPtr->DigitalVal.TSAL_FAULT = 1;
-    VCUDataPtr->DigitalVal.BSE_FAULT = 0;
-    VCUDataPtr->DigitalVal.APPS_FAULT = 0;
-
     // ++ Added by Jay Pacamarra
     VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
     VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;

@@ -25,7 +25,6 @@
 
 #include "throttle.h"
 
-extern State state;
 extern TimerHandle_t xTimers[];                 //jaypacamarra
 
 /*********************************************************************************
@@ -159,7 +158,7 @@ void vThrottleTask(void *pvParameters)
         /*********************************************************************************
           Set Throttle
          *********************************************************************************/
-        if (state == RUNNING && THROTTLE_AVAILABLE)
+        if (VCUDataPtr->vcuState == RUNNING && THROTTLE_AVAILABLE)
         {
             // update throttle percentage in vcu data structure
             float apps_percent_avg = (get_APPS1_Pedal_Percent() + get_APPS2_Pedal_Percent()) / 2;
