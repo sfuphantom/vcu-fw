@@ -17,6 +17,12 @@ bool APPS2_RANGE_FAULT_TIMER_EXPIRED;   //added by jaypacamarra
 bool BSE_RANGE_FAULT_TIMER_EXPIRED;     //added by jaypacamarra
 bool FP_DIFF_FAULT_TIMER_EXPIRED;       //added by jaypacamarra
 
+// ++ Added by jjkhan: State machine Timer callback flags
+volatile bool HV_CURRENT_TIMER_EXPIRED;
+volatile bool HV_VOLTAGE_TIMER_EXPIRED;
+// -- Added by jjkhan: State machine Timer callback flags
+
+
 /* array to hold handles to the created timers*/
 TimerHandle_t xTimers[NUMBER_OF_TIMERS];
 xQueueHandle VCUDataQueue;
@@ -24,10 +30,11 @@ xQueueHandle VCUDataQueue;
 // ++ Added by jjkhan
 TaskHandle_t testingEepromHandler = NULL; // Eeprom Test Task Task Handler
 TaskHandle_t stateMachineHandler = NULL;  // State machine Task Handler
+TaskHandle_t testingStateMachineTask = NULL;  // State Machine Test Task Handler.
 TaskHandle_t eepromHandler = NULL;  // Eeprom Task Task Handler
 SemaphoreHandle_t vcuKey;        // Mutex to protect VCU data structure
 SemaphoreHandle_t powerfailureFlagKey;  // still using this? - jjkhan
-xQueueHandle eepromMessages;
+xQueueHandle eepromMessages, stateMachineMessages;
 // -- Added by jjkhan
 
 void phantom_freeRTOSInit(void)
@@ -78,8 +85,48 @@ void phantom_freeRTOStimerInit(void)
                     Timer_2s
             );
 
-    //++ Added by Jay Pacamarra
+    // ++ Added by jjkhan - State Machint Task Timers for HV Current and Voltage Flags
+
     xTimers[2] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+                kernel. */
+                "HV_Current_OutOfRange_T",
+                /* The timer period in ticks, must be
+                greater than 0. */
+                pdMS_TO_TICKS(10000),
+                /* The timers will auto-reload themselves
+                when they expire. */
+                pdFALSE,
+                /* The ID is used to store a count of the
+                number of times the timer has expired, which
+                is initialised to 0. */
+                ( void * ) 0,
+                /* Callback function for when the timer expires*/
+                Timer_HV_CurrentRange
+            );
+
+    xTimers[3] = xTimerCreate
+            ( /* Just a text name, not used by the RTOS
+                kernel. */
+                "HV_Voltage_OutOfRange_T",
+                /* The timer period in ticks, must be
+                greater than 0. */
+                pdMS_TO_TICKS(10000),
+                /* The timers will auto-reload themselves
+                when they expire. */
+                pdFALSE,
+                /* The ID is used to store a count of the
+                number of times the timer has expired, which
+                is initialised to 0. */
+                ( void * ) 0,
+                /* Callback function for when the timer expires*/
+                Timer_HV_VoltageRange
+            );
+
+    // -- Added by jjkhan - State Machint Task Timers for HV Current and Voltage Flags
+
+    //++ Added by Jay Pacamarra
+    xTimers[4] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
                      kernel. */
                     "APPS1_RANGE_FAULT_Timer",
@@ -97,7 +144,7 @@ void phantom_freeRTOStimerInit(void)
                     APPS1_SEVERE_RANGE_FAULT_CALLBACK
             );
 
-    xTimers[3] = xTimerCreate
+    xTimers[5] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
                      kernel. */
                     "APPS2_RANGE_FAULT_Timer",
@@ -115,7 +162,7 @@ void phantom_freeRTOStimerInit(void)
                     APPS2_SEVERE_RANGE_FAULT_CALLBACK
             );
 
-    xTimers[4] = xTimerCreate
+    xTimers[6] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
                      kernel. */
                     "BSE_RANGE_FAULT_Timer",
@@ -133,7 +180,7 @@ void phantom_freeRTOStimerInit(void)
                     BSE_SEVERE_RANGE_FAULT_CALLBACK
             );
 
-    xTimers[5] = xTimerCreate
+    xTimers[7] = xTimerCreate
             ( /* Just a text name, not used by the RTOS
                      kernel. */
                     "FP_DIFF_FAULT_Timer",
@@ -189,29 +236,36 @@ void phantom_freeRTOStimerInit(void)
             UARTSend(PC_UART, "The timer could not be set into the active state.\r\n");
         }
     }
-
-    //++ Added by Jay Pacamarra
     if( xTimers[2] == NULL )
+    {
+            /* The timer was not created. */
+        UARTSend(PC_UART, "HV Current Fault timer was not created.\r\n");
+    }
+    if( xTimers[3] == NULL )
+    {
+            /* The timer was not created. */
+        UARTSend(PC_UART, "HV Voltage Fault timer was not created.\r\n");
+    }
+    if( xTimers[4] == NULL )
     {
         /* The APPS1 timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
     }
-    if( xTimers[3] == NULL )
+    if( xTimers[5] == NULL )
     {
         /* The APPS2 timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
     }
-    if( xTimers[4] == NULL )
+    if( xTimers[6] == NULL )
     {
         /* The BSE timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
     }
-    if( xTimers[5] == NULL )
+    if( xTimers[7] == NULL )
     {
         /* The FP DIFF timer was not created. */
         UARTSend(PC_UART, "The timer was not created.\r\n");
     }
-    //++ Added by Jay Pacamarra
 }
 
 void phantom_freeRTOStaskInit(void)
@@ -219,8 +273,9 @@ void phantom_freeRTOStaskInit(void)
     // create a freeRTOS queue to pass data between tasks
     // this will be useful when passing the VCU data structure in between different tasks
 
-    VCUDataQueue = xQueueCreate(5, sizeof(long)); // what does this 5 mean?
-    eepromMessages = xQueueCreate(10, sizeof(char)*60U);
+     VCUDataQueue = xQueueCreate(5, sizeof(long)); // what does this 5 mean?
+     eepromMessages = xQueueCreate(10, sizeof(char)*60U);
+     stateMachineMessages = xQueueCreate(10, sizeof(char)*60U);
 
     // can I already shove the VCU data structure into here? or do i need to do that within a task
 
@@ -230,17 +285,14 @@ void phantom_freeRTOStaskInit(void)
 
     vcuKey = xSemaphoreCreateMutex(); // vcuKey to protect VCUData
 
-    // -- Added by jjkhan
-
-
-    // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
-    if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  150, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
-    {
-        // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
-        // probably need a better error handler
-        sciSend(PC_UART,23,(unsigned char*)"StateMachineTask Creation Failed.\r\n");
-        while(1);
-    }
+     // freeRTOS API to create a task, takes in a task name, stack size, something, priority, something else
+     if (xTaskCreate(vStateMachineTask, (const char*)"StateMachineTask",  240, NULL,  (STATE_MACHINE_TASK_PRIORITY), NULL) != pdTRUE)
+     {
+         // if xTaskCreate returns something != pdTRUE, then the task failed, wait in this infinite loop..
+         // probably need a better error handler
+         sciSend(PC_UART,23,(unsigned char*)"StateMachineTask Creation Failed.\r\n");
+         while(1);
+     }
 
 
     if (xTaskCreate(vThrottleTask, (const char*)"ThrottleTask",  150, NULL,  (THROTTLE_TASK_PRIORITY), NULL) != pdTRUE)
@@ -296,8 +348,7 @@ void phantom_freeRTOStaskInit(void)
     }
 #endif
     /* -- Added by jjkhan */
-
-    // all tasks have been created successfully
+        // all tasks have been created successfully
     UARTSend(PC_UART, "Tasks created\r\n"); // We want to replace scilinREG with something like "PC_UART". and the BMS one to be "BMS_UART"
     // will need our own hardware defines file to do this for all the ports and pins we use..
     // will need to be different based on the launchpad or VCU being used. This can be changed via build configurations
@@ -317,7 +368,13 @@ void Timer_2s(TimerHandle_t xTimers)
     THROTTLE_AVAILABLE = true;
 }
 
-//++ Added by Jay Pacamarra
+void Timer_HV_CurrentRange(TimerHandle_t xTimers){
+    HV_CURRENT_TIMER_EXPIRED = true; //  i.e. Timer value = threshold
+}
+
+void Timer_HV_VoltageRange(TimerHandle_t xTimers){
+    HV_VOLTAGE_TIMER_EXPIRED = true; //  i.e. Timer value = threshold
+}
 /* Timer callback when APPS1 Range fault occurs for 100 ms*/
 void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers)
 {
@@ -338,51 +395,50 @@ void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers)
 {
     FP_DIFF_FAULT_TIMER_EXPIRED = true;
 }
-//++ Added by Jay Pacamarra
 
 /*********************************************************************************
- *               READY TO DRIVE SIGNAL INTERRUPT (SHOULD PROBABLY FIND A BETTER PLACE TO PUT THIS)
- *********************************************************************************/
-void gioNotification(gioPORT_t *port, uint32 bit)
-{
-    /*  enter user code between the USER CODE BEGIN and USER CODE END. */
-    /* USER CODE BEGIN (19) */
-    //    UARTSend(PC_UART, "---------Interrupt Request-------\r\n");
-    if (port == gioPORTA && bit == 2 && INTERRUPT_AVAILABLE)
-    {
-        BaseType_t xHigherPriorityTaskWoken = pdFALSE;
-        // RTDS switch
-        UARTSend(PC_UART, "---------Interrupt Active\r\n");
-        if (VCUDataPtr->DigitalVal.RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
-        {
-            if (Throttle_getBSESensorSum() < 2000)
-            {
-                gioSetBit(gioPORTA, 6, 1);
-                VCUDataPtr->DigitalVal.RTDS = 1; // CHANGE STATE TO RUNNING
-                UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
+  *               READY TO DRIVE SIGNAL INTERRUPT (SHOULD PROBABLY FIND A BETTER PLACE TO PUT THIS)
+  *********************************************************************************/
+ void gioNotification(gioPORT_t *port, uint32 bit)
+ {
+ /*  enter user code between the USER CODE BEGIN and USER CODE END. */
+ /* USER CODE BEGIN (19) */
+ //    UARTSend(PC_UART, "---------Interrupt Request-------\r\n");
+     if (port == gioPORTA && bit == 2 && INTERRUPT_AVAILABLE)
+     {
+         BaseType_t xHigherPriorityTaskWoken = pdFALSE;
+         // RTDS switch
+         UARTSend(PC_UART, "---------Interrupt Active\r\n");
+         if (VCUDataPtr->DigitalVal.RTDS == 0 && gioGetBit(gioPORTA, 2) == 0)
+         {
+             if (Throttle_getBSESensorSum() < 2000)
+             {
+                 gioSetBit(gioPORTA, 6, 1);
+                 VCUDataPtr->DigitalVal.RTDS = 1; // CHANGE STATE TO RUNNING
+                 UARTSend(PC_UART, "---------RTDS set to 1 in interrupt\r\n");
 
-                // ready to drive buzzer, need to start a 2 second timer here
-                //                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
+                 // ready to drive buzzer, need to start a 2 second timer here
+ //                pwmStart(BUZZER_PORT, READY_TO_DRIVE_BUZZER);
 
-                // reset the 2 second timer to let the buzzer ring for 2 seconds
-                if (xTimerResetFromISR(xTimers[1], xHigherPriorityTaskWoken) != pdPASS)// after 2s the timer will allow the interrupt to toggle the signal again
-                {
-                    // timer reset failed
-                    UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
-                }
-            }
-        }
-        //        else
-        //        {
-        //            UARTSend(PC_UART, "---------RTDS set to 0 in interrupt\r\n");
-        //            RTDS = 0;
-        //        }
+                 // reset the 2 second timer to let the buzzer ring for 2 seconds
+                 if (xTimerResetFromISR(xTimers[1], xHigherPriorityTaskWoken) != pdPASS)// after 2s the timer will allow the interrupt to toggle the signal again
+                 {
+                     // timer reset failed
+                     UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+                 }
+             }
+         }
+ //        else
+ //        {
+ //            UARTSend(PC_UART, "---------RTDS set to 0 in interrupt\r\n");
+ //            RTDS = 0;
+ //        }
 
-        INTERRUPT_AVAILABLE = false;
-        if (xTimerResetFromISR(xTimers[0], xHigherPriorityTaskWoken) != pdPASS)// after 300ms the timer will allow the interrupt to toggle the signal again
-        {
-            // timer reset failed
-            UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
-        }
-    }
-}
+         INTERRUPT_AVAILABLE = false;
+         if (xTimerResetFromISR(xTimers[0], xHigherPriorityTaskWoken) != pdPASS)// after 300ms the timer will allow the interrupt to toggle the signal again
+         {
+             // timer reset failed
+             UARTSend(PC_UART, "---------Timer reset failed-------\r\n");
+         }
+     }
+ }

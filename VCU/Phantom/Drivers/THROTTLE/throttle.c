@@ -184,7 +184,7 @@ bool check_BSE_Range_Fault() {
     {
         if(BSE_range_fault_timer_started == false)
         {
-            if(xTimerStart(xTimers[4], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+            if(xTimerStart(xTimers[6], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
             {
                 for(;;);
             }
@@ -206,7 +206,7 @@ bool check_BSE_Range_Fault() {
     {
         if(BSE_range_fault_timer_started == false)
         {
-            if(xTimerStart(xTimers[4], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+            if(xTimerStart(xTimers[6], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
             {
                 for(;;);
             }
@@ -231,7 +231,7 @@ bool check_BSE_Range_Fault() {
         is_there_BSE_range_fault = false;
 
         // Stop fault timer
-        xTimerStop(xTimers[4], portMAX_DELAY);
+        xTimerStop(xTimers[6], portMAX_DELAY);
         BSE_range_fault_timer_started = false;
         BSE_RANGE_FAULT_TIMER_EXPIRED = false;
     }
@@ -251,7 +251,7 @@ bool check_APPS1_Range_Fault() {
 
         if(APPS1_range_fault_timer_started == false)
         {
-            if(xTimerStart(xTimers[2], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+            if(xTimerStart(xTimers[4], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
             {
                 for(;;);
             }
@@ -276,7 +276,7 @@ bool check_APPS1_Range_Fault() {
 
         if(APPS1_range_fault_timer_started == false)
         {
-            if(xTimerStart(xTimers[2], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+            if(xTimerStart(xTimers[4], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
             {
                 for(;;);
             }
@@ -301,7 +301,7 @@ bool check_APPS1_Range_Fault() {
         is_there_APPS1_range_fault = false;
 
         // Stop fault timer
-        xTimerStop(xTimers[2], portMAX_DELAY);
+        xTimerStop(xTimers[4], portMAX_DELAY);
         APPS1_range_fault_timer_started = false;
         APPS1_RANGE_FAULT_TIMER_EXPIRED = false;
     }
@@ -320,7 +320,7 @@ bool check_APPS2_Range_Fault() {
     {
         if(APPS2_range_fault_timer_started == false)
         {
-            if(xTimerStart(xTimers[3], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+            if(xTimerStart(xTimers[5], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
             {
                 for(;;);
             }
@@ -343,7 +343,7 @@ bool check_APPS2_Range_Fault() {
     {
         if(APPS2_range_fault_timer_started == false)
         {
-            if(xTimerStart(xTimers[3], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+            if(xTimerStart(xTimers[5], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
             {
                 for(;;);
             }
@@ -368,7 +368,7 @@ bool check_APPS2_Range_Fault() {
         is_there_APPS2_range_fault = false;
 
         // Stop fault timer
-        xTimerStop(xTimers[3], portMAX_DELAY);
+        xTimerStop(xTimers[5], portMAX_DELAY);
         APPS2_range_fault_timer_started = false;
         APPS2_RANGE_FAULT_TIMER_EXPIRED = false;
     }
@@ -390,7 +390,7 @@ bool check_10PercentAPPS_Fault() {
     {
         if(FP_diff_fault_timer_started == false)
         {
-            if(xTimerStart(xTimers[5], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
+            if(xTimerStart(xTimers[7], pdMS_TO_TICKS(50)) != pdPASS) // start software timer for apps1 range fault
             {
                 for(;;);
             }
@@ -409,7 +409,7 @@ bool check_10PercentAPPS_Fault() {
     else
     {
         // Stop the fault timer
-        xTimerStop(xTimers[5], portMAX_DELAY);
+        xTimerStop(xTimers[7], portMAX_DELAY);
         FP_diff_fault_timer_started = false;
         FP_DIFF_FAULT_TIMER_EXPIRED = false;
 

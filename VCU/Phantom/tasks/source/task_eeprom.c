@@ -13,7 +13,7 @@
 #include "board_hardware.h" // Has definition of State possible values
 
 // ++ This is the vcuState memory location in VCU Data structure
-#define VCU_STATE 0x48  // 0x48 = 72
+#define VCU_STATE 0x59  // 0x59 = 89
 // -- This is the vcuState memory location in VCU Data structure
 
 extern TaskHandle_t eepromHandler; // Eeprom Task handler
@@ -21,7 +21,7 @@ extern SemaphoreHandle_t vcuKey;
 extern data VCUData;
 void *pVCUDataStructure = &VCUData;  // Need this void pointer to read from eeprom bank - Added by jjkhan
 extern data* VCUDataPtr; // Need this pointer to update "state" with "vcuState" when last shutdown is not graceful
-extern State state; //  In state machine task can simply use VCUDataPtr->vcuState, instead of "state" ?
+//extern State state; //  In state machine task can simply use VCUDataPtr->vcuState, instead of "state" ?
 //++ Added by jjkhan for execution time measurement
 
 #include <Phantom/support/execution_timer.h>
@@ -170,7 +170,7 @@ inline void loadFromEeprom(void){
                      xQueueSendToBack(eepromMessages,(void *)txBuffer, pdMS_TO_TICKS(0)); // Don't block if Queue is already full
 #endif
                      initializationOccured = 1;
-                     state = VCUDataPtr->vcuState; // Get last saved state after loading VCUData from eeprom memory
+                     //state = VCUDataPtr->vcuState; // Get last saved state after loading VCUData from eeprom memory
                 }else if(jobCompletedFlag == E_NOT_OK){
                     // Print VCU data structure load from eeprom failed.
                 }
@@ -244,19 +244,18 @@ inline void workOnLastScheduledJob(void){
 
 inline void initializeVCU(void){
     // Read the last saved POWER_FAILURE_FLAG, it is the last byte of the VCUData Structure,
-    // VCUData Structure (at the time of integration) -> 73 Bytes
-    // The last byte == POWER_FAILURE_FLAG,
-    // Therefore, need to offset memory pointer by 72 bytes (in hex = 0x48)
+    // VCUData Structure (at the time of integration) -> 92 Bytes (0x5C)
+    // Therefore, need to offset memory pointer by 91 bytes (in hex = 0x5B)
 
     jobCompletedFlag = eeprom_Read(EEP0, DATA_BLOCK_2, VCU_STATE, &lastStoredState, 0x01, SYNC);
      if(jobCompletedFlag==E_OK){
-         if(lastStoredState==FAULT){ // Last shutdown was due to a Fault
+         if(lastStoredState==SEVERE_FAULT || lastStoredState==MINOR_FAULT ){ // Last shutdown was due to a Fault
 #if EEPROM_DEBUG_MESSAGES  == 1
                  sprintf(txBuffer, message24); // Write  message to txBuffer
                  xQueueSendToBack(eepromMessages,(void *)txBuffer, pdMS_TO_TICKS(0)); // Don't block if Queue is already full
 #endif
                  loadFromEeprom();
-         }else if(lastStoredState!=FAULT){  // Last shutdown was graceful
+         }else if(lastStoredState!=SEVERE_FAULT || lastStoredState!=MINOR_FAULT){  // Last shutdown was graceful
 #if EEPROM_DEBUG_MESSAGES  == 1
                  sprintf(txBuffer, message25); // Write  message to txBuffer
                  xQueueSendToBack(eepromMessages,(void *)txBuffer, pdMS_TO_TICKS(0)); // Don't block if Queue is already full
