@@ -2,12 +2,7 @@
  * main.c
  *
  *  Created on: Mar 17, 2020
-<<<<<<< HEAD
- *      Author: gabriel, Joshua Guo
-=======
- *      Author: gabriel
- *
->>>>>>> develop
+ *  Author: gabriel, Joshua Guo
  */
 
 /* USER CODE BEGIN (0) */
@@ -30,20 +25,7 @@
 #include "phantom_task.h"       // os_task wrapper written by Joshua Guo
 // #include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
 
-<<<<<<< HEAD
 // #include "execution_timer.h"
-=======
-data VCUData;
-data* VCUDataPtr = &VCUData;
-
-// ++ Added by jjkhan:
-     // Uncomment the following directive if the current sensor module is connected.
-    // VCU has it on-board, launchpad doesn't -> will get stuck in lv_monitorInit()
-//#define LV_MONITOR
-// -- Added by jjkhan
-
-/* USER CODE END */
->>>>>>> develop
 
 #include "task_test.h"
 #include "task_throttle.h"

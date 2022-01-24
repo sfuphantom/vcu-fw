@@ -13,7 +13,7 @@
  *********************************************************************************/
 #define THROTTLE_TASK_PERIOD_MS         5    // 10ms
 #define SENSOR_READ_TASK_PERIOD_MS      100   // 100ms
-#define STATE_MACHINE_TASK_PERIOD_MS    100
+#define STATE_MACHINE_TASK_PERIOD_MS    10
 #define EEPROM_TASK_PERIOD_MS           10
 #define WATCHDOG_TASK__PERIOD_MS        300  // 300ms
 #define DATA_LOGGING_TASK_PERIOD_MS     500  // 500ms
