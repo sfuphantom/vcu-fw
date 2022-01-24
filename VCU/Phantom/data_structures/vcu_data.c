@@ -11,7 +11,12 @@
 #include "vcu_data.h"
 
 #define MUTEX_POLLING_TIME_MS   10  // this can be adjusted if too slow or fast
-static SemaphoreHandle_t VCU_Key = NULL;
+static SemaphoreHandle_t FaultKey = NULL;
+static SemaphoreHandle_t HVKey = NULL;
+static SemaphoreHandle_t LVKey = NULL;
+static SemaphoreHandle_t BSEAPPSKey = NULL;
+static SemaphoreHandle_t SignalKey = NULL;
+static SemaphoreHandle_t StateKey = NULL;
 
 static VCUData data;
 /*
@@ -35,7 +40,12 @@ typedef struct data
 */
 void VCUData_init(void)
 {
-    VCU_Key = xSemaphoreCreateMutex();
+    FaultKey = xSemaphoreCreateMutex();
+    HVKey = xSemaphoreCreateMutex();
+    LVKey = xSemaphoreCreateMutex();
+    BSEAPPSKey = xSemaphoreCreateMutex();
+    SignalKey = xSemaphoreCreateMutex();
+    StateKey = xSemaphoreCreateMutex();
 
     data = (VCUData) {
         // Analog Readings
@@ -46,14 +56,20 @@ void VCUData_init(void)
         0.0F,    // BSE_percentage
         0.0F,    // APPS1_percentage
         0.0F,    // APPS2_percentage
+
         // Analog Output
         0.0F,    // throttle_percentage
+
         // Digital Readings
-        true,                         // RTD_signal
+        false,                      // TSAL_signal
+        false,                         // RTD_signal
         false,                         // throttle_available
+
         0U,                         // fault_flags
+
         // Digital Output
         false,                         // brake_light_signal
+
         // Machine State
         TRACTIVE_OFF                // VCU_state
     };
@@ -67,11 +83,11 @@ uint32 VCUData_readFaults(uint32 mask)
 
 bool VCUData_turnOnFaults(uint32 mask)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(FaultKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.fault_flags |= mask;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(FaultKey);
     } else {
         return false;
     }
@@ -79,11 +95,11 @@ bool VCUData_turnOnFaults(uint32 mask)
 
 bool VCUData_turnOffFaults(uint32 mask)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(FaultKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.fault_flags &= ~mask;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(FaultKey);
     } else {
         return false;
     }
@@ -91,11 +107,11 @@ bool VCUData_turnOffFaults(uint32 mask)
 
 bool VCUData_setFaults(uint32 mask)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(FaultKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.fault_flags = mask;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(FaultKey);
     } else {
         return false;
     }
@@ -109,11 +125,11 @@ bool VCUData_getRTDSignal(void)
 
 bool VCUData_setRTDSignal(bool newSignal)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(SignalKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.RTD_signal = newSignal;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(SignalKey);
     } else {
         return false;
     }
@@ -126,11 +142,11 @@ bool VCUData_getBrakeLightSignal(void)
 
 bool VCUData_setBrakeLightSignal(bool newSignal)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(SignalKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.brake_light_signal = newSignal;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(SignalKey);
     } else {
         return false;
     }
@@ -143,11 +159,11 @@ bool VCUData_getThrottleAvailableSignal(void)
 
 bool VCUData_setThrottleAvailableSignal(bool newSignal)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(SignalKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.throttle_available = newSignal;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(SignalKey);
     } else {
         return false;
     }
@@ -161,11 +177,11 @@ State VCUData_getState(void)
 
 bool VCUData_setState(State newState)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(StateKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.VCU_state = newState;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(StateKey);
     } else {
         return false;
     }
@@ -180,11 +196,11 @@ float VCUData_getCurrentHV_A(void)
 
 bool VCUData_setCurrentHV_A(float newValue)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(HVKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.currentHV_A = newValue;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(HVKey);
     } else {
         return false;
     }
@@ -197,11 +213,11 @@ float VCUData_getVoltageHV_V(void)
 
 bool VCUData_setVoltageHV_V(float newValue)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(HVKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.voltageHV_V = newValue;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(HVKey);
     } else {
         return false;
     }
@@ -214,11 +230,11 @@ float VCUData_getCurrentLV_A(void)
 
 bool VCUData_setCurrentLV_A(float newValue)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(LVKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.currentLV_A = newValue;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(LVKey);
     } else {
         return false;
     }
@@ -231,11 +247,11 @@ float VCUData_getVoltageLV_V(void)
 
 bool VCUData_setVoltageLV_V(float newValue)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(LVKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.voltageLV_V = newValue;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(LVKey);
     } else {
         return false;
     }
@@ -248,11 +264,11 @@ float VCUData_getBSEPercentage(void)
 
 bool VCUData_setBSEPercentage(float newValue)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(BSEAPPSKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.BSE_percentage = newValue;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(BSEAPPSKey);
     } else {
         return false;
     }
@@ -265,11 +281,11 @@ float VCUData_getAPPS1Percentage(void)
 
 bool VCUData_setAPPS1Percentage(float newValue)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(BSEAPPSKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.APPS1_percentage = newValue;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(BSEAPPSKey);
     } else {
         return false;
     }
@@ -282,11 +298,11 @@ float VCUData_getAPPS2Percentage(void)
 
 bool VCUData_setAPPS2Percentage(float newValue)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(BSEAPPSKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.APPS2_percentage = newValue;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(BSEAPPSKey);
     } else {
         return false;
     }
@@ -299,11 +315,11 @@ float VCUData_getThrottlePercentage(void)
 
 bool VCUData_setThrottlePercentage(float newValue)
 {
-    if (xSemaphoreTake(VCU_Key, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+    if (xSemaphoreTake(BSEAPPSKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
 
         data.throttle_percentage = newValue;
 
-        return xSemaphoreGive(VCU_Key);
+        return xSemaphoreGive(BSEAPPSKey);
     } else {
         return false;
     }

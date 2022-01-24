@@ -116,6 +116,7 @@ typedef struct {
     bool TSAL_signal;
     bool RTD_signal;
     bool throttle_available;
+    
     uint32 fault_flags;
 
     bool brake_light_signal;
