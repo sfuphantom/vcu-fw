@@ -86,7 +86,7 @@
 
 //             if ( gioGetBit(gioPORTA, 2) == 1)
 //             {
-//                 VCUDataPtr->DigitalVal.RTDS = 0;
+//                 //VCUDataPtr->DigitalVal.RTDS = 0; -> Commented out by jjkhan: Don't know what it going on here
 //     //            UARTSend(PC_UART, "RTDS RAW IS READ AS 1, RESETTING RTDS SIGNAL\r\n");
 //             }
 //             else
@@ -110,7 +110,7 @@
 
 //             // CAN status from BMS (this may need an interrupt for when data arrives, and maybe stored in a buffer? maybe not.. we should try both)
 
-//             // read LV voltage, current
+        //lv_current = LV_reading(LV_current_register);
 
 //             // this needs to be updated to not block the whole system if i2c not available
 //     //        lv_current = LV_reading(LV_current_register);

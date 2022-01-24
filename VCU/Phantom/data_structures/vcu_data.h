@@ -11,19 +11,44 @@
 #include "hal_stdtypes.h"
 
 typedef enum {
-    BMS_FAULT = (1U << 0),                      // if 0, then BMS is healthy, if 1 then BMS fault
-    IMD_FAULT = (1U << 1),                      // if 0, then IMD is healthy, if 1 then IMD fault
-    BSPD_FAULT = (1U << 2),                     // if 0, then BSPD is healthy, if 1 then BSPD fault
-    TSAL_FAULT = (1U << 3),                     // if 0, then TSAL is on and AIRs are closed, if 1 then TSAL is off and AIRs should be open
-    BSE_FAULT = (1U << 4),                      // if 0, then BSE is healthy, if 1 then BSE fault
 
-    BSE_APPS_SIMULTANEOUS_FAULT = (1U << 5),    // MINOR
-    BSE_RANGE_FAULT = (1U << 6),                // SEVERE
-    APPS_10DIFF_FAULT = (1U << 7),              // SEVERE
-    APPS1_RANGE_FAULT = (1U << 8),              // SEVERE
-    APPS2_RANGE_FAULT = (1U << 9),              // SEVERE
+    // Shutdown Circuit Faults
+    IMD_SEVERE_FAULT = (1U << 1),
+    BSPD_SEVERE_FAULT = (1U << 2),
+    BMS_GPIO_SEVERE_FAULT = (1U << 3),                          // Changed BMS_FAULT to BMS_GPIO_FAULT - jjkhan
+    
+    // APPS/BSE Faults
+    BSE_RANGE_SEVERE_FAULT = (1U << 4),
+    APPS1_RANGE_SEVERE_FAULT = (1U << 5),
+    APPS2_RANGE_SEVERE_FAULT = (1U << 6),
+    APPS_10DIFF_SEVERE_FAULT = (1U << 7),
+    BSE_APPS_SIMULTANEOUS_MINOR_FAULT = (1U << 8),
+    
+    // HV Sensor Faults
+    HV_CURRENT_OUT_OF_RANGE_MINOR_FAULT = (1U << 9),            // SEVERE if persistent
+    HV_VOLTAGE_OUT_OF_RANGE_MINOR_FAULT = (1U << 10),            // SEVERE if persistent
+    HV_APPS_PROPORTION_SEVERE_ERROR = (1U << 11),                // Stays in TRACTIVE_OFF if already in TRACTIVE_OFF state
 
-    ALL_FAULTS = (~0U)   // All 1s to let all faults through the mask
+    // LV Sensor Faults
+    LV_CURRENT_OUT_OF_RANGE_MINOR_FAULT = (1U << 12),
+    LV_VOLTAGE_OUT_OF_RANGE_MINOR_FAULT = (1U << 13),
+
+    // CAN Faults
+    CAN_ERROR_TYPE1 = (1U << 14),                                // Severe Error reported by CAN
+    CAN_ERROR_TYPE2 = (1U << 15),                                // Minor Errot Reported by CAN
+
+    // TSAL Faults
+    TSAL_WELDED_AIRS_SEVERE_FAULT = (1U << 16),
+
+    // IMD Faults
+    IMD_LOW_ISO_SEVERE_FAULT = (1U << 17),
+    IMD_SHORT_CIRCUIT_SEVERE_FAULT = (1U << 18),
+    IMD_DEVICE_ERR_SEVERE_FAULT = (1U << 19),
+    IMD_BAD_INFO_SEVERE_FAULT = (1U << 20),
+    IMD_UNDEF_SEVERE_FAULT = (1U << 21),
+    IMD_GARBAGE_DATA_SEVERE_FAULT = (1U << 22),
+
+    ALL_FAULTS = (~0U)                              // All 1s to let all faults through the mask
 } FaultMask;
 
 typedef enum {
@@ -88,6 +113,7 @@ typedef struct {
     
     float throttle_percentage;
 
+    bool TSAL_signal;
     bool RTD_signal;
     bool throttle_available;
     uint32 fault_flags;
