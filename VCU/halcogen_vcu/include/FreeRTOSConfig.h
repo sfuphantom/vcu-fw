@@ -157,6 +157,9 @@
 #define INCLUDE_xTaskGetIdleTaskHandle      1
 
 /* USER CODE BEGIN (4) */
+#define INCLUDE_xTaskGetIdleTaskHandle      1
+#define INCLUDE_pxTaskGetStackStart         1
+
  /* ++ Added by jjkhan */
 
   /* The following two are required for compilation if configGENERATE_RUN_TIME_STATS is definedd  */
@@ -177,6 +180,7 @@ extern uint32_t getProfilerTimerCount();
 #define configASSERT( x ) if( ( x ) == pdFALSE ) { taskDISABLE_INTERRUPTS(); for( ;; ); }
 
 /* USER CODE BEGIN (5) */
+#include "SEGGER_SYSVIEW_FreeRTOS.h"
 /* USER CODE END */
 
 #endif /* FREERTOS_CONFIG_H */
