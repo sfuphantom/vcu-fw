@@ -11,7 +11,7 @@
 #include <math.h>           // for fabsf function
 #include "hal_stdtypes.h"
 #include "gio.h"
-#include "adc.h"
+#include <adc.h>
 #include "MCP48FV_DAC_SPI.h"
 
 #include "vcu_data.h"
@@ -54,7 +54,7 @@ typedef struct {
 #define BRAKE_LIGHT_OFF     1
 static bool previous_brake_light_state = 1;    // Default = 1. Holds previous brake light state, 1 = ON, 0 = OFF - jaypacamarra
 
-#define THROTTLE_FAULTS_MASK (APPS1_RANGE_FAULT | APPS2_RANGE_FAULT | BSE_RANGE_FAULT | APPS_10DIFF_FAULT | BSE_APPS_SIMULTANEOUS_FAULT)
+#define THROTTLE_FAULTS_MASK (APPS1_RANGE_SEVERE_FAULT | APPS2_RANGE_SEVERE_FAULT | BSE_RANGE_SEVERE_FAULT | APPS_10DIFF_SEVERE_FAULT | BSE_APPS_SIMULTANEOUS_MINOR_FAULT)
 static bool APPS1_RANGE_FAULT_TIMER_EXPIRED = false;   //added by jaypacamarra
 static bool APPS2_RANGE_FAULT_TIMER_EXPIRED = false;   //added by jaypacamarra
 static bool BSE_RANGE_FAULT_TIMER_EXPIRED = false;     //added by jaypacamarra
@@ -127,11 +127,11 @@ static void vThrottleTask(void* arg)
     // Fill the unrelevant bits with flags from vcu data
     uint32_t currentFaults = VCUData_readFaults(~THROTTLE_FAULTS_MASK);
 
-    currentFaults |= (apps1Fault && 1) * APPS1_RANGE_FAULT;
-    currentFaults |= (apps2Fault && 1) * APPS2_RANGE_FAULT;
-    currentFaults |= (bseFault && 1) * BSE_RANGE_FAULT;
-    currentFaults |= (diffFault && 1) * APPS_10DIFF_FAULT;
-    currentFaults |= (simulFault && 1) * BSE_APPS_SIMULTANEOUS_FAULT;
+    currentFaults |= (apps1Fault && 1) * APPS1_RANGE_SEVERE_FAULT;
+    currentFaults |= (apps2Fault && 1) * APPS2_RANGE_SEVERE_FAULT;
+    currentFaults |= (bseFault && 1) * BSE_RANGE_SEVERE_FAULT;
+    currentFaults |= (diffFault && 1) * APPS_10DIFF_SEVERE_FAULT;
+    currentFaults |= (simulFault && 1) * BSE_APPS_SIMULTANEOUS_MINOR_FAULT;
 
     VCUData_setFaults(currentFaults);
 
