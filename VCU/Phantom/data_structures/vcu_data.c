@@ -118,6 +118,23 @@ bool VCUData_setFaults(uint32 mask)
 }
 
 /* SIGNAL FUNCTIONS */
+bool VCUData_getTSALSignal(void)
+{
+    return data.TSAL_signal;
+}
+
+bool VCUData_setTSALSignal(bool newSignal)
+{
+    if (xSemaphoreTake(SignalKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.TSAL_signal = newSignal;
+
+        return xSemaphoreGive(SignalKey);
+    } else {
+        return false;
+    }
+}
+
 bool VCUData_getRTDSignal(void)
 {
     return data.RTD_signal;
