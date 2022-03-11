@@ -54,8 +54,8 @@ static void testTimerCallback(TimerHandle_t timer)
 {
     uint8 faults = VCUData_readFaults(ALL_FAULTS);
     if (!faults) {  // prefer to avoid anything with mutexes in a timer callback
-        VCUData_turnOnFaults(BMS_FAULT | BSPD_FAULT | BSE_FAULT);
+        VCUData_turnOnFaults(BMS_GPIO_SEVERE_FAULT | BSPD_SEVERE_FAULT | BSE_APPS_FAULT_GROUP);
     } else {
-        VCUData_turnOffFaults(BMS_FAULT | BSPD_FAULT | BSE_FAULT);
+        VCUData_turnOffFaults(BMS_GPIO_SEVERE_FAULT | BSPD_SEVERE_FAULT | BSE_APPS_FAULT_GROUP);
     }
 }

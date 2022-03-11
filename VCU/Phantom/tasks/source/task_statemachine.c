@@ -98,7 +98,7 @@ static void vStateMachineTask(void* arg)
 
         case MINOR_FAULT:
             RGB_LED_drive(RGB_YELLOW);
-            if (isSevereFault(faults, newState)) {
+            if (faults && isSevereFault(faults, newState)) {
                 newState = SEVERE_FAULT;
             } else if (RTDS_signal && TSAL_signal) {
                 newState = RUNNING;
