@@ -6,5 +6,5 @@
 # .cproject/
 
 # Debug/
-# RemoteSystemsTempFiles/
+RemoteSystemsTempFiles/
 BuildConfig_*/
