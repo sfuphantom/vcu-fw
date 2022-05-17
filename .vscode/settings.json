@@ -1,8 +1,0 @@
-{
-    "files.associations": {
-        "hal_stdtypes.h": "c",
-        "gio.h": "c",
-        "rgb_led.h": "c",
-        "priorities.h": "c"
-    }
-}
