@@ -25,7 +25,7 @@
 
 // This function must be called before using
 // anything else in the module.
-void RGB_LED_Init()
+void RGB_init()
 {
     pwmSetSignal(RGB_LED_PORT, RED_LED, DEFAULT_SIGNAL);
     pwmSetSignal(RGB_LED_PORT, GREEN_LED, DEFAULT_SIGNAL);
@@ -35,10 +35,10 @@ void RGB_LED_Init()
     pwmStart(RGB_LED_PORT, GREEN_LED);
     pwmStart(RGB_LED_PORT, BLUE_LED);
 
-    RGB_LED_drive(DEFAULT_COLOR);
+    RGB_drive(DEFAULT_COLOR);
 }
 
-void RGB_LED_reset()
+void RGB_reset()
 {
     pwmStop(RGB_LED_PORT, RED_LED);
     pwmStop(RGB_LED_PORT, GREEN_LED);
@@ -52,12 +52,12 @@ void RGB_LED_reset()
     pwmStart(RGB_LED_PORT, GREEN_LED);
     pwmStart(RGB_LED_PORT, BLUE_LED);
 
-    RGB_LED_drive(DEFAULT_COLOR);
+    RGB_drive(DEFAULT_COLOR);
 }
 
-void RGB_LED_drive(uint32_t redLedPwm, uint32_t greenLedPwm, uint32_t blueLedPwm)
+void RGB_drive(Color color)
 {
-    pwmSetDuty(RGB_LED_PORT, RED_LED, redLedPwm + 1);
-    pwmSetDuty(RGB_LED_PORT, GREEN_LED, greenLedPwm + 1);
-    pwmSetDuty(RGB_LED_PORT, BLUE_LED, blueLedPwm + 1);
+    pwmSetDuty(RGB_LED_PORT, RED_LED, color.red + 1);
+    pwmSetDuty(RGB_LED_PORT, GREEN_LED, color.green + 1);
+    pwmSetDuty(RGB_LED_PORT, BLUE_LED, color.blue + 1);
 }

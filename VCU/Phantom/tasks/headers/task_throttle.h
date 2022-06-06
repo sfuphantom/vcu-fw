@@ -8,8 +8,8 @@
 #ifndef PHANTOM_TASKS_TASK_THROTTLE_H_
 #define PHANTOM_TASKS_TASK_THROTTLE_H_
 
-
-void vThrottleTask(void *);
+void Task_throttleInit(void);
+// void vThrottleTask(void);
 
 
 #endif /* PHANTOM_TASKS_TASK_THROTTLE_H_ */

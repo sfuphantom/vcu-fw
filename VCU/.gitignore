@@ -1,7 +1,10 @@
-/Debug/
-/Launchpad-1224/
-/VCU-REV2/
-/BuildConfig_Launchpad-1224/
-/BuildConfig_VCU-REV2/
-/VCU/tags
-/VCU/tags.lock
+.launches/
+.metadata/
+.vscode/
+.settings/
+# .ccsproject/
+# .cproject/
+
+# Debug/
+RemoteSystemsTempFiles/
+BuildConfig_*/

@@ -2,114 +2,348 @@
  * vcu_data.c
  *
  *  Created on: Apr 18, 2020
- *      Author: soroush
+ *      Author: soroush, Josh Guo
  */
+#include "FreeRTOS.h"
+#include "os_semphr.h"
+
+#define VCUDATA_PRIVLEDGED_ACCESS
 #include "vcu_data.h"
 
+#define MUTEX_POLLING_TIME_MS   10  // this can be adjusted if too slow or fast
+static SemaphoreHandle_t FaultKey = NULL;
+static SemaphoreHandle_t HVKey = NULL;
+static SemaphoreHandle_t LVKey = NULL;
+static SemaphoreHandle_t BSEAPPSKey = NULL;
+static SemaphoreHandle_t SignalKey = NULL;
+static SemaphoreHandle_t StateKey = NULL;
 
-/*******************************************************************
-* NAME :            initData
-*
-* DESCRIPTION :     Initializes the VCU State Machine
-*
-* INPUTS : Pointer to baseAddress to data structure of VCU data.
-*
-* RETURN : None
-*
-*
-* NOTES :
-*
-*/
-void initData(data* VCUDataPtr)
+static VCUData data;
+/*
+typedef struct data
 {
-    /***********************************************************
-     *              ANALOG VALUE INITIALIZATION
-     ***********************************************************/
+    Note: -> DO NOT change the place of vcuState structure in this file because:
+         *  In eepromTask, we're reading vcuState from FEE bank using an OFFSET of 72 bytes.
+         *  i.e. 73rd byte is the value corresponding to vcuState, based on the setup on
+         *  the placement order of "data" structure below.
 
-    VCUDataPtr->AnalogIn.APPS1_percentage.adc_value = 0;
-    VCUDataPtr->AnalogIn.APPS1_percentage.value = 0.0;
+         *  Where did this 72 bytes number come from? Also, what is it offsetting from?
 
-    VCUDataPtr->AnalogIn.APPS2_percentage.adc_value = 0;
-    VCUDataPtr->AnalogIn.APPS2_percentage.value = 0.0;
+    Note: Now that the data structure has changed, how would the FEE bank know where vcu state is?
 
-    VCUDataPtr->AnalogIn.BSE_percentage.adc_value = 0;
-    VCUDataPtr->AnalogIn.BSE_percentage.value = 0.0;
+} data;
+*/
 
-    VCUDataPtr->AnalogIn.currentHV_A.adc_value = 0;
-    VCUDataPtr->AnalogIn.currentHV_A.value = 0.0;
+/*
+* NOTE : This function must be called before any operation on the VCU
+*        data structure. Otherwise, undefined behaviour will happen.
+*/
+void VCUData_init(void)
+{
+    FaultKey = xSemaphoreCreateMutex();
+    HVKey = xSemaphoreCreateMutex();
+    LVKey = xSemaphoreCreateMutex();
+    BSEAPPSKey = xSemaphoreCreateMutex();
+    SignalKey = xSemaphoreCreateMutex();
+    StateKey = xSemaphoreCreateMutex();
 
-    VCUDataPtr->AnalogIn.voltageHV_V.adc_value = 0;
-    VCUDataPtr->AnalogIn.voltageHV_V.value = 0.0;
+    data = (VCUData) {
+        // Analog Readings
+        0.0F,    // currentHV_A
+        0.0F,    // voltageHV_V
+        0.0F,    // currentLV_A
+        0.0F,    // voltageLV_V
+        0.0F,    // BSE_percentage
+        0.0F,    // APPS1_percentage
+        0.0F,    // APPS2_percentage
 
-    VCUDataPtr->AnalogIn.currentLV_A.adc_value = 0;
-    VCUDataPtr->AnalogIn.currentLV_A.value = 0.0;
+        // Analog Output
+        0.0F,    // throttle_percentage
 
-    VCUDataPtr->AnalogIn.voltageLV_V.adc_value = 0;
-    VCUDataPtr->AnalogIn.voltageLV_V.value = 0.0;
+        // Digital Readings
+        false,                      // TSAL_signal
+        false,                         // RTD_signal
+        false,                         // throttle_available
 
-    VCUDataPtr->AnalogOut.throttle_percentage.adc_value = 0;
-    VCUDataPtr->AnalogOut.throttle_percentage.value = 0.0;
+        0U,                         // fault_flags
 
-    /***********************************************************
-     *              DIGITAL VALUE INITIALIZATION
-     ***********************************************************/
+        // Digital Output
+        false,                         // brake_light_signal
 
-    // 1 = has a fault  ||      0 = has no fault
-    VCUDataPtr->DigitalVal.RTDS = 0;
-    VCUDataPtr->DigitalVal.BMS_GPIO_FAULT = 0;
-    VCUDataPtr->DigitalVal.IMD_FAULT = 0;
-    VCUDataPtr->DigitalVal.BSPD_FAULT = 0;
-    VCUDataPtr->DigitalVal.TSAL_ON = 0;
-
-    /* ++ New Faults*/
-
-    /* APPS/BSE Sensor - Faults */
-
-    VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT=0;
-    VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT=0;
-    VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT=0;
-    VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT=0;
-    VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT=0;
-
-    /* HV Current Sensor & Voltage Sensor- Faults */
-
-    VCUDataPtr->DigitalVal.HV_CURRENT_OUT_OF_RANGE=0;
-    VCUDataPtr->DigitalVal.APPS_PROPORTION_ERROR=0;
-    VCUDataPtr->DigitalVal.HV_VOLTAGE_OUT_OF_RANGE_FAULT=0;
-
-    /* CAN Error Messages. */
-
-    VCUDataPtr->DigitalVal.CAN_ERROR_TYPE1=0; // Severe Error reported by CAN
-    VCUDataPtr->DigitalVal.CAN_ERROR_TYPE2=0;  // Minor Errot Reported by CAN
-
-    /* LV Current Sensor & Voltage Sensor- Faults */
-    VCUDataPtr->DigitalVal.LV_CURRENT_OUT_OF_RANGE=0;
-    VCUDataPtr->DigitalVal.LV_VOLTAGE_OUT_OF_RANGE=0;
-
-    /* IMD Faults. */
-    VCUDataPtr->DigitalVal.IMD_LOW_ISO_FAULT=0;
-    VCUDataPtr->DigitalVal.IMD_SHORT_CIRCUIT_FAULT=0;
-    VCUDataPtr->DigitalVal.IMD_DEVICE_ERR_FAULT=0;
-    VCUDataPtr->DigitalVal.IMD_BAD_INFO_FAULT=0;
-    VCUDataPtr->DigitalVal.IMD_UNDEF_ERR=0;
-    VCUDataPtr->DigitalVal.IMD_GARBAGE_DATA_FAULT=0;
-
-    /* TSAL Faults.*/
-    VCUDataPtr->DigitalVal.TSAL_WELDED_AIRS_FAULT=0;
-
-    /* -- New Faults  */
-
-    VCUDataPtr->DigitalOut.BRAKE_LIGHT_ENABLE = 0;
-
-    // ++ Added by Jay Pacamarra
-    VCUDataPtr->DigitalVal.BSE_APPS_MINOR_SIMULTANEOUS_FAULT = 0;
-    VCUDataPtr->DigitalVal.BSE_SEVERE_RANGE_FAULT = 0;
-    VCUDataPtr->DigitalVal.APPS_SEVERE_10DIFF_FAULT = 0;
-    VCUDataPtr->DigitalVal.APPS1_SEVERE_RANGE_FAULT = 0;
-    VCUDataPtr->DigitalVal.APPS2_SEVERE_RANGE_FAULT = 0;
-    // ++ Added by Jay Pacamarra
-
-    // ++ Added by jjkhan
-    VCUDataPtr->vcuState = TRACTIVE_OFF;
+        // Machine State
+        TRACTIVE_OFF                // VCU_state
+    };
 }
 
+/* FAULT FUNCTIONS */
+uint32 VCUData_readFaults(uint32 mask)
+{
+    return data.fault_flags & mask;
+}
+
+bool VCUData_turnOnFaults(uint32 mask)
+{
+    if (xSemaphoreTake(FaultKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.fault_flags |= mask;
+
+        return xSemaphoreGive(FaultKey);
+    } else {
+        return false;
+    }
+}
+
+bool VCUData_turnOffFaults(uint32 mask)
+{
+    if (xSemaphoreTake(FaultKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.fault_flags &= ~mask;
+
+        return xSemaphoreGive(FaultKey);
+    } else {
+        return false;
+    }
+}
+
+bool VCUData_setFaults(uint32 mask)
+{
+    if (xSemaphoreTake(FaultKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.fault_flags = mask;
+
+        return xSemaphoreGive(FaultKey);
+    } else {
+        return false;
+    }
+}
+
+/* SIGNAL FUNCTIONS */
+bool VCUData_getTSALSignal(void)
+{
+    return data.TSAL_signal;
+}
+
+bool VCUData_setTSALSignal(bool newSignal)
+{
+    if (xSemaphoreTake(SignalKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.TSAL_signal = newSignal;
+
+        return xSemaphoreGive(SignalKey);
+    } else {
+        return false;
+    }
+}
+
+bool VCUData_getRTDSignal(void)
+{
+    return data.RTD_signal;
+}
+
+bool VCUData_setRTDSignal(bool newSignal)
+{
+    if (xSemaphoreTake(SignalKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.RTD_signal = newSignal;
+
+        return xSemaphoreGive(SignalKey);
+    } else {
+        return false;
+    }
+}
+
+bool VCUData_getBrakeLightSignal(void)
+{
+    return data.brake_light_signal;
+}
+
+bool VCUData_setBrakeLightSignal(bool newSignal)
+{
+    if (xSemaphoreTake(SignalKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.brake_light_signal = newSignal;
+
+        return xSemaphoreGive(SignalKey);
+    } else {
+        return false;
+    }
+}
+
+bool VCUData_getThrottleAvailableSignal(void)
+{
+    return data.throttle_available;
+}
+
+bool VCUData_setThrottleAvailableSignal(bool newSignal)
+{
+    if (xSemaphoreTake(SignalKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.throttle_available = newSignal;
+
+        return xSemaphoreGive(SignalKey);
+    } else {
+        return false;
+    }
+}
+
+/* STATE FUNCTIONS */
+State VCUData_getState(void)
+{
+    return data.VCU_state;
+}
+
+bool VCUData_setState(State newState)
+{
+    if (xSemaphoreTake(StateKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.VCU_state = newState;
+
+        return xSemaphoreGive(StateKey);
+    } else {
+        return false;
+    }
+}
+
+
+/* ANALOG DATA FUNCTIONS */
+float VCUData_getCurrentHV_A(void)
+{
+    return data.currentHV_A;
+}
+
+bool VCUData_setCurrentHV_A(float newValue)
+{
+    if (xSemaphoreTake(HVKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.currentHV_A = newValue;
+
+        return xSemaphoreGive(HVKey);
+    } else {
+        return false;
+    }
+}
+
+float VCUData_getVoltageHV_V(void)
+{
+    return data.voltageHV_V;
+}
+
+bool VCUData_setVoltageHV_V(float newValue)
+{
+    if (xSemaphoreTake(HVKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.voltageHV_V = newValue;
+
+        return xSemaphoreGive(HVKey);
+    } else {
+        return false;
+    }
+}
+
+float VCUData_getCurrentLV_A(void)
+{
+    return data.currentLV_A;
+}
+
+bool VCUData_setCurrentLV_A(float newValue)
+{
+    if (xSemaphoreTake(LVKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.currentLV_A = newValue;
+
+        return xSemaphoreGive(LVKey);
+    } else {
+        return false;
+    }
+}
+
+float VCUData_getVoltageLV_V(void)
+{
+    return data.voltageLV_V;
+}
+
+bool VCUData_setVoltageLV_V(float newValue)
+{
+    if (xSemaphoreTake(LVKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.voltageLV_V = newValue;
+
+        return xSemaphoreGive(LVKey);
+    } else {
+        return false;
+    }
+}
+
+float VCUData_getBSEPercentage(void)
+{
+    return data.BSE_percentage;
+}
+
+bool VCUData_setBSEPercentage(float newValue)
+{
+    if (xSemaphoreTake(BSEAPPSKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.BSE_percentage = newValue;
+
+        return xSemaphoreGive(BSEAPPSKey);
+    } else {
+        return false;
+    }
+}
+
+float VCUData_getAPPS1Percentage(void)
+{
+    return data.APPS1_percentage;
+}
+
+bool VCUData_setAPPS1Percentage(float newValue)
+{
+    if (xSemaphoreTake(BSEAPPSKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.APPS1_percentage = newValue;
+
+        return xSemaphoreGive(BSEAPPSKey);
+    } else {
+        return false;
+    }
+}
+
+float VCUData_getAPPS2Percentage(void)
+{
+    return data.APPS2_percentage;
+}
+
+bool VCUData_setAPPS2Percentage(float newValue)
+{
+    if (xSemaphoreTake(BSEAPPSKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.APPS2_percentage = newValue;
+
+        return xSemaphoreGive(BSEAPPSKey);
+    } else {
+        return false;
+    }
+}
+
+float VCUData_getThrottlePercentage(void)
+{
+    return data.throttle_percentage;
+}
+
+bool VCUData_setThrottlePercentage(float newValue)
+{
+    if (xSemaphoreTake(BSEAPPSKey, pdMS_TO_TICKS(MUTEX_POLLING_TIME_MS))) {
+
+        data.throttle_percentage = newValue;
+
+        return xSemaphoreGive(BSEAPPSKey);
+    } else {
+        return false;
+    }
+}
+
+// FOR PRIVLEDGED ACCESS ONLY (like EEPROM)
+VCUData* VCUData_getPointer(void)
+{
+    return &data;
+}

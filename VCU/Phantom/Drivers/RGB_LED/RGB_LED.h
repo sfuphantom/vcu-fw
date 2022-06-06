@@ -13,7 +13,7 @@
 #ifndef SOURCE_RGB_H_
 #define SOURCE_RGB_H_
 
-#include <stdint.h>
+#include "hal_stdtypes.h"
 
 /*
  * MACHINE STATE COLOR CODING
@@ -25,25 +25,31 @@
  * SEVERE_FAULT     RED
  */
 
+typedef struct {
+    uint8 red;
+    uint8 green;
+    uint8 blue;
+} Color;
+
 #define DEFAULT_PWM_DUTY    50
 
-// Preset parameters for RGB_LED_drive
-#define RGB_OFF     0,                  0,                  0
-#define RGB_RED     DEFAULT_PWM_DUTY,   0,                  0
-#define RGB_GREEN   0,                  DEFAULT_PWM_DUTY,   0
-#define RGB_BLUE    0,                  0,                  DEFAULT_PWM_DUTY
-#define RGB_YELLOW  DEFAULT_PWM_DUTY,   DEFAULT_PWM_DUTY,   0
-#define RGB_MAGENTA DEFAULT_PWM_DUTY,   0,                  DEFAULT_PWM_DUTY
-#define RGB_CYAN    0,                  DEFAULT_PWM_DUTY,   DEFAULT_PWM_DUTY
-#define RGB_WHITE   DEFAULT_PWM_DUTY/2, DEFAULT_PWM_DUTY,   DEFAULT_PWM_DUTY
+// Preset colors
+#define RGB_OFF     ((Color) { 0,  0,  0})
+#define RGB_RED     ((Color) {DEFAULT_PWM_DUTY,  0,  0})
+#define RGB_GREEN   ((Color) { 0, DEFAULT_PWM_DUTY,  0})
+#define RGB_BLUE    ((Color) { 0,  0, DEFAULT_PWM_DUTY})
+#define RGB_YELLOW  ((Color) {DEFAULT_PWM_DUTY, DEFAULT_PWM_DUTY,  0})
+#define RGB_MAGENTA ((Color) {DEFAULT_PWM_DUTY,  0, DEFAULT_PWM_DUTY})
+#define RGB_CYAN    ((Color) { 0, DEFAULT_PWM_DUTY, DEFAULT_PWM_DUTY})
+#define RGB_WHITE   ((Color) {DEFAULT_PWM_DUTY/2, DEFAULT_PWM_DUTY, DEFAULT_PWM_DUTY})
 
 // Initialize the driver
-void RGB_LED_Init();
+void RGB_init();
 
 // Reset driver to initial state
-void RGB_LED_reset();
+void RGB_reset();
 
-// Example use: RGB_LED_drive(RGB_CYAN) or RGB_LED_drive(65, 40, 25)
-void RGB_LED_drive(uint32_t redLedPwm, uint32_t greenLedPwm, uint32_t blueLedPwm);
+// Example use: RGB_drive(RGB_CYAN) or RGB_LED_drive(65, 40, 25)
+void RGB_drive(Color color);
 
 #endif /* SOURCE_RGB_H_ */

@@ -84,15 +84,4 @@
 #define BSE_PRINT   0 // if this is enabled, it hogs the whole cpu since the task it runs in is called every 10ms and is the highest priority. doesn't allow other tasks/interrupts to run
 
 
-
-
-//xQueueHandle xq;
-
-/*********************************************************************************
- *                          STATE ENUMERATION
- *********************************************************************************/
-typedef enum {TRACTIVE_OFF, TRACTIVE_ON, RUNNING,  MINOR_FAULT, SEVERE_FAULT} State;
-
-
-
 #endif /* PHANTOM_HARDWARE_VCU_HW_BOARD_HARDWARE_H_ */
