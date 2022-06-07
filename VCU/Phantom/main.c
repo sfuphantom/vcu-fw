@@ -13,27 +13,25 @@
 #include "het.h"
 
 #include "RGB_LED.h"            // RGB LED wrapper written by Joshua Guo
-// #include "RTD_Buzzer.h"         // Ready to Drive buzzer wrapper written by Gabriel Soares
-// #include "MCP48FV_DAC_SPI.h"    // DAC library written by Ataur Rehman
-// #include "LV_monitor.h"         // COMMENT OUT IF USING LAUNCHPAD
-// #include "IMD.h"                // Bender IR155 IMD Library written by Sumreen Rattan
-// #include "eeprom_driver.h"      // EEPROM driver written by Junaid Khan
+ #include "RTD_Buzzer.h"         // Ready to Drive buzzer wrapper written by Gabriel Soares
+ #include "MCP48FV_DAC_SPI.h"    // DAC library written by Ataur Rehman
+ #include "eeprom_driver.h"      // EEPROM driver written by Junaid Khan
 
 #include "board_hardware.h"     // contains hardware defines for specific board used (i.e. VCU or launchpad)
 #include "vcu_data.h"           // VCU Data structure interface written by Joshua Guo
 
 #include "phantom_task.h"       // os_task wrapper written by Joshua Guo
-// #include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
+ #include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
 
-// #include "execution_timer.h"
+ #include "execution_timer.h"
 
 #include "task_test.h"
 #include "task_throttle.h"
-// #include "task_sensor_read.h"
-// #include "task_statemachine.h"
-// #include "task_watchdog.h"
-// #include "task_data_logging.h"
-// #include "task_eeprom.h"
+
+ #include "task_statemachine.h"
+ #include "task_watchdog.h"
+
+ #include "task_eeprom.h"
 
 /* USER CODE END */
 
@@ -60,13 +58,9 @@ void phantomDriversInit()
 {
     /* Phantom Library Initialization */
     VCUData_init();             // Initialize VCU Data Structure
-    // RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
+     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_init();             // Initialize RGB LEDs to start off
-    // MCP48FV_Init();             // Initialize DAC Library
-#ifdef LV_MONITOR
-    lv_monitorInit();           // Initialize LV Monitor Library
-#endif
-    // initializeIMD();            // Initialize IMD Library
+     MCP48FV_Init();             // Initialize DAC Library
 }
 
 void phantomTasksInit()

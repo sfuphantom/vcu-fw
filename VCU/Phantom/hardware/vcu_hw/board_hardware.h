@@ -31,8 +31,6 @@
 #define WATCHDOG_PORT         hetPORT1
 #define WATCHDOG_PIN          2
 
-/***************  WATCHDOG GPIO  *********************/
-#define TASK_TIMING_PORT      hetPORT1
 /********* RGB STATUS LEDS ON VCU ****************/
 #define RGB_LED_PORT          hetRAM1
 #define BLUE_LED              pwm1
@@ -63,16 +61,6 @@
 
 /*********   SPI PORTS   ****************/
 #define DAC_SPI_PORT          mibspiREG1
-#define HV_SPI_PORT           mibspiREG3
-
-/*********   I2C PORTS   ****************/
-#define LV_MONITOR_I2C_PORT   i2cREG1
-
-/*------------------------------------------------------------------------------------------------------------------*/
-
-/*********************************************************************************
- *                          GLOBAL VARIABLES I NEED TO CLEAN UP
- *********************************************************************************/
 
 
 /*********************************************************************************
