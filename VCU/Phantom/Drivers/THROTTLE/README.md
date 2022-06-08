@@ -4,17 +4,19 @@ CODE REFACTOR OVERVIEW:
 
 Non-Boolean variables in throttle.c will be split into two structs:   
 
-  -RawSensorValues 
+    RawSensorValues 
 
-  -FilteredSensorValues  
+    FilteredSensorValues  
 
-Accessing throttle data will be through structs. However, getter functions for pedal readings and faults remain the same.  
+NOTE: Accessing throttle variables will be through structs. However, getter functions for pedal readings and faults remain the same.  
+
+
 
 CHANGES: 
 
  
 
-(1) Variables placed in created struct: Raw_sensor_value  
+(1) Variables placed in created struct: RawSensorValue  
 
     adcData_t FP_data_array[3] 
 
@@ -26,7 +28,7 @@ CHANGES:
 
  
 
-(2) Variables placed in created struct: Filtered_sensor_value 
+(2) Variables placed in created struct: FilteredSensorValue 
 
     float BSE_previous_filtered_sensor_values; 
 
