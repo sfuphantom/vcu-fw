@@ -6,8 +6,8 @@
  *  Created on: Sept. 3, 2021
  *      Author: Joshua Guo
  */
-#ifndef PHANTOM_TASKS_TASK_STATEMACHINE_H_
-#define PHANTOM_TASKS_TASK_STATEMACHINE_H_
+#ifndef PHANTOM_TASKS_TASK_TEST_H
+#define PHANTOM_TASKS_TASK_TEST_H
 
 
 

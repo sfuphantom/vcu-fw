@@ -76,9 +76,9 @@ void VCUData_init(void)
 }
 
 /* FAULT FUNCTIONS */
-uint32 VCUData_readFaults(uint32 mask)
+Fault VCUData_readFaults(uint32 mask)
 {
-    return data.fault_flags & mask;
+    return (Fault) data.fault_flags & mask;
 }
 
 bool VCUData_turnOnFaults(uint32 mask)

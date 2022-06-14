@@ -10,7 +10,7 @@
 
 void lv_monitorInit(){
 
-    const uint8_t LV_Calibration[4] = {0x14,0x00}; //this is a calculated value 5120->0x1400
+    uint8_t LV_Calibration[4] = {0x14,0x00}; //this is a calculated value 5120->0x1400
 
 /* USER CODE BEGIN (3) */
 

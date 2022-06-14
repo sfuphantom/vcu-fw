@@ -12,6 +12,6 @@
 #define PHANTOM_TASKS_TASK_STATEMACHINE_H_
 
 /* Task */
-void Task_StateMachineInit(void)
+void Task_StateMachineInit(void);
 
 #endif /* PHANTOM_TASKS_TASK_STATEMACHINE_H_ */

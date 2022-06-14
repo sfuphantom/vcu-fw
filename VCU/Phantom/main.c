@@ -30,7 +30,7 @@
 #include "task_test.h"
 #include "task_throttle.h"
 // #include "task_sensor_read.h"
-// #include "task_statemachine.h"
+#include "task_statemachine.h"
 // #include "task_watchdog.h"
 // #include "task_data_logging.h"
 // #include "task_eeprom.h"
@@ -74,6 +74,7 @@ void phantomTasksInit()
     // initalizations of tasks
 //    Task_testInit();
     Task_throttleInit();
+//    Task_StateMachineInit();
 }
 /* USER CODE END */
 
