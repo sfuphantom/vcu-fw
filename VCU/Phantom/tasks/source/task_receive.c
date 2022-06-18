@@ -15,14 +15,13 @@
 #include "vcu_data.h"
 enum{
 
-    TASK_NUM = 1, //uxTaskGetNumberOfTasks
-    TASK_LIST, // vTaskList
-    TASK_SUSPEND, 
-    TASK_RESUME,
-    ECHO_THROTTLE,  
+    ECHO_THROTTLE=1,
+    ECHO_APPS1,
+    ECHO_APPS2,
+    ECHO_BSE,
     STAT_RUN,  // vTaskGetRunTimeStats
     STAT_START,  // xTaskGetTickCount
-    ECHO_APPS
+    TASK_LIST, // vTaskList
 };
 
 
@@ -30,6 +29,7 @@ enum{
 // (int)((ceil(log10(2^32))+1)*sizeof(char)) -stack overflow
 static char float_str[11];
 static char ptrTaskList[500];
+extern volatile unsigned long ulHighFrequencyTimerTicks;
 
 static Task task;
 static TaskHandle_t taskHandle;
@@ -49,9 +49,9 @@ void ReceiveTaskInit(void)
 }
 
 void UARTprintf(char msg[]){
-    UARTSend(PC_UART, "\r");
-    UARTSend(PC_UART, msg);
     UARTSend(PC_UART, "\n");
+    UARTSend(PC_UART, msg);
+    UARTSend(PC_UART, "\r");
 }
 
 static void vReceiveTask(void* arg)
@@ -74,16 +74,32 @@ static void vReceiveTask(void* arg)
 
         case ECHO_THROTTLE:
             ltoa((uint32_t)VCUData_getThrottlePercentage(), float_str);
-            UARTprintf(float_str);
+            UARTSend(PC_UART, float_str);
+            UARTSend(PC_UART, "\r");
             break;
-        case ECHO_APPS:
+        case ECHO_APPS1:
             ltoa((uint32_t)VCUData_getAPPS1Percentage(), float_str);
-            UARTprintf(float_str);
-            ltoa((uint32_t)VCUData_getAPPS2Percentage(), float_str);
-            UARTprintf(float_str);
-            ltoa((uint32_t)VCUData_getBSEPercentage(), float_str);
-            UARTprintf(float_str);
+            UARTSend(PC_UART, float_str);
+            UARTSend(PC_UART,"%\r");
             break;
+
+        case ECHO_APPS2:
+
+            ltoa((uint32_t)VCUData_getAPPS2Percentage(), float_str);
+            UARTSend(PC_UART,float_str);
+            UARTSend(PC_UART ,"%,\r");
+            break;
+        case ECHO_BSE:
+
+            ltoa((uint32_t)VCUData_getBSEPercentage(), float_str);
+            UARTSend(PC_UART,float_str);
+            UARTSend(PC_UART, "%\r");
+            break;
+
+        case STAT_START:
+            ltoa((uint32_t)xTaskGetTickCount(), float_str);
+            UARTSend(PC_UART, float_str);
+            UARTSend(PC_UART, "\r");
         default:
 //            ltoa(cmd, &cli_msg);
 //            UARTprintf(&cli_msg);
