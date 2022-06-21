@@ -12,7 +12,7 @@
 
 typedef void* TaskHandle_t;
 
-typedef struct {
+typedef struct _task {
     TaskFunction_t functionPtr;
     uint32 frequencyMs;
 } Task;

@@ -100,7 +100,7 @@
 
 //             if (currentState == TRACTIVE_OFF)
 //             {
-//                 RGB_LED_drive(RGB_CYAN);
+//                 RGB_drive(RGB_CYAN);
 
 //                 if (STATE_PRINT)
 //                 {
@@ -119,7 +119,7 @@
 //             }
 //             else if (currentState == TRACTIVE_ON)
 //             {
-//                  RGB_LED_drive(RGB_MAGENTA);
+//                  RGB_drive(RGB_MAGENTA);
 
 //                  if (STATE_PRINT)
 //                  {
@@ -154,7 +154,7 @@
 //             else if (currentState == RUNNING)
 //             {
 
-//                 RGB_LED_drive(RGB_GREEN);
+//                 RGB_drive(RGB_GREEN);
 
 //                 if (FAULTS)
 //                 {
@@ -184,7 +184,7 @@
 //                     UARTSend(PC_UART, "********MINOR_FAULT********");
 //                 }
                 
-//                 RGB_LED_drive(RGB_YELLOW);
+//                 RGB_drive(RGB_YELLOW);
 
 //                 if (FAULTS)
 //                 {
@@ -226,7 +226,7 @@
 //                     UARTSend(PC_UART, "********SEVERE_FAULT********");
 //                 }
 
-//                 RGB_LED_drive(RGB_RED);
+//                 RGB_drive(RGB_RED);
 
 //                 if (FAULTS)
 //                 {

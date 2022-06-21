@@ -14,7 +14,7 @@
 
 #include "RGB_LED.h"            // RGB LED wrapper written by Joshua Guo
 // #include "RTD_Buzzer.h"         // Ready to Drive buzzer wrapper written by Gabriel Soares
-// #include "MCP48FV_DAC_SPI.h"    // DAC library written by Ataur Rehman
+#include "MCP48FV_DAC_SPI.h"    // DAC library written by Ataur Rehman
 // #include "LV_monitor.h"         // COMMENT OUT IF USING LAUNCHPAD
 // #include "IMD.h"                // Bender IR155 IMD Library written by Sumreen Rattan
 // #include "eeprom_driver.h"      // EEPROM driver written by Junaid Khan
@@ -30,7 +30,7 @@
 #include "task_test.h"
 #include "task_throttle.h"
 // #include "task_sensor_read.h"
-// #include "task_statemachine.h"
+#include "task_statemachine.h"
 // #include "task_watchdog.h"
 // #include "task_data_logging.h"
 // #include "task_eeprom.h"
@@ -62,7 +62,7 @@ void phantomDriversInit()
     VCUData_init();             // Initialize VCU Data Structure
     // RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_init();             // Initialize RGB LEDs to start off
-    // MCP48FV_Init();             // Initialize DAC Library
+    MCP48FV_Init();             // Initialize DAC Library
 #ifdef LV_MONITOR
     lv_monitorInit();           // Initialize LV Monitor Library
 #endif
@@ -74,6 +74,7 @@ void phantomTasksInit()
     // initalizations of tasks
 //    Task_testInit();
     Task_throttleInit();
+    Task_StateMachineInit();
 }
 /* USER CODE END */
 

@@ -11,13 +11,14 @@
 #include <math.h>           // for fabsf function
 #include "hal_stdtypes.h"
 #include "gio.h"
-#include <adc.h>
+#include "adc.h"
 #include "MCP48FV_DAC_SPI.h"
 
 #include "vcu_data.h"
 #include "board_hardware.h"
 
 #include "task_config.h"
+#include "task_throttle.h"
 
 static Task task;
 static TaskHandle_t taskHandle; 
@@ -160,8 +161,8 @@ static void vThrottleTask(void* arg)
 
     // debugging - jaypacamarra
     // manually setting state to RUNNING and setting THROTTLE_AVAILABLE to true to test DAC - jaypacamarra
-    // VCUData_setState(RUNNING);
-    // VCUData_setThrottleAvailableSignal(true);
+    VCUData_setState(RUNNING);
+    VCUData_setThrottleAvailableSignal(true);
     /*********************************************************************************
       Set Throttle
      *********************************************************************************/
@@ -170,7 +171,7 @@ static void vThrottleTask(void* arg)
     if (state == RUNNING && isThrottleAvailable)
     {
         // update throttle percentage in vcu data structure
-        float apps_percent_avg = (apps1PedalPercent + apps2PedalPercent) / 2;
+        float apps_percent_avg = (pedalReadings.FP_sensor_1_sum + pedalReadings.FP_sensor_2_sum) / 2;
 
         VCUData_setThrottlePercentage(apps_percent_avg);
         // send DAC to inverter

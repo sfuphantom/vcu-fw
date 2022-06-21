@@ -10,7 +10,7 @@
 
 #include "hal_stdtypes.h"
 
-typedef enum {
+typedef enum _fault {
 
     // Shutdown Circuit Faults
     IMD_SEVERE_FAULT = (1U),
@@ -51,7 +51,7 @@ typedef enum {
     ALL_FAULTS = (~0U)                              // All 1s to let all faults through the mask
 } Fault;
 
-typedef enum {
+typedef enum _fault_group {
     SHUTDOWN_CIRCUIT_FAULT_GROUP = IMD_SEVERE_FAULT || BSPD_SEVERE_FAULT || BMS_GPIO_SEVERE_FAULT,
     BSE_APPS_FAULT_GROUP = BSE_RANGE_SEVERE_FAULT || APPS1_RANGE_SEVERE_FAULT || APPS2_RANGE_SEVERE_FAULT || APPS_10DIFF_SEVERE_FAULT || BSE_APPS_SIMULTANEOUS_MINOR_FAULT,
     HV_FAULT_GROUP = HV_CURRENT_OUT_OF_RANGE_MINOR_FAULT || HV_VOLTAGE_OUT_OF_RANGE_MINOR_FAULT || HV_APPS_PROPORTION_SEVERE_ERROR,
@@ -61,7 +61,7 @@ typedef enum {
     IMD_FAULT_GROUP = IMD_LOW_ISO_SEVERE_FAULT || IMD_SHORT_CIRCUIT_SEVERE_FAULT || IMD_DEVICE_ERR_SEVERE_FAULT || IMD_BAD_INFO_SEVERE_FAULT || IMD_UNDEF_SEVERE_FAULT || IMD_GARBAGE_DATA_SEVERE_FAULT
 } FaultGroup;
 
-typedef enum {
+typedef enum _state {
     TRACTIVE_OFF, 
     TRACTIVE_ON, 
     RUNNING, 
@@ -111,7 +111,7 @@ bool VCUData_setThrottlePercentage(float newValue);
 
 // Any module that needs direct access
 // to the VCU data structure needs to 
-// #define VCUDATA_PRIVLEDGED_ACCESS in their file
+// #define VCUDATA_PRIVLEDGED_ACCESS in their .c file
 #ifdef VCUDATA_PRIVLEDGED_ACCESS
 
 typedef struct {

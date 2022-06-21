@@ -49,7 +49,7 @@ void RGB_init();
 // Reset driver to initial state
 void RGB_reset();
 
-// Example use: RGB_drive(RGB_CYAN) or RGB_LED_drive(65, 40, 25)
+// Example use: RGB_drive(RGB_CYAN) or RGB_drive(65, 40, 25)
 void RGB_drive(Color color);
 
 #endif /* SOURCE_RGB_H_ */

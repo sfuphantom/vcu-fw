@@ -14,6 +14,8 @@
 #include "vcu_data.h"
 #include "RGB_LED.h"
 
+#include "task_statemachine.h"
+
 static Task task;
 static TaskHandle_t taskHandle; 
 
@@ -57,12 +59,12 @@ static void vStateMachineTask(void* arg)
 
     bool TSAL_signal = VCUData_getTSALSignal();
     bool RTDS_signal = VCUData_getRTDSignal();
-    Fault faults = VCUData_readFaults(ALL_FAULTS);
+    uint32 faults = VCUData_readFaults(ALL_FAULTS);
 
     switch(newState)
     {
         case TRACTIVE_OFF:
-            RGB_LED_drive(RGB_CYAN);
+            RGB_drive(RGB_CYAN);
 
             if (RTDS_signal || faults) {
                 newState = SEVERE_FAULT;
@@ -72,7 +74,7 @@ static void vStateMachineTask(void* arg)
             break;
 
         case TRACTIVE_ON:
-            RGB_LED_drive(RGB_MAGENTA);
+            RGB_drive(RGB_MAGENTA);
 
             if (faults) {
                 newState = isSevereFault(faults, newState) ? SEVERE_FAULT : isMinorFault(faults) ? MINOR_FAULT : newState;
@@ -84,7 +86,7 @@ static void vStateMachineTask(void* arg)
             break;
 
         case RUNNING:
-            RGB_LED_drive(RGB_GREEN);
+            RGB_drive(RGB_GREEN);
 
             if (faults) {
                 // Update state depending on severity of fault
@@ -97,7 +99,7 @@ static void vStateMachineTask(void* arg)
             break;
 
         case MINOR_FAULT:
-            RGB_LED_drive(RGB_YELLOW);
+            RGB_drive(RGB_YELLOW);
             if (faults && isSevereFault(faults, newState)) {
                 newState = SEVERE_FAULT;
             } else if (RTDS_signal && TSAL_signal) {
@@ -116,7 +118,7 @@ static void vStateMachineTask(void* arg)
             break;
 
         case SEVERE_FAULT:
-            RGB_LED_drive(RGB_RED);
+            RGB_drive(RGB_RED);
 
             if (!(faults || RTDS_signal))
             {
