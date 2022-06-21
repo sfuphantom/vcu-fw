@@ -160,8 +160,8 @@ static void vThrottleTask(void* arg)
 
     // debugging - jaypacamarra
     // manually setting state to RUNNING and setting THROTTLE_AVAILABLE to true to test DAC - jaypacamarra
-    // VCUData_setState(RUNNING);
-    // VCUData_setThrottleAvailableSignal(true);
+    VCUData_setState(RUNNING);
+    VCUData_setThrottleAvailableSignal(true);
     /*********************************************************************************
       Set Throttle
      *********************************************************************************/
