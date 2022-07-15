@@ -6,7 +6,8 @@
  */
 
 /* USER CODE BEGIN (0) */
-
+#include "rti.h"
+#include "task_receive.h"
 #include "sci.h"
 #include "gio.h"
 #include "adc.h"
@@ -67,14 +68,28 @@ void phantomTasksInit()
 {
     // initalizations of tasks
 //    Task_testInit();
+    ReceiveTaskInit();
     Task_throttleInit();
 }
+volatile unsigned long ulHighFrequencyTimerTicks;
+void rtiNotification(uint32 notification)
+{
+    ulHighFrequencyTimerTicks++;
+    // should probably add a check to see if the right timer was called but test board only has one active hardware timer atm
+
+
+}
 /* USER CODE END */
+
+
 
 void main(void)
 {
 /* USER CODE BEGIN (3) */
-    
+    rtiInit();
+    rtiEnableNotification(rtiNOTIFICATION_COMPARE0);
+    _enable_IRQ();
+
     halcogenInit();
     phantomDriversInit();
     phantomTasksInit();
