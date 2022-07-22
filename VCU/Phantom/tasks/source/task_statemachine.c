@@ -6,6 +6,7 @@
  */
 #include "phantom_task.h"
 #include "phantom_timer.h"   // if you need to use timers
+#include "phantom_queue.h"
 
 // #include your_task_header_file
 // Any other .h files you need goes here...
@@ -15,7 +16,10 @@
 #include "RGB_LED.h"
 
 static Task task;
-static TaskHandle_t taskHandle; 
+static TaskHandle_t taskHandle;
+static QueueHandle_t sendQueue1;
+static QueueHandle_t sendQueue2;
+static QueueHandle_t readQueue;
 
 // Any other module-scope variables goes here... (make sure they have the 'static' keyword)
 static TimerHandle_t HV_CurrentTimerHandle;
@@ -25,13 +29,26 @@ static bool HV_CURRENT_TIMER_EXPIRED;
 
 // Pre-define your static functions here...
 static void vStateMachineTask(void* arg);
-static bool isSevereFault(Fault faults, State currentState);
-static bool isMinorFault(Fault faults);
+static bool isSevereFault(uint32 faults, State currentState);
+static bool isMinorFault(uint32 faults);
 static void HV_CurrentTimerCallback(TimerHandle_t timer);
 static void HV_VoltageTimerCallback(TimerHandle_t timer);
 
+void Task_StateMachineSetSendQueue1(QueueHandle_t queueHandle)
+{
+    sendQueue1 = queueHandle;
+}
 
-// BTW this function should be the only thing in your header file (aside from include guards and other comments ofc)
+void Task_StateMachineSetSendQueue2(QueueHandle_t queueHandle)
+{
+    sendQueue2 = queueHandle;
+}
+
+void Task_StateMachineSetReadQueue(QueueHandle_t queueHandle)
+{
+    readQueue = queueHandle;
+}
+
 void Task_StateMachineInit(void)
 {
     task = (Task) {vStateMachineTask, STATE_MACHINE_TASK_PERIOD_MS};
@@ -57,7 +74,7 @@ static void vStateMachineTask(void* arg)
 
     bool TSAL_signal = VCUData_getTSALSignal();
     bool RTDS_signal = VCUData_getRTDSignal();
-    Fault faults = VCUData_readFaults(ALL_FAULTS);
+    uint32 faults = VCUData_readFaults(ALL_FAULTS);
 
     switch(newState)
     {
@@ -128,7 +145,7 @@ static void vStateMachineTask(void* arg)
     VCUData_setState(newState);
 }
 
-static bool isSevereFault(Fault faults, State currentState)
+static bool isSevereFault(uint32 faults, State currentState)
 {
     if (!faults) {
         return false;
@@ -182,7 +199,7 @@ static bool isSevereFault(Fault faults, State currentState)
     return false;
 }
 
-static bool isMinorFault(Fault faults)
+static bool isMinorFault(uint32 faults)
 {
     if (!faults) {
         return false;

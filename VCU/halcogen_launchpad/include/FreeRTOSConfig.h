@@ -131,6 +131,9 @@
 /* Semaphores */
 #define configUSE_COUNTING_SEMAPHORES   1
 
+/* Queues */
+#define configUSE_QUEUE_SETS            1 // needed for queue sets - josh
+
 /* Timers */
 #define configUSE_TIMERS                1
 #define configTIMER_TASK_PRIORITY		(1)

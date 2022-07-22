@@ -7,6 +7,7 @@
  */
 #include "phantom_task.h"
 #include "phantom_timer.h"
+#include "phantom_queue.h"
 
 #include <math.h>           // for fabsf function
 #include "hal_stdtypes.h"
@@ -20,7 +21,9 @@
 #include "task_config.h"
 
 static Task task;
-static TaskHandle_t taskHandle; 
+static TaskHandle_t taskHandle;
+static QueueHandle_t sendQueue;
+static QueueSetHandle_t recvQueueSet;
 
 static TimerHandle_t APPS1RangeFaultTimer;
 static TimerHandle_t APPS2RangeFaultTimer;
@@ -60,7 +63,7 @@ static bool APPS2_RANGE_FAULT_TIMER_EXPIRED = false;   //added by jaypacamarra
 static bool BSE_RANGE_FAULT_TIMER_EXPIRED = false;     //added by jaypacamarra
 static bool FP_DIFF_FAULT_TIMER_EXPIRED = false;       //added by jaypacamarra
 
-static void vThrottleTask(void* arg);
+static void vThrottleActorTask(void* arg);
 
 static void RTDS_CALLBACK(TimerHandle_t xTimers);
 static void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);
@@ -75,11 +78,19 @@ static bool check_Pedal_Range_Fault(uint32_t pedalValue, uint32_t minValue, uint
 static bool check_10PercentAPPS_Fault(float Percent_APPS1_Pressed, float Percent_APPS2_Pressed);
 static bool check_Brake_Plausibility_Fault(uint32_t BSE_sensor_sum, float Percent_APPS1_Pressed, float Percent_APPS2_Pressed);
 
-
-// BTW this function should be the only thing in your header file (aside from include guards and other comments ofc)
-void Task_throttleInit(void)
+void Task_throttleActorSetReadQueueSet(QueueSetHandle_t queue_set_handle)
 {
-    task = (Task) {vThrottleTask, THROTTLE_TASK_PERIOD_MS};
+    recvQueueSet = queue_set_handle;
+}
+
+void Task_throttleActorSetSendQueue(QueueHandle_t queue_handle)
+{
+    sendQueue = queue_handle;
+}
+
+void Task_throttleActorInit(void)
+{
+    task = (Task) {vThrottleActorTask, THROTTLE_TASK_PERIOD_MS};
 
     // Phantom_createTask should block infinitely if task creation failed
     taskHandle = Phantom_createTask(&task, "ThrottleTask", THROTTLE_TASK_STACK_SIZE, THROTTLE_TASK_PRIORITY);
@@ -95,7 +106,7 @@ void Task_throttleInit(void)
     (void) taskHandle;
 }
 
-static void vThrottleTask(void* arg)
+static void vThrottleActorTask(void* arg)
 {
     // arg will always be NULL, so ignore it.
 
