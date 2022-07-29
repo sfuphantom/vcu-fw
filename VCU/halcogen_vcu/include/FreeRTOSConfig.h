@@ -99,7 +99,7 @@
 #define configUSE_16_BIT_TICKS        0
 #define configCPU_CLOCK_HZ            ( ( unsigned portLONG ) 80000000 ) /* Timer clock. */
 #define configTICK_RATE_HZ            ( ( TickType_t ) 1000 )
-#define configMAX_PRIORITIES          ( 5 )
+#define configMAX_PRIORITIES          ( 6 )
 #define configMINIMAL_STACK_SIZE      ( ( unsigned portSHORT ) 256 )
 #define configTOTAL_HEAP_SIZE         ( ( size_t ) 12000 )   // 8192 - original; We have RAM size allocated to 189184 Bytes - check linker file - need to double check - jjkhan
 #define configMAX_TASK_NAME_LEN       ( 16 )
