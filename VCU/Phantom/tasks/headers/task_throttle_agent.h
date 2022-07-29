@@ -8,7 +8,16 @@
 #ifndef PHANTOM_TASKS_TASK_THROTTLE_AGENT_H_
 #define PHANTOM_TASKS_TASK_THROTTLE_AGENT_H_
 
+QueueHandle_t ThrottleAgent_getMailBoxHandle();
+
+#ifndef VCU_SIM_MODE
+
+void Task_throttleAgentSimInit(void);
+
+#else
+
 void Task_throttleAgentInit(void);
-void Task_throttleAgentSetSendQueue(void* queue_handle);
+
+#endif
 
 #endif
