@@ -6,6 +6,10 @@
  */
 
 /* USER CODE BEGIN (0) */
+
+// uncomment to switch to simulation mode
+// #define VCU_SIM_MODE
+
 #include "rti.h"
 #include "sci.h"
 #include "gio.h"
@@ -40,7 +44,6 @@
 void halcogenInit()
 {
     /* Halcogen Initialization */
-    _enable_IRQ();              // Enable interrupts        // which file is this function from? -josh
     sciInit();                  // Initialize UART (SCI) halcogen driver
     gioInit();                  // Initialize GPIO halcogen driver
     adcInit();                  // Initialize ADC halcogen driver
@@ -62,32 +65,6 @@ void phantomDriversInit()
      RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_init();             // Initialize RGB LEDs to start off
      MCP48FV_Init();             // Initialize DAC Library
-}
-
-void phantomQueueInit()
-{
-    QueueHandle_t statusQ = Phantom_createQueue(10, sizeof(int)),
-                  stateThrottleQ = Phantom_createQueue(1, sizeof(int)),
-                  stateInterruptQ = Phantom_createQueue(1, sizeof(int)),
-                  pedalQ = Phantom_createQueue(1, sizeof(int) * 3),
-                  interruptQ = Phantom_createQueue(10, sizeof(char)),
-                  printQ = Phantom_createQueue(32, sizeof(char) * 8);
-    
-    QueueSetHandle_t throttleQSet = Phantom_createQueueSet(sizeof(int) * 4),
-                     interruptQSet = Phantom_createQueueSet(sizeof(int) + (10 * sizeof(char)));
-    
-    // add queues to receive sets
-    Phantom_addToQueueSet(throttleQSet, pedalQ);
-    Phantom_addToQueueSet(throttleQSet, stateThrottleQ);
-    Phantom_addToQueueSet(interruptQSet, interruptQ);
-    Phantom_addToQueueSet(interruptQSet, stateInterruptQ);
-
-    // set tasks' references to their corresponding queues
-    Task_StateMachineSetSendQueue1(stateInterruptQ);
-    Task_StateMachineSetSendQueue2(stateThrottleQ);
-    Task_StateMachineSetReadQueue(statusQ);
-    Task_throttleActorSetSendQueue(statusQ);
-    Task_throttleActorSetReadQueueSet(throttleQSet);
 }
 
 void phantomTasksInit()
@@ -119,7 +96,6 @@ void main(void)
     halcogenInit();
     phantomDriversInit();
 
-    phantomQueueInit();
     phantomTasksInit();
 
     // Phantom_startTaskScheduler is Blocking
