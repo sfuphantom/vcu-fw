@@ -21,7 +21,7 @@ static TaskHandle_t taskHandle;
 static void vYourTaskFunction(void* arg);
 // static void yourTimerCallbackFunc(TimerHandle_t timer);
 
-// BTW this function should be the only thing in your header file (aside from include guards and other comments ofc)
+// this function should be in your header file (aside from include guards and other comments ofc)
 void YourTaskInit(void)
 {
     task = (Task) {vYourTaskFunction, YOUR_TASK_PERIOD_MS};
