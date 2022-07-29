@@ -93,7 +93,7 @@ void Task_throttleActorInit(void)
     task = (Task) {vThrottleActorTask, THROTTLE_TASK_PERIOD_MS};
 
     // Phantom_createTask should block infinitely if task creation failed
-    taskHandle = Phantom_createTask(&task, "ThrottleTask", THROTTLE_TASK_STACK_SIZE, THROTTLE_TASK_PRIORITY);
+    taskHandle = Phantom_createTask(&task, "ThrottleActorTask", THROTTLE_TASK_STACK_SIZE, THROTTLE_TASK_PRIORITY);
 
     APPS1RangeFaultTimer = Phantom_createTimer("APPS1_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS1_SEVERE_RANGE_FAULT_CALLBACK);
     APPS2RangeFaultTimer = Phantom_createTimer("APPS2_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS2_SEVERE_RANGE_FAULT_CALLBACK);
