@@ -48,12 +48,6 @@ void ReceiveTaskInit(void)
     // any other init code you want to put goes here...
 }
 
-void UARTprintf(char msg[]){
-    UARTSend(PC_UART, "\n");
-    UARTSend(PC_UART, msg);
-    UARTSend(PC_UART, "\r");
-}
-
 static void vReceiveTask(void* arg)
 {
     char cli_msg = '0';
@@ -66,9 +60,9 @@ static void vReceiveTask(void* arg)
         case TASK_LIST:
 
             vTaskGetRunTimeStats(ptrTaskList);
-            UARTprintf(ptrTaskList);
-             vTaskList(ptrTaskList);
-             UARTprintf(ptrTaskList);
+            UARTSend(PC_UART, ptrTaskList);
+            vTaskList(ptrTaskList);
+            UARTSend(PC_UART, ptrTaskList);
 
             break;
 
