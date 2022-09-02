@@ -9,6 +9,7 @@
 #define PHANTOM_DATA_STRUCTURES_VCU_DATA_H_
 
 #include "hal_stdtypes.h"
+#include "vcu_common.h"
 
 typedef enum {
 
@@ -60,14 +61,6 @@ typedef enum {
     TSAL_FAULT_GROUP = TSAL_WELDED_AIRS_SEVERE_FAULT,
     IMD_FAULT_GROUP = IMD_LOW_ISO_SEVERE_FAULT || IMD_SHORT_CIRCUIT_SEVERE_FAULT || IMD_DEVICE_ERR_SEVERE_FAULT || IMD_BAD_INFO_SEVERE_FAULT || IMD_UNDEF_SEVERE_FAULT || IMD_GARBAGE_DATA_SEVERE_FAULT
 } FaultGroup;
-
-typedef enum {
-    TRACTIVE_OFF, 
-    TRACTIVE_ON, 
-    RUNNING, 
-    MINOR_FAULT,
-    SEVERE_FAULT
-} State;
 
 // function prototypes
 void VCUData_init(void);

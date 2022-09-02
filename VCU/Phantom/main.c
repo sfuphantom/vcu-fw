@@ -22,7 +22,7 @@
 #include "eeprom_driver.h"      // EEPROM driver written by Junaid Khan
 
 #include "board_hardware.h"     // contains hardware defines for specific board used (i.e. VCU or launchpad)
-#include "vcu_data.h"           // VCU Data structure interface written by Joshua Guo
+#include "vcu_data.h"           // VCU Data structure interface written by Joshua Guo (DEPRECATED)
 
 #include "phantom_queue.h"      // os_queue wrapper written by Joshua Guo
 #include "phantom_task.h"       // os_task wrapper written by Joshua Guo

@@ -24,7 +24,15 @@ typedef enum _isr_id {
 
 typedef struct _isr_action {
     isr_id_t id;
-    BaseType_t (*isr_func) (int state, ...);
+    BaseType_t (*isr_func) (void* arg);
 } isr_action_t;
+
+typedef struct _pedal_reading {
+    uint16_t bse;
+    uint16_t fp2;
+    uint16_t fp1;
+} pedal_reading_t;
+
+
 
 #endif

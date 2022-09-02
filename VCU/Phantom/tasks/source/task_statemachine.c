@@ -12,16 +12,17 @@
 // Any other .h files you need goes here...
 #include "task_config.h"
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
-#include "vcu_data.h"
+#include "vcu_data.h"           // deprecated
+#include "vcu_common.h"
 #include "RGB_LED.h"
 
 static Task task;
 static TaskHandle_t taskHandle;
-static QueueHandle_t sendQueue1;
-static QueueHandle_t sendQueue2;
-static QueueHandle_t readQueue;
+static QueueHandle_t queueHandle;
 
 // Any other module-scope variables goes here... (make sure they have the 'static' keyword)
+static State currentState;
+
 static TimerHandle_t HV_CurrentTimerHandle;
 static TimerHandle_t HV_VoltageTimerHandle;
 static bool HV_VOLTAGE_TIMER_EXPIRED;
@@ -34,19 +35,9 @@ static bool isMinorFault(uint32 faults);
 static void HV_CurrentTimerCallback(TimerHandle_t timer);
 static void HV_VoltageTimerCallback(TimerHandle_t timer);
 
-void Task_StateMachineSetSendQueue1(QueueHandle_t queueHandle)
+State StateMachine_getState()
 {
-    sendQueue1 = queueHandle;
-}
-
-void Task_StateMachineSetSendQueue2(QueueHandle_t queueHandle)
-{
-    sendQueue2 = queueHandle;
-}
-
-void Task_StateMachineSetReadQueue(QueueHandle_t queueHandle)
-{
-    readQueue = queueHandle;
+    return currentState;
 }
 
 void Task_StateMachineInit(void)
@@ -70,7 +61,7 @@ static void vStateMachineTask(void* arg)
     // arg will always be NULL, so ignore it.
 
     // your task stuff goes in here...
-    State newState = VCUData_getState();
+    State newState = currentState;
 
     bool TSAL_signal = VCUData_getTSALSignal();
     bool RTDS_signal = VCUData_getRTDSignal();
@@ -142,7 +133,7 @@ static void vStateMachineTask(void* arg)
             break;
     }
 
-    VCUData_setState(newState);
+    currentState = newState;
 }
 
 static bool isSevereFault(uint32 faults, State currentState)

@@ -25,7 +25,8 @@ void gioNotification(gioPORT_t* port, uint32 bit)
     // else if ... TODO
 
     if (interruptAction.id != ISR_ID_ERROR) {
-        QueueHandle_t actionQ = ThrottleActor_getActionHandleQueue();
+        QueueHandle_t actionQ = InterruptActor_getActionQueueHandle();
+
     }
 }
 

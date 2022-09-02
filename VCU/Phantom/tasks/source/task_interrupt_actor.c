@@ -9,6 +9,7 @@
 #include "phantom_queue.h"
 
 #include "task_interrupt_actor.h"
+#include "task_statemachine.h"
 // Any other .h files you need goes here...
 #include "vcu_common.h"
 #include "os_portmacro.h"
@@ -65,9 +66,9 @@ static void vInterruptActorTask(void* arg)
 
     Phantom_receive(interruptActionsQueue, &buffer, portMAX_DELAY);
 
-    Phantom_peek(machineStateMailBox, &state, portMAX_DELAY);
+    state = StateMachine_getState();
 
-    buffer.isr_func_t(state, interruptActorOutQueue); // and any other params?
+    buffer.isr_func(state, interruptActorOutQueue); // and any other params?
     
 }
 

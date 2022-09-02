@@ -11,17 +11,12 @@
 #include "task_throttle_agent.h"
 #include "task_config.h"
 // Any other .h files you need goes here...
+#include "vcu_common.h"
 #include "board_hardware.h"
 #include "adc.h"
 
 static Task task;
 static TaskHandle_t taskHandle; 
-
-typedef struct _pedal_reading {
-    uint16_t bse;
-    uint16_t fp2;
-    uint16_t fp1;
-} pedal_reading_t;
 
 // Any other module-scope variables goes here... (make sure they have the 'static' keyword)
 static QueueHandle_t throttleMailBox = NULL;
@@ -88,7 +83,7 @@ void Task_throttleAgentSimInit(void)
 
 static void vThrottleAgentSimTask(void* arg)
 {
-
+    // TODO
 }
 
 // Other helper functions and callbacks goes here...
