@@ -8,7 +8,9 @@
 #ifndef PHANTOM_TASKS_TASK_THROTTLE_AGENT_H_
 #define PHANTOM_TASKS_TASK_THROTTLE_AGENT_H_
 
-QueueHandle_t ThrottleAgent_getMailBoxHandle();
+#include "vcu_common.h"
+
+QueueHandle_t ThrottleAgent_receive(pedal_reading_t* pdreadings, TickType_t wait_time_ms);
 
 #ifndef VCU_SIM_MODE
 

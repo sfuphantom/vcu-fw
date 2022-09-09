@@ -75,10 +75,10 @@ static void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers);
 
 void Task_throttleActorInit(void)
 {
-    task = (Task) {vThrottleActorTask, THROTTLE_TASK_PERIOD_MS};
+    task = (Task) {vThrottleActorTask, 0};
 
     // Phantom_createTask should block infinitely if task creation failed
-    taskHandle = Phantom_createTask(&task, "ThrottleActorTask", THROTTLE_TASK_STACK_SIZE, THROTTLE_TASK_PRIORITY);
+    taskHandle = Phantom_createTask(&task, "ThrottleActorTask", THROTTLE_ACT_STACK_SIZE, THROTTLE_ACT_PRIORITY);
 
     APPS1RangeFaultTimer = Phantom_createTimer("APPS1_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS1_SEVERE_RANGE_FAULT_CALLBACK);
     APPS2RangeFaultTimer = Phantom_createTimer("APPS2_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS2_SEVERE_RANGE_FAULT_CALLBACK);
@@ -98,26 +98,23 @@ static void vThrottleActorTask(void* arg)
     // Get pedal readings
     pedal_reading_t pedalReadings = (pedal_reading_t) {0, 0, 0};
 
-    if (throttleAgentMailBox == NULL) {
-        throttleAgentMailBox = ThrottleAgent_getMailBoxHandle();
-    }
-
+    ThrottleAgent_receive(&pedalReadings, portMAX_DELAY)
     Phantom_receive(throttleAgentMailBox, &pedalReadings, portMAX_DELAY);
 
-    float apps1PedalPercent = calculatePedalPercent(pedalReadings.FP_sensor_1_sum, PADDED_APPS1_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
-    float apps2PedalPercent = calculatePedalPercent(pedalReadings.FP_sensor_2_sum, PADDED_APPS2_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
-    float bsePedalPercent = calculatePedalPercent(pedalReadings.BSE_sensor_sum, PADDED_BSE_MIN_VALUE, PADDED_BSE_MAX_VALUE);
+    float apps1PedalPercent = calculatePedalPercent(pedalReadings.fp1, PADDED_APPS1_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
+    float apps2PedalPercent = calculatePedalPercent(pedalReadings.fp2, PADDED_APPS2_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
+    float bsePedalPercent = calculatePedalPercent(pedalReadings.bse, PADDED_BSE_MIN_VALUE, PADDED_BSE_MAX_VALUE);
 
     // check for short to GND/VCC on APPS sensor 1
-    bool apps1Fault = check_Pedal_Range_Fault(pedalReadings.FP_sensor_1_sum, APPS1_MIN_VALUE, APPS1_MAX_VALUE, APPS1RangeFaultTimer, &APPS1_RANGE_FAULT_TIMER_EXPIRED);
+    bool apps1Fault = check_Pedal_Range_Fault(pedalReadings.fp1, APPS1_MIN_VALUE, APPS1_MAX_VALUE, APPS1RangeFaultTimer, &APPS1_RANGE_FAULT_TIMER_EXPIRED);
     // check for short to GND/VCC on APPS sensor 2
-    bool apps2Fault = check_Pedal_Range_Fault(pedalReadings.FP_sensor_2_sum, APPS2_MIN_VALUE, APPS2_MAX_VALUE, APPS2RangeFaultTimer, &APPS2_RANGE_FAULT_TIMER_EXPIRED);
+    bool apps2Fault = check_Pedal_Range_Fault(pedalReadings.fp2, APPS2_MIN_VALUE, APPS2_MAX_VALUE, APPS2RangeFaultTimer, &APPS2_RANGE_FAULT_TIMER_EXPIRED);
     // check for short to GND/VCC on BSE
-    bool bseFault   = check_Pedal_Range_Fault(pedalReadings.BSE_sensor_sum, BSE_MIN_VALUE, BSE_MAX_VALUE, BSERangeFaultTimer, &BSE_RANGE_FAULT_TIMER_EXPIRED);
+    bool bseFault   = check_Pedal_Range_Fault(pedalReadings.bse, BSE_MIN_VALUE, BSE_MAX_VALUE, BSERangeFaultTimer, &BSE_RANGE_FAULT_TIMER_EXPIRED);
     // Check if APPS1 and APPS2 are within 10% of each other
     bool diffFault  = check_10PercentAPPS_Fault(apps1PedalPercent, apps2PedalPercent);
     // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25%
-    bool simulFault = check_Brake_Plausibility_Fault(pedalReadings.BSE_sensor_sum, apps1PedalPercent, apps2PedalPercent);
+    bool simulFault = check_Brake_Plausibility_Fault(pedalReadings.bse, apps1PedalPercent, apps2PedalPercent);
 
     // Fill the unrelevant bits with flags from vcu data
     uint32_t currentFaults = 0;
@@ -133,7 +130,7 @@ static void vThrottleActorTask(void* arg)
     /*********************************************************************************
       brake light
      *********************************************************************************/
-    uint32_t BSESensorSum = pedalReadings.BSE_sensor_sum;
+    uint32_t BSESensorSum = pedalReadings.bse;
     if (brake_light_state == BRAKE_LIGHT_OFF && BSESensorSum > (BRAKING_THRESHOLD + HYSTERESIS))
     {
         // turn on brake lights

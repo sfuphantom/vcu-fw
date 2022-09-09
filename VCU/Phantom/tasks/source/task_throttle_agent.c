@@ -26,9 +26,9 @@ static pedal_reading_t prevFilteredPedalRd = (pedal_reading_t) {0, 0, 0};
 static void vThrottleAgentTask(void* arg);
 static void vThrottleAgentSimTask(void* arg);
 
-QueueHandle_t ThrottleAgent_getMailBoxHandle()
+BaseType_t ThrottleAgent_receive(pedal_reading_t* pdreading, TickType_t wait_time_ms)
 {
-    return throttleMailBox;
+    return Phantom_receive(throttleMailBox, pdreading, wait_time_ms);
 }
 
 void Task_throttleAgentInit(void)
