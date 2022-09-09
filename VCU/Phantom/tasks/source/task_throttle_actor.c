@@ -98,8 +98,7 @@ static void vThrottleActorTask(void* arg)
     // Get pedal readings
     pedal_reading_t pedalReadings = (pedal_reading_t) {0, 0, 0};
 
-    ThrottleAgent_receive(&pedalReadings, portMAX_DELAY)
-    Phantom_receive(throttleAgentMailBox, &pedalReadings, portMAX_DELAY);
+    ThrottleAgent_receive(&pedalReadings, portMAX_DELAY);
 
     float apps1PedalPercent = calculatePedalPercent(pedalReadings.fp1, PADDED_APPS1_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
     float apps2PedalPercent = calculatePedalPercent(pedalReadings.fp2, PADDED_APPS2_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
