@@ -1,9 +1,9 @@
 #ifndef PHANTOM_TASKS_INTERRUPT_ACTOR_H_
 #define PHANTOM_TASKS_INTERRUPT_ACTOR_H_
 
-QueueHandle_t InterruptActor_getActionQueueHandle();
+#include <stdint.h>
 
-// TODO
-
+void InterruptInit(void);
+uint8_t receiveIntEvent(uint32_t delay);
 
 #endif
