@@ -10,16 +10,9 @@
 
 #include "vcu_common.h"
 
-QueueHandle_t ThrottleAgent_receive(pedal_reading_t* pdreadings, TickType_t wait_time_ms);
 
-#ifndef VCU_SIM_MODE
+void throttleAgentInit(void);
+uint8_t receivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms);
 
-void Task_throttleAgentSimInit(void);
-
-#else
-
-void Task_throttleAgentInit(void);
-
-#endif
 
 #endif

@@ -6,46 +6,63 @@
  */
 #include "phantom_task.h"
 #include "phantom_queue.h"
-// #include "phantom_timer.h"   // if you need to use timers
 
 #include "task_throttle_agent.h"
 #include "task_config.h"
-// Any other .h files you need goes here...
+
 #include "vcu_common.h"
 #include "board_hardware.h"
 #include "adc.h"
 
-static Task task;
-static TaskHandle_t taskHandle; 
+typedef struct ThrottleAgent_t{
+    PipeTask_t pipeline;
+    pedal_reading_t readings;
+    pedal_reading_t prevReadings;
+}ThrottleAgent_t;
 
-// Any other module-scope variables goes here... (make sure they have the 'static' keyword)
-static QueueHandle_t throttleMailBox = NULL;
-static pedal_reading_t prevFilteredPedalRd = (pedal_reading_t) {0, 0, 0};
+static ThrottleAgent_t footPedals;
 
-// Pre-define your static functions here...
 static void vThrottleAgentTask(void* arg);
-static void vThrottleAgentSimTask(void* arg);
 
-BaseType_t ThrottleAgent_receive(pedal_reading_t* pdreading, TickType_t wait_time_ms)
+static pedal_reading_t readPedals();
+
+/* Public API */
+uint8_t receivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms)
 {
-    return Phantom_receive(throttleMailBox, pdreading, wait_time_ms);
+    return Phantom_receive(footPedals.pipeline.q, pdreading, wait_time_ms) == pdTRUE;
 }
 
-void Task_throttleAgentInit(void)
+void throttleAgentInit(void)
 {
-    task = (Task) {vThrottleAgentTask, THROTTLE_AGT_PERIOD_MS};
+    footPedals.pipeline.task = (Task) {vThrottleAgentTask, THROTTLE_AGT_PERIOD_MS};
 
-    // Phantom_createTask should block infinitely if task creation failed
-    taskHandle = Phantom_createTask(&task, "ThrottleAgentTask", THROTTLE_AGT_STACK_SIZE, THROTTLE_AGT_PRIORITY);
+    // blocks indefinitely if task creation failed
+    footPedals.pipeline.taskHandle = Phantom_createTask(&footPedals.pipeline.task, "ThrottleAgentTask", THROTTLE_AGT_STACK_SIZE, THROTTLE_AGT_PRIORITY);
 
-    // any other init code you want to put goes here...
-    throttleMailBox = Phantom_createMailBox(sizeof(pedal_reading_t));
+    footPedals.pipeline.q = Phantom_createMailBox(sizeof(pedal_reading_t));
 }
 
 static void vThrottleAgentTask(void* arg)
 {
-    // arg will always be NULL, so ignore it.
 
+    footPedals.readings = readPedals();
+
+    // apply a low pass filter with ALPHA of 0.5
+    footPedals.readings.bse = (footPedals.readings.bse + footPedals.prevReadings.bse) >> 1;
+    footPedals.readings.fp1 = (footPedals.readings.fp1 + footPedals.prevReadings.fp1) >> 1;
+    footPedals.readings.fp2 = (footPedals.readings.fp2 + footPedals.prevReadings.fp2) >> 1;
+
+    // update prev filtered values
+    footPedals.prevReadings =  footPedals.readings;
+
+    // send filtered values to mailbox
+    Phantom_overwrite(footPedals.pipeline.q, &footPedals.readings);
+}
+
+static pedal_reading_t readPedals()
+{
+
+    #ifndef SIM_MODE 
     // Get pedal readings from ADC
     adcData_t FP_data[3];
     adcStartConversion(adcREG1, adcGROUP1);
@@ -53,37 +70,13 @@ static void vThrottleAgentTask(void* arg)
     adcGetData(adcREG1, adcGROUP1, FP_data);
 
     // must map each value explicitly because compiler may not have the same mem packing rules for struct as arrays
-    pedal_reading_t pedalRd = (pedal_reading_t) {FP_data[0].value, FP_data[1].value, FP_data[2].value};
+    return (pedal_reading_t) {FP_data[0].value, FP_data[1].value, FP_data[2].value};
 
-    // apply a low pass filter with ALPHA of 0.5
-    pedalRd.bse = (pedalRd.bse + prevFilteredPedalRd.bse) >> 1;
-    pedalRd.fp1 = (pedalRd.fp1 + prevFilteredPedalRd.fp1) >> 1;
-    pedalRd.fp2 = (pedalRd.fp2 + prevFilteredPedalRd.fp2) >> 1;
+    #else
 
-    // update prev filtered values
-    prevFilteredPedalRd = pedalRd;
+    // TODO: Write sim mode variant  
 
-    // send filtered values to mailbox
-    Phantom_overwrite(throttleMailBox, &pedalRd);
+    #endif
+
+
 }
-
-
-/* SIMULATION MODE VARIANT */
-
-void Task_throttleAgentSimInit(void)
-{
-    task = (Task) {vThrottleAgentSimTask, THROTTLE_AGT_SIM_PERIOD_MS};
-
-    // Phantom_createTask should block infinitely if task creation failed
-    taskHandle = Phantom_createTask(&task, "ThrottleAgentSimTask", THROTTLE_AGT_SIM_STACK_SIZE, THROTTLE_AGT_SIM_PRIORITY);
-
-    // any other init code you want to put goes here...
-    throttleMailBox = Phantom_createMailBox(sizeof(pedal_reading_t));
-}
-
-static void vThrottleAgentSimTask(void* arg)
-{
-    // TODO
-}
-
-// Other helper functions and callbacks goes here...
