@@ -31,8 +31,8 @@
 #include "execution_timer.h"
 
 #include "task_test.h"
+#include "task_interrupt.h"
 #include "task_receive.h"
-
 #include "task_throttle_actor.h"
 #include "task_statemachine.h"
 #include "task_watchdog.h"
@@ -62,25 +62,24 @@ void phantomDriversInit()
 {
     /* Phantom Library Initialization */
     VCUData_init();             // Initialize VCU Data Structure
-     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
+    RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_init();             // Initialize RGB LEDs to start off
-     MCP48FV_Init();             // Initialize DAC Library
 }
 
 void phantomTasksInit()
 {
-    // initalizations of tasks
 //    Task_testInit();
     ReceiveTaskInit();
-    Task_throttleActorInit();
+    ThrottleInit();
+    InterruptInit();
+
 }
 volatile unsigned long ulHighFrequencyTimerTicks;
 void rtiNotification(uint32 notification)
 {
     ulHighFrequencyTimerTicks++;
-    // should probably add a check to see if the right timer was called but test board only has one active hardware timer atm
-
-
+    // should probably add a check to see if the right timer 
+    // was called but VCU only has one active hardware timer atm
 }
 /* USER CODE END */
 

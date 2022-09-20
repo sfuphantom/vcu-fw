@@ -1,6 +1,10 @@
 #ifndef _PHANTOM_VCU_COMMON_DEFINES_H_
 #define _PHANTOM_VCU_COMMON_DEFINES_H_
 
+#include "phantom_task.h"
+#include "FreeRTOS.h"
+#include "os_queue.h"
+
 /**
  * @brief Machine states for the VCU.
  *          TRACTIVE_OFF = MAGENTA,
@@ -33,6 +37,11 @@ typedef struct _pedal_reading {
     uint16_t fp1;
 } pedal_reading_t;
 
+typedef struct {
+    Task task;
+    TaskHandle_t taskHandle;
+    QueueHandle_t q;
+}PipeTask_t; // common struct for agent/actor tasks
 
 typedef enum {
 
@@ -84,5 +93,4 @@ typedef enum {
     TSAL_FAULT_GROUP = TSAL_WELDED_AIRS_SEVERE_FAULT,
     IMD_FAULT_GROUP = IMD_LOW_ISO_SEVERE_FAULT || IMD_SHORT_CIRCUIT_SEVERE_FAULT || IMD_DEVICE_ERR_SEVERE_FAULT || IMD_BAD_INFO_SEVERE_FAULT || IMD_UNDEF_SEVERE_FAULT || IMD_GARBAGE_DATA_SEVERE_FAULT
 } FaultGroup;
-
 #endif
