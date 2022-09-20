@@ -13,7 +13,8 @@
 #include "board_hardware.h"
 #include "stdlib.h"
 #include "vcu_data.h"
-enum{
+
+enum eCommands{
 
     ECHO_THROTTLE=1,
     ECHO_APPS1,
@@ -24,8 +25,6 @@ enum{
     TASK_LIST, // vTaskList
 };
 
-
-
 // (int)((ceil(log10(2^32))+1)*sizeof(char)) -stack overflow
 static char float_str[11];
 static char ptrTaskList[500];
@@ -34,18 +33,14 @@ extern volatile unsigned long ulHighFrequencyTimerTicks;
 static Task task;
 static TaskHandle_t taskHandle;
 
-// Pre-define your static functions here...
 static void vReceiveTask(void* arg);
 
-// BTW this function should be the only thing in your header file (aside from include guards and other comments ofc)
 void ReceiveTaskInit(void)
 {
     task = (Task) {vReceiveTask, 0};
 
-    // Phantom_createTask should block infinitely if task creation failed
+    // blocks indefinitely if task creation failed
     taskHandle = Phantom_createTask(&task, "VCU_CLI", 512, 0);
-
-    // any other init code you want to put goes here...
 }
 
 static void vReceiveTask(void* arg)
@@ -53,7 +48,6 @@ static void vReceiveTask(void* arg)
     char cli_msg = '0';
     sciReceive(PC_UART, 1, &cli_msg);
     uint8_t cmd = atoi(&cli_msg);
-    char num_tasks;
 
     switch(cmd){
 
@@ -102,6 +96,3 @@ static void vReceiveTask(void* arg)
 
 
 }
-
-// Other helper functions and callbacks goes here...
-// static void yourTimerCallbackFunc(TimerHandle_t timer) {}
