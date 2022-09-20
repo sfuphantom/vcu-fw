@@ -22,7 +22,9 @@
 #include "task_config.h"
 
 #include "task_throttle_agent.h"    // for access to mailbox
+#include "task_throttle_actor.h"    // for access to mailbox
 #include "task_statemachine.h"      // for access to mailbox & queue
+
 
 static Task task;
 static TaskHandle_t taskHandle;
@@ -56,7 +58,6 @@ static bool FP_DIFF_FAULT_TIMER_EXPIRED = false;       //added by jaypacamarra
 #define BRAKE_LIGHT_OFF     1
 static bool brake_light_state = BRAKE_LIGHT_ON; // Default = BRAKE_LIGHT_ON
 
-static QueueHandle_t throttleAgentMailBox = NULL;
 static bool isThrottleAvailable = false; // is this necessary anymore? TODO
 static uint32_t faultCode = 0;
 
@@ -73,11 +74,11 @@ static void APPS2_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);
 static void BSE_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers);
 static void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers);
 
-void Task_throttleActorInit(void)
+void ThrottleInit(void)
 {
     task = (Task) {vThrottleActorTask, 0};
 
-    // Phantom_createTask should block infinitely if task creation failed
+    // blocks indefinitely if task creation failed
     taskHandle = Phantom_createTask(&task, "ThrottleActorTask", THROTTLE_ACT_STACK_SIZE, THROTTLE_ACT_PRIORITY);
 
     APPS1RangeFaultTimer = Phantom_createTimer("APPS1_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS1_SEVERE_RANGE_FAULT_CALLBACK);
@@ -86,19 +87,20 @@ void Task_throttleActorInit(void)
     FPDiffFaultTimer = Phantom_createTimer("FP_DIFF_FAULT_Timer", 100, NO_RELOAD, NULL, FP_DIFF_SEVERE_FAULT_CALLBACK);
 
     RTDSTimer = Phantom_createTimer("RTDS_Timer", 2000, NO_RELOAD, NULL, RTDS_CALLBACK);
-    // any other init code you want to put goes here...
 
     (void) taskHandle;
+    
+    MCP48FV_Init();             // Initialize DAC Library
 }
 
 static void vThrottleActorTask(void* arg)
 {
-    // arg will always be NULL, so ignore it.
-
     // Get pedal readings
-    pedal_reading_t pedalReadings = (pedal_reading_t) {0, 0, 0};
-
-    ThrottleAgent_receive(&pedalReadings, portMAX_DELAY);
+    pedal_reading_t pedalReadings;
+    if (!receivePedalReadings(&pedalReadings, portMAX_DELAY))
+    {
+        return;
+    }
 
     float apps1PedalPercent = calculatePedalPercent(pedalReadings.fp1, PADDED_APPS1_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
     float apps2PedalPercent = calculatePedalPercent(pedalReadings.fp2, PADDED_APPS2_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
