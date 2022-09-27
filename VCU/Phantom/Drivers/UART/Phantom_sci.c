@@ -1,6 +1,14 @@
 
 #include <halcogen_vcu/include/sci.h>
 #include "string.h"
+#include "stdarg.h"
+#include "stdio.h"
+
+// int UART_printf(sciBASE_t* sciREG, char* format_str, ...)
+// {
+//     // gonna try something soon -Josh
+//     // TODO
+// }
 
 void UARTSend(sciBASE_t *sci, char data[])
 {

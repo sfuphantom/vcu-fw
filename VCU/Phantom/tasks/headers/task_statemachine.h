@@ -11,7 +11,11 @@
 #ifndef PHANTOM_TASKS_TASK_STATEMACHINE_H_
 #define PHANTOM_TASKS_TASK_STATEMACHINE_H_
 
+#include "vcu_common.h"
+
+State StateMachine_getState();
+
 /* Task */
-void Task_StateMachineInit(void)
+void Task_StateMachineInit(void);
 
 #endif /* PHANTOM_TASKS_TASK_STATEMACHINE_H_ */

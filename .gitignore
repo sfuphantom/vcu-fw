@@ -4,3 +4,4 @@ tags
 tags.lock
 RemoteSystemsTempFiles/
 
+.vscode/settings.json

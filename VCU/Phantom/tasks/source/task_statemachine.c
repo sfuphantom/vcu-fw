@@ -6,18 +6,23 @@
  */
 #include "phantom_task.h"
 #include "phantom_timer.h"   // if you need to use timers
+#include "phantom_queue.h"
 
 // #include your_task_header_file
 // Any other .h files you need goes here...
 #include "task_config.h"
 #include "board_hardware.h"   // contains hardware defines for specific board used (i.e. VCU or launchpad)
-#include "vcu_data.h"
+#include "vcu_data.h"           // deprecated
+#include "vcu_common.h"
 #include "RGB_LED.h"
 
 static Task task;
-static TaskHandle_t taskHandle; 
+static TaskHandle_t taskHandle;
+static QueueHandle_t queueHandle;
 
 // Any other module-scope variables goes here... (make sure they have the 'static' keyword)
+static State currentState;
+
 static TimerHandle_t HV_CurrentTimerHandle;
 static TimerHandle_t HV_VoltageTimerHandle;
 static bool HV_VOLTAGE_TIMER_EXPIRED;
@@ -25,13 +30,16 @@ static bool HV_CURRENT_TIMER_EXPIRED;
 
 // Pre-define your static functions here...
 static void vStateMachineTask(void* arg);
-static bool isSevereFault(Fault faults, State currentState);
-static bool isMinorFault(Fault faults);
+static bool isSevereFault(uint32 faults, State currentState);
+static bool isMinorFault(uint32 faults);
 static void HV_CurrentTimerCallback(TimerHandle_t timer);
 static void HV_VoltageTimerCallback(TimerHandle_t timer);
 
+State StateMachine_getState()
+{
+    return currentState;
+}
 
-// BTW this function should be the only thing in your header file (aside from include guards and other comments ofc)
 void Task_StateMachineInit(void)
 {
     task = (Task) {vStateMachineTask, STATE_MACHINE_TASK_PERIOD_MS};
@@ -53,11 +61,11 @@ static void vStateMachineTask(void* arg)
     // arg will always be NULL, so ignore it.
 
     // your task stuff goes in here...
-    State newState = VCUData_getState();
+    State newState = currentState;
 
     bool TSAL_signal = VCUData_getTSALSignal();
     bool RTDS_signal = VCUData_getRTDSignal();
-    Fault faults = VCUData_readFaults(ALL_FAULTS);
+    uint32 faults = VCUData_readFaults(ALL_FAULTS);
 
     switch(newState)
     {
@@ -125,10 +133,10 @@ static void vStateMachineTask(void* arg)
             break;
     }
 
-    VCUData_setState(newState);
+    currentState = newState;
 }
 
-static bool isSevereFault(Fault faults, State currentState)
+static bool isSevereFault(uint32 faults, State currentState)
 {
     if (!faults) {
         return false;
@@ -182,7 +190,7 @@ static bool isSevereFault(Fault faults, State currentState)
     return false;
 }
 
-static bool isMinorFault(Fault faults)
+static bool isMinorFault(uint32 faults)
 {
     if (!faults) {
         return false;
