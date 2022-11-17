@@ -25,3 +25,30 @@ void UARTInit(sciBASE_t *sci, uint32 baud)
     sciReceive(sci, 1, (unsigned char*)NULL); // clear interrupt flag
 }
 }
+
+void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
+{
+    sciSend(sci, 1, (unsigned char*) &data);
+    if (data == START_SIM_DATA && !endProcessing || beginProcessing)
+    {
+        if (beginProcessing)
+        {
+            serialData[index] = data;
+
+            if (data == '\n')
+            {
+                endProcessing = 1;
+                beginProcessing = 0;
+            }
+
+            index++;
+        }
+        else
+        {
+            beginProcessing = 1;
+            index = 0;
+        }
+
+    }
+}
+

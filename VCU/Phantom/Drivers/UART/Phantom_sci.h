@@ -16,5 +16,6 @@ extern "C" {
 
 void UARTInit(sciBASE_t *sci, uint32 baud);
 void UARTSend(sciBASE_t *sci, char data[]);
+void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data);
 
 #endif /* INCLUDE_PHANTOM_SCI_H_ */
