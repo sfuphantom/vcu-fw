@@ -73,10 +73,70 @@ static pedal_reading_t readPedals()
     return (pedal_reading_t) {FP_data[0].value, FP_data[1].value, FP_data[2].value};
 
     #else
-
-    // TODO: Write sim mode variant  
-
+    unsigned char* serialBuffer = getSimData();
+    
+    
+    /* Parse serial data */
+    uint16_t readings[3];
+    
+    int i;
+    int next_index = 0;
+    for (i = 0; i < 3; ++i)
+    {   
+        next_index = parse_data(serialBuffer, readings+i, next_index);
+    }
+    
+    return (pedal_reading_t) {readings[0], readings[1], readings[2]};
     #endif
-
-
 }
+
+#ifdef SIM_MODE
+#define MAX_SIM_DIGITS 16
+static uint16_t parse_data(char* data, uint16_t* buffer, uint8_t offset)
+{
+    /* 
+    Used to extract a number from a comma separated data set represented as a string, given a starting index  
+    Args:
+        data: full csv data set as a char*
+        buffer: int buffer to write parsed number into
+        start: index of first digit of number in the data
+    */
+    char* startingAddress = data + offset;
+
+    char* tmp = startingAddress;
+
+    char numberBuffer[MAX_SIM_DIGITS]; // each element is a digit as a char 
+
+    int i;
+    for (i = 0; ; ++i)
+    {
+        if( *tmp == ',' || *tmp == '\n' || *tmp == '\0')
+        {
+            break;
+        }
+
+        numberBuffer[i] = *tmp; // push digit onto buffer
+
+        tmp++;
+    }
+
+    int expectedDigits = tmp - startingAddress;
+
+    // not sure why, but it sometimes pads the next calls of this function's
+    // number variable with the last few digits of previous calls
+    // let's add protection by simply cutting off the digits we weren't expecting
+        
+    // convert from string to integer
+    uint16_t value = (int)strtol(numberBuffer, (char**)NULL, 10);
+
+    // find number of digits
+    uint8_t actualDigits = 1 + log10(value);
+
+    // divide the value by 10^digitsToCut to remove thousands, hundreds, tens place, etc
+    int digitsToCut = actualDigits - expectedDigits;
+
+    *buffer = value / (int)(pow(10, digitsToCut));
+
+    return expectedDigits + offset + 1; // index of comma + 1
+}
+#endif 
