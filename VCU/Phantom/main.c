@@ -6,33 +6,37 @@
  */
 
 /* USER CODE BEGIN (0) */
+
+// uncomment to switch to simulation mode
+// #define VCU_SIM_MODE
+
 #include "rti.h"
-#include "task_receive.h"
 #include "sci.h"
 #include "gio.h"
 #include "adc.h"
 #include "het.h"
 
 #include "RGB_LED.h"            // RGB LED wrapper written by Joshua Guo
- #include "RTD_Buzzer.h"         // Ready to Drive buzzer wrapper written by Gabriel Soares
- #include "MCP48FV_DAC_SPI.h"    // DAC library written by Ataur Rehman
- #include "eeprom_driver.h"      // EEPROM driver written by Junaid Khan
+#include "RTD_Buzzer.h"         // Ready to Drive buzzer wrapper written by Gabriel Soares
+#include "MCP48FV_DAC_SPI.h"    // DAC library written by Ataur Rehman
+#include "eeprom_driver.h"      // EEPROM driver written by Junaid Khan
 
 #include "board_hardware.h"     // contains hardware defines for specific board used (i.e. VCU or launchpad)
-#include "vcu_data.h"           // VCU Data structure interface written by Joshua Guo
+#include "vcu_data.h"           // VCU Data structure interface written by Joshua Guo (DEPRECATED)
 
+#include "phantom_queue.h"      // os_queue wrapper written by Joshua Guo
 #include "phantom_task.h"       // os_task wrapper written by Joshua Guo
- #include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
+#include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
 
- #include "execution_timer.h"
+#include "execution_timer.h"
 
 #include "task_test.h"
-#include "task_throttle.h"
-
- #include "task_statemachine.h"
- #include "task_watchdog.h"
-
- #include "task_eeprom.h"
+#include "task_interrupt.h"
+#include "task_receive.h"
+#include "task_throttle_actor.h"
+#include "task_statemachine.h"
+#include "task_watchdog.h"
+#include "task_eeprom.h"
 
 /* USER CODE END */
 
@@ -40,7 +44,6 @@
 void halcogenInit()
 {
     /* Halcogen Initialization */
-    _enable_IRQ();              // Enable interrupts        // which file is this function from? -josh
     sciInit();                  // Initialize UART (SCI) halcogen driver
     gioInit();                  // Initialize GPIO halcogen driver
     adcInit();                  // Initialize ADC halcogen driver
@@ -59,25 +62,24 @@ void phantomDriversInit()
 {
     /* Phantom Library Initialization */
     VCUData_init();             // Initialize VCU Data Structure
-     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
+    RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_init();             // Initialize RGB LEDs to start off
-     MCP48FV_Init();             // Initialize DAC Library
 }
 
 void phantomTasksInit()
 {
-    // initalizations of tasks
 //    Task_testInit();
     ReceiveTaskInit();
-    Task_throttleInit();
+    ThrottleInit();
+    InterruptInit();
+
 }
 volatile unsigned long ulHighFrequencyTimerTicks;
 void rtiNotification(uint32 notification)
 {
     ulHighFrequencyTimerTicks++;
-    // should probably add a check to see if the right timer was called but test board only has one active hardware timer atm
-
-
+    // should probably add a check to see if the right timer 
+    // was called but VCU only has one active hardware timer atm
 }
 /* USER CODE END */
 
@@ -92,6 +94,7 @@ void main(void)
 
     halcogenInit();
     phantomDriversInit();
+
     phantomTasksInit();
 
     // Phantom_startTaskScheduler is Blocking
