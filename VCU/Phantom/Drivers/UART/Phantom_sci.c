@@ -18,6 +18,10 @@ void UARTSend(sciBASE_t *sci, char data[])
 
 void UARTInit(sciBASE_t *sci, uint32 baud)
 {
+    _enable_IRQ();
     sciInit();
     sciSetBaudrate(sci, baud);
+    sciEnableNotification(sci, SCI_RX_INT);
+    sciReceive(sci, 1, (unsigned char*)NULL); // clear interrupt flag
+}
 }

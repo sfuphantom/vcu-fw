@@ -34,6 +34,7 @@
 #include "task_interrupt.h"
 #include "task_receive.h"
 #include "task_throttle_actor.h"
+#include "task_throttle_agent.h"
 #include "task_statemachine.h"
 #include "task_watchdog.h"
 #include "task_eeprom.h"
@@ -72,6 +73,7 @@ void phantomTasksInit()
     ReceiveTaskInit();
     ThrottleInit();
     InterruptInit();
+    throttleAgentInit();
 
 }
 volatile unsigned long ulHighFrequencyTimerTicks;
@@ -97,8 +99,11 @@ void main(void)
 
     phantomTasksInit();
 
+    UARTInit(PC_UART, 9600); // something up above overwrites the configuration set here. Make sure this goes last!
+
     // Phantom_startTaskScheduler is Blocking
     Phantom_startTaskScheduler();
+    while(1);
    
 /* USER CODE END */
 }

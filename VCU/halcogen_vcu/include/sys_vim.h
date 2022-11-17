@@ -92,10 +92,13 @@ extern void esmHighInterrupt(void);
 extern void phantomInterrupt(void);
 extern void vPortPreemptiveTick(void);
 extern void het1HighLevelInterrupt(void);
+extern void linHighLevelInterrupt(void);
 extern void vPortYeildWithinAPI(void);
 extern void gioLowLevelInterrupt(void);
 extern void het1LowLevelInterrupt(void);
+extern void linLowLevelInterrupt(void);
 extern void sciHighLevelInterrupt(void);
+extern void sciLowLevelInterrupt(void);
 
 /* USER CODE BEGIN (3) */
 /* USER CODE END */
@@ -141,7 +144,7 @@ typedef struct vim_config_reg
                                 | (uint32)((uint32)SYS_IRQ << 10U)\
                                 | (uint32)((uint32)SYS_IRQ << 11U)\
                                 | (uint32)((uint32)SYS_IRQ << 12U)\
-                                | (uint32)((uint32)SYS_IRQ << 13U)\
+                                | (uint32)((uint32)SYS_FIQ << 13U)\
                                 | (uint32)((uint32)SYS_IRQ << 14U)\
                                 | (uint32)((uint32)SYS_IRQ << 15U)\
                                 | (uint32)((uint32)SYS_IRQ << 16U)\
@@ -155,7 +158,7 @@ typedef struct vim_config_reg
                                 | (uint32)((uint32)SYS_IRQ << 24U)\
                                 | (uint32)((uint32)SYS_IRQ << 25U)\
                                 | (uint32)((uint32)SYS_IRQ << 26U)\
-                                | (uint32)((uint32)SYS_IRQ << 27U)\
+                                | (uint32)((uint32)SYS_FIQ << 27U)\
                                 | (uint32)((uint32)SYS_IRQ << 28U)\
                                 | (uint32)((uint32)SYS_IRQ << 29U)\
                                 | (uint32)((uint32)SYS_IRQ << 30U)\
@@ -273,7 +276,7 @@ typedef struct vim_config_reg
                                     | (uint32)((uint32)1U << 10U)\
                                     | (uint32)((uint32)0U << 11U)\
                                     | (uint32)((uint32)0U << 12U)\
-                                    | (uint32)((uint32)0U << 13U)\
+                                    | (uint32)((uint32)1U << 13U)\
                                     | (uint32)((uint32)0U << 14U)\
                                     | (uint32)((uint32)0U << 15U)\
                                     | (uint32)((uint32)0U << 16U)\
@@ -287,7 +290,7 @@ typedef struct vim_config_reg
                                     | (uint32)((uint32)1U << 24U)\
                                     | (uint32)((uint32)0U << 25U)\
                                     | (uint32)((uint32)0U << 26U)\
-                                    | (uint32)((uint32)0U << 27U)\
+                                    | (uint32)((uint32)1U << 27U)\
                                     | (uint32)((uint32)0U << 28U)\
                                     | (uint32)((uint32)0U << 29U)\
                                     | (uint32)((uint32)0U << 30U)\
@@ -336,7 +339,7 @@ typedef struct vim_config_reg
                                     | (uint32)((uint32)0U << 7U)\
                                     | (uint32)((uint32)0U << 8U)\
                                     | (uint32)((uint32)0U << 9U)\
-                                    | (uint32)((uint32)0U << 10U)\
+                                    | (uint32)((uint32)1U << 10U)\
                                     | (uint32)((uint32)0U << 11U)\
                                     | (uint32)((uint32)0U << 12U)\
                                     | (uint32)((uint32)0U << 13U)\
