@@ -48,6 +48,7 @@
 #include "math.h"
 
 /* USER CODE BEGIN (1) */
+#include "Phantom_sci.h"
 /* USER CODE END */
 /** @struct g_sciTransfer
 *   @brief Interrupt mode globals
@@ -220,7 +221,7 @@ void sciInit(void)
     scilinREG->SETINT = (uint32)((uint32)0U << 26U)  /* Framing error */
                       | (uint32)((uint32)0U << 25U)  /* Overrun error */
                       | (uint32)((uint32)0U << 24U)  /* Parity error */
-                      | (uint32)((uint32)0U << 9U)  /* Receive */
+                      | (uint32)((uint32)1U << 9U)  /* Receive */
                       | (uint32)((uint32)0U << 1U)  /* Wakeup */
                       | (uint32)((uint32)0U);  /* Break detect */
 
@@ -809,8 +810,7 @@ void sciHighLevelInterrupt(void)
 {
     uint32 vec = sciREG->INTVECT0;
 	uint8 byte;
-/* USER CODE BEGIN (28) */
-/* USER CODE END */
+
 
     switch (vec)
     {
@@ -836,15 +836,6 @@ void sciHighLevelInterrupt(void)
 
             if (g_sciTransfer_t[0U].rx_length > 0U)
             {
-                *g_sciTransfer_t[0U].rx_data = byte;
-                /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
-				g_sciTransfer_t[0U].rx_data++;
-                g_sciTransfer_t[0U].rx_length--;
-                if (g_sciTransfer_t[0U].rx_length == 0U)
-                {
-                    sciNotification(sciREG, (uint32)SCI_RX_INT);
-                }
-            }
         break;
 
     case 12U:
@@ -874,7 +865,243 @@ void sciHighLevelInterrupt(void)
 /* USER CODE END */
 }
 
+/* USER CODE BEGIN (30) */
+/* USER CODE END */
 
+/** @fn void sciLowLevelInterrupt(void)
+*   @brief Level 1 Interrupt for SCI
+*/
+#pragma CODE_STATE(sciLowLevelInterrupt, 32)
+#pragma INTERRUPT(sciLowLevelInterrupt, IRQ)
+
+/* SourceId : SCI_SourceId_019 */
+/* DesignId : SCI_DesignId_017 */
+/* Requirements : HL_SR245, HL_SR246 */
+void sciLowLevelInterrupt(void)
+{
+    uint32 vec = sciREG->INTVECT1;
+	uint8 byte;
+/* USER CODE BEGIN (31) */
+/* USER CODE END */
+
+    switch (vec)
+    {
+    case 1U:
+        sciNotification(sciREG, (uint32)SCI_WAKE_INT);
+        break;
+    case 3U:
+        sciNotification(sciREG, (uint32)SCI_PE_INT);
+        break;
+    case 6U:
+        sciNotification(sciREG, (uint32)SCI_FE_INT);
+        break;
+    case 7U:
+        sciNotification(sciREG, (uint32)SCI_BREAK_INT);
+        break;
+    case 9U:
+        sciNotification(sciREG, (uint32)SCI_OE_INT);
+        break;
+
+    case 11U:
+        /* receive */
+			byte = (uint8)(sciREG->RD & 0x000000FFU);
+
+            if (g_sciTransfer_t[0U].rx_length > 0U)
+            {
+                *g_sciTransfer_t[0U].rx_data = byte;
+                /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+				g_sciTransfer_t[0U].rx_data++;
+                
+                g_sciTransfer_t[0U].rx_length--;
+                if (g_sciTransfer_t[0U].rx_length == 0U)
+                {
+                    sciNotification(sciREG, (uint32)SCI_RX_INT);
+                }
+            }
+        break;
+
+    case 12U:
+        /* transmit */
+		/*SAFETYMCUSW 30 S MR:12.2,12.3 <APPROVED> "Used for data count in Transmit/Receive polling and Interrupt mode" */
+		--g_sciTransfer_t[0U].tx_length;
+        if (g_sciTransfer_t[0U].tx_length > 0U)
+        {
+			uint8 txdata = *g_sciTransfer_t[0U].tx_data;
+            sciREG->TD = (uint32)(txdata);
+			/*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+            g_sciTransfer_t[0U].tx_data++;
+        }
+        else
+        {
+            sciREG->CLEARINT = (uint32)SCI_TX_INT;
+            sciNotification(sciREG, (uint32)SCI_TX_INT);
+        }
+        break;
+
+    default:
+        /* phantom interrupt, clear flags and return */
+        sciREG->FLR = sciREG->SETINTLVL & 0x07000303U;
+         break;
+    }
+/* USER CODE BEGIN (32) */
+/* USER CODE END */
+}
+
+/** @fn void linLowLevelInterrupt(void)
+*   @brief  Interrupt 1 for SCILIN
+*/
+#pragma CODE_STATE(linLowLevelInterrupt, 32)
+#pragma INTERRUPT(linLowLevelInterrupt, FIQ)
+
+/* SourceId : SCI_SourceId_020 */
+/* DesignId : SCI_DesignId_017 */
+/* Requirements : HL_SR245, HL_SR246 */
+void linLowLevelInterrupt(void)
+{
+    uint32 vec = scilinREG->INTVECT1;
+	uint8 byte;
+/* USER CODE BEGIN (33) */
+/* USER CODE END */
+
+    switch (vec)
+    {
+    case 1U:
+        sciNotification(scilinREG,(uint32)SCI_WAKE_INT);
+        break;
+    case 3U:
+        sciNotification(scilinREG,(uint32)SCI_PE_INT);
+        break;
+    case 6U:
+        sciNotification(scilinREG, (uint32)SCI_FE_INT);
+        break;
+    case 7U:
+        sciNotification(scilinREG, (uint32)SCI_BREAK_INT);
+        break;
+    case 9U:
+        sciNotification(scilinREG, (uint32)SCI_OE_INT);
+        break;
+
+    case 11U:
+        /* receive */
+			byte = (uint8)(scilinREG->RD & 0x000000FFU);
+
+            if (g_sciTransfer_t[1U].rx_length > 0U)
+            {
+                *g_sciTransfer_t[1U].rx_data = byte;
+                /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+				g_sciTransfer_t[1U].rx_data++;
+                g_sciTransfer_t[1U].rx_length--;
+                if (g_sciTransfer_t[1U].rx_length == 0U)
+                {
+                    sciNotification(scilinREG, (uint32)SCI_RX_INT);
+                }
+            }
+        break;
+
+    case 12U:
+        /* transmit */
+		/*SAFETYMCUSW 30 S MR:12.2,12.3 <APPROVED> "Used for data count in Transmit/Receive polling and Interrupt mode" */
+		--g_sciTransfer_t[1U].tx_length;
+        if (g_sciTransfer_t[1U].tx_length > 0U)
+        {
+			uint8 txdata = *g_sciTransfer_t[1U].tx_data;
+            scilinREG->TD = (uint32)(txdata);
+			/*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+            g_sciTransfer_t[1U].tx_data++;
+        }
+        else
+        {
+            scilinREG->CLEARINT = (uint32)SCI_TX_INT;
+            sciNotification(scilinREG, (uint32)SCI_TX_INT);
+        }
+        break;
+
+    default:
+        /* phantom interrupt, clear flags and return */
+        scilinREG->FLR = scilinREG->SETINTLVL & 0x07000303U;
+         break;
+    }
+/* USER CODE BEGIN (34) */
+/* USER CODE END */
+}
+
+/** @fn void linHighLevelInterrupt(void)
+*   @brief Level 0 Interrupt for SCILIN
+*/
+#pragma CODE_STATE(linHighLevelInterrupt, 32)
+#pragma INTERRUPT(linHighLevelInterrupt, FIQ)
+
+/* SourceId : SCI_SourceId_021 */
+/* DesignId : SCI_DesignId_017 */
+/* Requirements : HL_SR245, HL_SR246 */
+void linHighLevelInterrupt(void)
+{
+    uint32 vec = scilinREG->INTVECT0;
+	uint8 byte;
+/* USER CODE BEGIN (35) */
+/* USER CODE END */
+
+    switch (vec)
+    {
+    case 1U:
+        sciNotification(scilinREG, (uint32)SCI_WAKE_INT);
+        break;
+    case 3U:
+        sciNotification(scilinREG, (uint32)SCI_PE_INT);
+        break;
+    case 6U:
+        sciNotification(scilinREG, (uint32)SCI_FE_INT);
+        break;
+    case 7U:
+        sciNotification(scilinREG, (uint32)SCI_BREAK_INT);
+        break;
+    case 9U:
+        sciNotification(scilinREG, (uint32)SCI_OE_INT);
+        break;
+
+    case 11U:
+        /* receive */
+			byte = (uint8)(scilinREG->RD & 0x000000FFU);
+
+            if (g_sciTransfer_t[1U].rx_length > 0U)
+            {
+                *g_sciTransfer_t[1U].rx_data = byte;
+                /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+				g_sciTransfer_t[1U].rx_data++;
+                g_sciTransfer_t[1U].rx_length--;
+                if (g_sciTransfer_t[1U].rx_length == 0U)
+                {
+                    sciNotification(scilinREG, (uint32)SCI_RX_INT);
+                }
+            }
+        break;
+
+    case 12U:
+        /* transmit */
+		/*SAFETYMCUSW 30 S MR:12.2,12.3 <APPROVED> "Used for data count in Transmit/Receive polling and Interrupt mode" */
+		--g_sciTransfer_t[1U].tx_length;
+        if (g_sciTransfer_t[1U].tx_length > 0U)
+        {
+			uint8 txdata = *g_sciTransfer_t[1U].tx_data;
+            scilinREG->TD = (uint32)(txdata);
+            /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+			g_sciTransfer_t[1U].tx_data++;
+        }
+        else
+        {
+            scilinREG->CLEARINT = (uint32)SCI_TX_INT;
+            sciNotification(scilinREG, (uint32)SCI_TX_INT);
+        }
+        break;
+
+    default:
+        /* phantom interrupt, clear flags and return */
+        scilinREG->FLR = ~scilinREG->SETINTLVL & 0x07000303U;
+        break;
+    }
+/* USER CODE BEGIN (36) */
+/* USER CODE END */
+}
 /* USER CODE BEGIN (37) */
 /* USER CODE END */
 
