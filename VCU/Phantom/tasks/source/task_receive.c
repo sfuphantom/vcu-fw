@@ -37,10 +37,12 @@ static void vReceiveTask(void* arg);
 
 void ReceiveTaskInit(void)
 {
+    #ifndef SIM_MODE
     task = (Task) {vReceiveTask, 0};
 
     // blocks indefinitely if task creation failed
     taskHandle = Phantom_createTask(&task, "VCU_CLI", 512, 0);
+    #endif
 }
 
 static void vReceiveTask(void* arg)
