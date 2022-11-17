@@ -836,6 +836,17 @@ void sciHighLevelInterrupt(void)
 
             if (g_sciTransfer_t[0U].rx_length > 0U)
             {
+//                *g_sciTransfer_t[0U].rx_data = byte;
+                /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
+//				g_sciTransfer_t[0U].rx_data++;
+//                g_sciTransfer_t[0U].rx_length--;
+//                if (g_sciTransfer_t[0U].rx_length == 0U)
+//                {
+                    /* USER CODE BEGIN (28) */
+                    sciReceiveCallback(sciREG, (uint32)SCI_RX_INT, byte);
+                    /* USER CODE END */
+//                }
+            }
         break;
 
     case 12U:
