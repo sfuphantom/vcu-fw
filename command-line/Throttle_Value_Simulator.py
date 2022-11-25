@@ -2,10 +2,11 @@
 #Kevinl03
 
 import serial
-from serial import Serial
+#from serial import Serial
 import serial.tools.list_ports
 import argparse
 import operator
+import time
 
 import os
 import sys
@@ -52,12 +53,8 @@ def select_a_serial_port(available_ports):                                      
 
 if __name__ == "__main__":
 
-    #import serial
+   
 
-
-    #os.system('cmd /k "pip install serial"')
-
-    
     # Create the parser
     my_parser = argparse.ArgumentParser(description='Throttle Value Simulator')
 
@@ -100,9 +97,45 @@ if __name__ == "__main__":
 
 
     # Write text or bytes to the file
+    ser.write("s".encode('utf-8'))
     for word in mylist:
         ser.write(word)
+        
         ser.write(",".encode('utf-8'))
+    ser.write("\n".encode('utf-8'))
+
+    
+
+def sendValsFromFile(filename):
+
+
+    #get the ports and set the ports
+    select_a_serial_port(get_available_serial_ports())
+
+
+    ser = serial.Serial(selected_port,9600)
+    
+    with open(filename) as csv_file:
+        csv_reader = csv.reader(filename, delimiter=',')
+        line_count = 0
+        for row in csv_reader:
+
+            #so that VCU knows where to start reading data from; use arbitrary value "s" to represent the start
+            ser.write("s".encode('utf-8'))
+            for val in range(3):
+
+                #currently sending a float, so will need to multiply to a scale and cast to int in order
+                #to send as valid bits without losing decimal precision
+                ser.write(int(row[val]*1000))
+        
+                ser.write(",".encode('utf-8'))
+            
+            ser.write("\n".encode('utf-8'))
+            #delay 20ms
+            time.sleep(0.02)
+            
+        
+    
 
 
 
