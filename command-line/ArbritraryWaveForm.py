@@ -8,21 +8,76 @@ import csv
 
 #-------------------------------------------------------------------#
 #THESE VARIABLES CAN BE CHANGED DEPENDING ON PEDAL/VCU SPECIFICATIONS
+#Can be found here : https://docs.google.com/document/d/1PsZSJR6la_u_oXmN2lo8tfRcU6E8GrMdpH35ESl7d4U/edit
 
 #ranges for petals
 
 maxPercentPressed = 50
 minPercentPressed = 0
 
-#ranges for VCU voltage
 maxVoltageReading = 5
 minVoltageReading = 0
+
+#ranges for VCU voltage
+APPS1maxVoltageReading = 4.5
+APPS1minVoltageReading = 1.50
+
+APPS2maxVoltageReading = 1.49
+APPS2minVoltageReading = 0.0
+
+
+BSEmaxVoltageReading = 4.5
+BSEminVoltageReading = 1.50
+
+APPSMaxPedalAngle = 225
+APPSMinPedalAngle = 180
+
+BSEMaxPedalAngle = 135
+BSEMinPedalAngle = -74
+
+
 
 #-------------------------------------------------------------------#
 
 def linearPercentToVoltMapping(percent):
     return ((percent/maxPercentPressed)*maxVoltageReading)
 
+####-----------------CREATING NEW FUNCTIONS DURING REFACTOR-------####
+
+#these functions will replace linearPercentToVoltMapping, mapVoltToAPPS1, mapVoltToAPPS2
+
+
+def mapAngleToPercentPressed(Angle,PedalType):
+    match PedalType:
+
+        #Since Accelerator maps to two unique voltages, we use the same calculation
+        #For APPS1 as we do for APPS2 
+        
+        case "APPS1":
+            return Angle/(APPSMaxPedalAngle - APPSMinPedalAngle)
+        case "APPS2":
+            return Angle/(APPSMaxPedalAngle - APPSMinPedalAngle)
+
+    
+        
+        case "BSE":
+            return Angle/(BSEMaxPedalAngle - BSEMinPedalAngle) 
+        case _:
+            return 0 #default case
+
+def mapPedalAngleToVoltage(Angle, PedalType):
+    percentPressed = mapAngleToPercentPressed(Angle,PedalType)
+    match PedalType:
+        case "APPS1":
+            return percentPressed*(APPS1maxVoltageReading - APPS1minVoltageReading)
+        case "APPS2":
+            return percentPressed*(APPS2maxVoltageReading - APPS2minVoltageReading)
+        case "BSE":
+            return percentPressed*(BSEmaxVoltageReading - BSEminVoltageReading)
+            
+
+
+###-----------------------------------------------------------------####
 
 #voltage maps identically to APPPS1
 def mapVoltToAPPS1(voltage):
