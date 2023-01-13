@@ -35,8 +35,21 @@ def mapVoltToAPPS2(voltage):
     #To be implemented 
     return voltage
 
+def percentToCosWave(percent):
+    
+    VerticalScale = -maxPercentPressed/2 #negative so that function increased starting from beggining
+    
+    HorizontalScale = math.pi/maxPercentPressed #max percentage 50 maps to pi (max value)
+
+    VerticalShift = maxPercentPressed/2 #values cannot be negative
+    
+    mapping = VerticalScale*(math.cos(percent*HorizontalScale)) + VerticalShift
+
+    return mapping
+    
+
 #/|/|/| shape, not /\/\/\/\ like typical triangularWaves
-def triangularWave(cycles,f):
+def triangularWave(cycles,BSEForm,f):
     
     writer = csv.writer(f)
     curpercent = 0
@@ -70,20 +83,7 @@ def triangularWave(cycles,f):
         curpercent = 0
 
 
-def percentToCosWave(percent):
-    
-    VerticalScale = -maxPercentPressed/2 #negative so that function increased starting from beggining
-    
-    HorizontalScale = math.pi/maxPercentPressed #max percentage 50 maps to pi (max value)
-
-    VerticalShift = maxPercentPressed/2 #values cannot be negative
-    
-    mapping = VerticalScale*(math.cos(percent*HorizontalScale)) + VerticalShift
-
-    return mapping
-    
-
-def sineWave(cycles,f):
+def sineWave(cycles, BSEForm,f):
 
     writer = csv.writer(f)
     array = [0,0,0]
@@ -132,7 +132,7 @@ def sineWave(cycles,f):
             curpercent -= increment
         
 
-def RandomVals(cycles,f):
+def RandomVals(cycles, BSEForm, f):
     
     writer = csv.writer(f)
     array = [0,0,0]
@@ -176,10 +176,15 @@ if __name__ == "__main__":
                            type=int,
                            help=' Range :     0 <= int <= 100')
 
-    my_parser.add_argument('WaveForm',
-                           metavar='WaveForm',
+    my_parser.add_argument('APPSWaveForm',
+                           metavar='APPSWaveForm',
                            type=str,
-                           help='T = triangular \n S = sinusodial \n R = Random')
+                           help='T = triangular \n S = sinusodial \n R = Random \n P = Spike Values \n     O = APPS Values set to 0 ')
+
+    my_parser.add_argument('BSEWaveForm',
+                           metavar='BSEWaveForm',
+                           type=str,
+                           help='T = triangular \n S = sinusodial \n R = Random \n I = Inverse of APPS \n O = Brake Values set to 0 ')
 
     args = my_parser.parse_args()
 
@@ -187,13 +192,15 @@ if __name__ == "__main__":
     with open('csv_file.csv', 'w', newline = '') as f:
         
         numcycles = args.Cycles
+
+        BSEtype = args.BSEWaveForm
         
-        if (args.WaveForm == "T"):
-            triangularWave(numcycles,f)
-        if (args.WaveForm == "S"):
-            sineWave(numcycles,f)
-        if(args.WaveForm == "R"):
-            RandomVals(numcycles,f)
+        if (args.APPSWaveForm == "T"):
+            triangularWave(numcycles,BSEtype,f)
+        if (args.APPSWaveForm == "S"):
+            sineWave(numcycles,BSEtype, f)
+        if(args.APPSWaveForm == "R"):
+            RandomVals(numcycles,BSEtype,f)
 
     #Defined in ThrottleValue Simulator
     #Throttle_Value_Simulator.sendValsFromFile('csv_file.csv')
