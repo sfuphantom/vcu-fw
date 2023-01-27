@@ -25,7 +25,6 @@
 #include "task_throttle_actor.h"    // for access to mailbox
 #include "task_statemachine.h"      // for access to mailbox & queue
 
-
 static Task task;
 static TaskHandle_t taskHandle;
 
@@ -95,38 +94,40 @@ void ThrottleInit(void)
 
 static void vThrottleActorTask(void* arg)
 {
-    // Get pedal readings
     pedal_reading_t pedalReadings;
+
     if (!receivePedalReadings(&pedalReadings, portMAX_DELAY))
     {
-        return;
+        return; // this is logically a continue
     }
 
     float apps1PedalPercent = calculatePedalPercent(pedalReadings.fp1, PADDED_APPS1_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
     float apps2PedalPercent = calculatePedalPercent(pedalReadings.fp2, PADDED_APPS2_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
     float bsePedalPercent = calculatePedalPercent(pedalReadings.bse, PADDED_BSE_MIN_VALUE, PADDED_BSE_MAX_VALUE);
 
-    // check for short to GND/VCC on APPS sensor 1
-    bool apps1Fault = check_Pedal_Range_Fault(pedalReadings.fp1, APPS1_MIN_VALUE, APPS1_MAX_VALUE, APPS1RangeFaultTimer, &APPS1_RANGE_FAULT_TIMER_EXPIRED);
-    // check for short to GND/VCC on APPS sensor 2
-    bool apps2Fault = check_Pedal_Range_Fault(pedalReadings.fp2, APPS2_MIN_VALUE, APPS2_MAX_VALUE, APPS2RangeFaultTimer, &APPS2_RANGE_FAULT_TIMER_EXPIRED);
-    // check for short to GND/VCC on BSE
-    bool bseFault   = check_Pedal_Range_Fault(pedalReadings.bse, BSE_MIN_VALUE, BSE_MAX_VALUE, BSERangeFaultTimer, &BSE_RANGE_FAULT_TIMER_EXPIRED);
-    // Check if APPS1 and APPS2 are within 10% of each other
-    bool diffFault  = check_10PercentAPPS_Fault(apps1PedalPercent, apps2PedalPercent);
-    // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25%
-    bool simulFault = check_Brake_Plausibility_Fault(pedalReadings.bse, apps1PedalPercent, apps2PedalPercent);
+    // TODO: Add range fault checks
 
-    // Fill the unrelevant bits with flags from vcu data
-    uint32_t currentFaults = 0;
+    // // check for short to GND/VCC on APPS sensor 1
+    // bool apps1Fault = check_Pedal_Range_Fault(pedalReadings.fp1, APPS1_MIN_VALUE, APPS1_MAX_VALUE, APPS1RangeFaultTimer, &APPS1_RANGE_FAULT_TIMER_EXPIRED);
+    // // check for short to GND/VCC on APPS sensor 2
+    // bool apps2Fault = check_Pedal_Range_Fault(pedalReadings.fp2, APPS2_MIN_VALUE, APPS2_MAX_VALUE, APPS2RangeFaultTimer, &APPS2_RANGE_FAULT_TIMER_EXPIRED);
+    // // check for short to GND/VCC on BSE
+    // bool bseFault   = check_Pedal_Range_Fault(pedalReadings.bse, BSE_MIN_VALUE, BSE_MAX_VALUE, BSERangeFaultTimer, &BSE_RANGE_FAULT_TIMER_EXPIRED);
+    // // Check if APPS1 and APPS2 are within 10% of each other
+    // bool diffFault  = check_10PercentAPPS_Fault(apps1PedalPercent, apps2PedalPercent);
+    // // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25%
+    // bool simulFault = check_Brake_Plausibility_Fault(pedalReadings.bse, apps1PedalPercent, apps2PedalPercent);
 
-    currentFaults |= ((apps1Fault && 1) * APPS1_RANGE_SEVERE_FAULT);
-    currentFaults |= (apps2Fault && 1) * APPS2_RANGE_SEVERE_FAULT;
-    currentFaults |= (bseFault && 1) * BSE_RANGE_SEVERE_FAULT;
-    currentFaults |= (diffFault && 1) * APPS_10DIFF_SEVERE_FAULT;
-    currentFaults |= (simulFault && 1) * BSE_APPS_SIMULTANEOUS_MINOR_FAULT;
+    // // Fill the unrelevant bits with flags from vcu data
+    // uint32_t currentFaults = 0;
 
-    faultCode = currentFaults;
+    // currentFaults |= ((apps1Fault && 1) * APPS1_RANGE_SEVERE_FAULT);
+    // currentFaults |= (apps2Fault && 1) * APPS2_RANGE_SEVERE_FAULT;
+    // currentFaults |= (bseFault && 1) * BSE_RANGE_SEVERE_FAULT;
+    // currentFaults |= (diffFault && 1) * APPS_10DIFF_SEVERE_FAULT;
+    // currentFaults |= (simulFault && 1) * BSE_APPS_SIMULTANEOUS_MINOR_FAULT;
+
+    // faultCode = currentFaults;
 
     /*********************************************************************************
       brake light
