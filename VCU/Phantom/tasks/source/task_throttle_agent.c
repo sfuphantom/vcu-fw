@@ -26,20 +26,21 @@ static void vThrottleAgentTask(void* arg);
 
 static pedal_reading_t readPedals();
 
+
 /* Public API */
 uint8_t receivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms)
 {
-    return Phantom_receive(footPedals.pipeline.q, pdreading, wait_time_ms) == pdTRUE;
+    return xQueueReceive(footPedals.pipeline.q, pdreading, wait_time_ms) == pdTRUE;
 }
 
-void throttleAgentInit(void)
+uint8_t throttleAgentInit(void)
 {
-    footPedals.pipeline.task = (Task) {vThrottleAgentTask, THROTTLE_AGT_PERIOD_MS};
+    footPedals.pipeline.task = (Task) {vThrottleAgentTask, 0};
 
     // blocks indefinitely if task creation failed
     footPedals.pipeline.taskHandle = Phantom_createTask(&footPedals.pipeline.task, "ThrottleAgentTask", THROTTLE_AGT_STACK_SIZE, THROTTLE_AGT_PRIORITY);
 
-    footPedals.pipeline.q = Phantom_createMailBox(sizeof(pedal_reading_t));
+    footPedals.pipeline.q = xQueueCreate(50, sizeof(pedal_reading_t));
 }
 
 static void vThrottleAgentTask(void* arg)
@@ -55,8 +56,8 @@ static void vThrottleAgentTask(void* arg)
     // update prev filtered values
     footPedals.prevReadings =  footPedals.readings;
 
-    // send filtered values to mailbox
-    Phantom_overwrite(footPedals.pipeline.q, &footPedals.readings);
+    // send filtered values to mailbox (task_throttle_actor.c)
+   xQueueSend(footPedals.pipeline.q, &footPedals.readings, 1000);
 }
 
 static pedal_reading_t readPedals()
