@@ -37,7 +37,7 @@ static void vReceiveTask(void* arg);
 
 void ReceiveTaskInit(void)
 {
-    #ifndef SIM_MODE
+    #if VCU_SIM_MODE == 0
     task = (Task) {vReceiveTask, 0};
 
     // blocks indefinitely if task creation failed

@@ -62,7 +62,7 @@ static void vThrottleAgentTask(void* arg)
 static pedal_reading_t readPedals()
 {
 
-    #ifndef SIM_MODE 
+    #if VCU_SIM_MODE == 0 
     // Get pedal readings from ADC
     adcData_t FP_data[3];
     adcStartConversion(adcREG1, adcGROUP1);
