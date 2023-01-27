@@ -92,7 +92,58 @@ def InversesinWave(PedalType,PercentPressed, Values):
     Values[2] = mapPercentageToBSEVoltage(SinPercentage)
 
 
+def triangularWave(PedalType,PercentPressed, Values):
+    
+    match PedalType:
+        case "APPS1":
+            Values[0] = mapPercentageToAPPS1Voltage(PercentPressed)
+            
+        case "APPS2":
+            Values[1] = mapPercentageToAPPS2Voltage(PercentPressed)
 
+        case "BSE":
+            Values[2] = mapPercentageToBSEVoltage(PercentPressed)
+
+
+def scatteredWave(PedalType,PercentPressed, Values):
+
+    randomPercentPressed = random.int(0,int(PercentPressed*100))
+    match PedalType:
+        case "APPS1":
+            Values[0] = mapPercentageToAPPS1Voltage(randomPercentPressed)
+            
+        case "APPS2":
+            Values[1] = mapPercentageToAPPS2Voltage(randomPercentPressed)
+
+        case "BSE":
+            Values[2] = mapPercentageToBSEVoltage(randomPercentPressed)
+        
+
+
+
+    
+def matchInverse(APPSWaveForm,curpercentage,Values):
+    match APPSWaveForm:
+
+                        case "S":
+                            InversesinWave("BSE",curpercentage, Values)
+                        
+                        case "T":
+                            #Passing 1-curpercentage will give the percentage as a float which is the opposite of
+                            #the other reading
+                            triangularWave("BSE",1-curpercentage, Values)                        
+                        case "R":
+                            scatteredWave("BSE", 1-curpercentage, Values)
+        
+                        case "P":
+                            pass
+                            
+
+                        case "O":
+                           Values[2] = BSEmaxVoltageReading
+                        case _:
+                            pass
+    
 
 if __name__ == "__main__":
 
@@ -133,13 +184,15 @@ if __name__ == "__main__":
         BSEWaveForm= args.BSEWaveForm
         APPSWaveForm = args.APPSWaveForm
 
+        #placeholder for set of values which will be filled in 
+
         Values = [0,0,0]
 
         for cycle in range(numcycles):
 
 
             for increment in range(0,precision+1):
-                curpercentage = (1/precision)*increment
+                curpercentage = (increment/precision)
                 
             
                  
@@ -149,10 +202,12 @@ if __name__ == "__main__":
                         sinWave("APPS2",curpercentage, Values)
                         
                     case "T":
-                        pass
-
+                        triangularWave("APPS1",curpercentage, Values)
+                        triangularWave("APPS2",curpercentage, Values)
+                        
                     case "R":
-                        pass
+                        scatteredWave("APPS1",curpercentage, Values)
+                        scatteredWave("APPS2",curpercentage, Values)
 
                     case "P":
                         pass
@@ -172,33 +227,15 @@ if __name__ == "__main__":
                         sinWave("BSE",curpercentage, Values)
                         
                     case "T":
-                        break
+                        triangularWave("BSE",curpercentage, Values)
+                        
 
                     case "R":
-                        pass
+                        scatteredWave("BSE",curpercentage, Values)
 
-                    case "I":
-                        
-                        match APPSWaveForm:
-
-                            case "S":
-                                InversesinWave("BSE",curpercentage, Values)
+                    case "I":     
+                        matchInverse("BSE",curpercentage,Values)
                             
-                            case "T":
-                                pass
-                            case "R":
-                                pass
-        
-                            case "P":
-                                pass
-                            
-
-                            case "O":
-                               Values[2] = BSEmaxVoltageReading
-                            case _:
-                                pass
-                            
-
                     case "O":
                         Values[2] = BSEminVoltageReading
                     case _:
