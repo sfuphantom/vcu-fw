@@ -18,6 +18,7 @@
 // #include "vcu_data.h"       // deprecated
 #include "vcu_common.h"
 #include "board_hardware.h"
+#include "Phantom_sci.h"
 
 #include "task_config.h"
 
@@ -171,11 +172,16 @@ static void vThrottleActorTask(void* arg)
         // ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
         // i.e. map from 0.6V (60) to 4.5V (450) or something like that, instead of 0->500 (0V -> 5V)
         MCP48FV_Set_Value(throttle); // send throttle value to DAC driver
+
+        UARTprintln("%d", throttle);
     }
     else
     {
         // send 0 to DAC
         MCP48FV_Set_Value(0);
+
+        UARTprintln("0");
+
         isThrottleAvailable = false;
     }
 }
