@@ -2,17 +2,17 @@
 #include "Phantom_sci.h"
 
 #include <halcogen_vcu/include/sci.h>
+#include <halcogen_vcu/include/gio.h>
 #include "string.h"
 #include "stdarg.h"
 #include "stdio.h"
 #include "board_hardware.h"
 
-static unsigned char serialData[128];
-static uint8_t beginProcessing = 0;
-static uint8_t endProcessing = 0;
-static uint8_t index = 0;
-static unsigned char data;
-static uint8_t rx_flag = 0;
+
+#define NUMBER_OF_SIMULATION_MESSAGES 3
+static volatile uint8_t messageCounter = 0;
+static volatile uint32_t serialData = 0; // there is 24 bit standard type so when we cast, we have to cast to 32 bit hence 4 bytes
+
 
 void UARTSend(sciBASE_t *sci, char data[])
 {
@@ -49,63 +49,59 @@ void UARTprintf(const char *_format, ...)
    }
 }
 
-unsigned char* getSimData(int i)
+void UARTprintln(const char *_format, ...)
 {
-    while(!endProcessing);
+    char str[128];
+    memset(str, '\0', 128 * sizeof(char));
+    int8_t length = -1;
 
-    endProcessing = 0;
-    return serialData;
+    va_list argList;
+    va_start( argList, _format );
+
+    length = vsnprintf(str, sizeof(str), _format, argList);
+
+	// only diff between this and UARTprintf because passing variable args between functions in C are weird and I don't wanna deal with it rn 
+    str[125] = '\r';
+    str[126] = '\n';
+
+    str[127] = '\0';
+
+    va_end( argList );
+
+    if (length > 0)
+    {
+        sciSend(PC_UART, (unsigned)length, (unsigned char*)str);
+    }
+
+
+
+}
+
+
+uint32_t getSimData()
+{
+    while(messageCounter < NUMBER_OF_SIMULATION_MESSAGES);
+
+    gioSetBit(gioPORTA, 5, 1);
+
+    uint32_t ret = serialData;
+
+    // reset volatile values
+    messageCounter = 0;
+    serialData = 0;
+
+    return ret;
 }
 
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 {
-    sciSend(sci, 1, (unsigned char*) &data);
-    if (data == START_SIM_DATA && !endProcessing || beginProcessing)
+//    sciSend(sci, 1, (unsigned char*) &data);
+
+    if (messageCounter < NUMBER_OF_SIMULATION_MESSAGES)
     {
-        if (beginProcessing)
-        {
-            serialData[index] = data;
+        serialData |= data << (messageCounter*8);
 
-            if (data == '\n')
-            {
-                endProcessing = 1;
-                beginProcessing = 0;
-            }
-
-            index++;
-        }
-        else
-        {
-            beginProcessing = 1;
-            index = 0;
-        }
-
-    }
-}
-
-
-void split(char* str, const char* delimeter, char* buffer, int buffer_size){
-    /*
-    Args:
-        str: original string to split
-        delimeter: delimeter
-        buffer: string to copy contents to
-        buffer_size: size of buffer
-    Return:
-        No explicit returns. Output of function is copied to buffer
-    */
-
-    // Returns first token
-    char *token = strtok(str, delimeter);
-
-    // Keep printing tokens while one of the
-    // delimiters present in str[].
-    int index = 0;
-    while (token != NULL && index < buffer_size)
-    {
-        buffer[index] = *token;
-        token = strtok(NULL, delimeter);
-        index++;
+        messageCounter++;
     }
 }
 

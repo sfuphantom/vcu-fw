@@ -14,16 +14,18 @@
 extern "C" {
 #endif
 
-#define SIM_MODE 
+// defined here, since everyone who cares about sim mode must need to rely on UART 
+#define VCU_SIM_MODE 1  
 #define START_SIM_DATA 's'
+#define END_SIM_DATA '\n'
 
 void UARTInit(sciBASE_t *sci, uint32 baud);
 void UARTSend(sciBASE_t *sci, char data[]);
 void UARTprintf(const char *_format, ...);
+void UARTprintln(const char *_format, ...);
 void split(char* str, const char* delimeter, char* buffer, int buffer_size);
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data);
-unsigned char* getSimData();
-void finishProcessing();
+uint32_t getSimData();
 
 
 #endif /* INCLUDE_PHANTOM_SCI_H_ */
