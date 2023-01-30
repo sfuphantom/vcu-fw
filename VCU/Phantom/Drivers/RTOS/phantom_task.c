@@ -28,9 +28,6 @@ TaskHandle_t Phantom_createTask(Task* task,
 
     xTaskCreate(taskSkeleton, taskName, stackSize, task, taskPriority, &taskHandle);
 
-    // if taskHandle is NULL, configASSERT will block the program indefinitely
-    configASSERT(taskHandle != NULL);
-
     return taskHandle;
 }
 
