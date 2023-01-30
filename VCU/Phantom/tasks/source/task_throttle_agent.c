@@ -14,6 +14,15 @@
 #include "board_hardware.h"
 #include "adc.h"
 
+#include "Phantom_sci.h"
+
+#include <stdlib.h>
+#include "sys_common.h"
+#include "string.h"
+#include "sci.h"
+#include "stdio.h"
+#include "math.h"
+
 typedef struct ThrottleAgent_t{
     PipeTask_t pipeline;
     pedal_reading_t readings;
@@ -41,6 +50,11 @@ uint8_t throttleAgentInit(void)
     footPedals.pipeline.taskHandle = Phantom_createTask(&footPedals.pipeline.task, "ThrottleAgentTask", THROTTLE_AGT_STACK_SIZE, THROTTLE_AGT_PRIORITY);
 
     footPedals.pipeline.q = xQueueCreate(50, sizeof(pedal_reading_t));
+
+    footPedals.prevReadings = (pedal_reading_t) {0, 0 ,0};
+
+    return footPedals.pipeline.q && footPedals.pipeline.taskHandle;
+
 }
 
 static void vThrottleAgentTask(void* arg)
