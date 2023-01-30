@@ -843,7 +843,8 @@ void sciHighLevelInterrupt(void)
 //                if (g_sciTransfer_t[0U].rx_length == 0U)
 //                {
                     /* USER CODE BEGIN (28) */
-                    sciReceiveCallback(sciREG, (uint32)SCI_RX_INT, byte);
+                    // using our own custom callback DO NOT REMOVE
+                    sciReceiveCallback(sciREG, (uint32)SCI_RX_INT, byte); 
                     /* USER CODE END */
 //                }
             }
