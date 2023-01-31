@@ -110,6 +110,7 @@ def triangularWave(PedalType,PercentPressed, Values):
 
 #Generate random values to test firmware when voltage readings are discontinuous
 
+def scatteredWave(PedalType,PercentPressed,Values):
     randomPercentPressed = random.randint(0,int(PercentPressed*100))
     randomPercentPressed = float(randomPercentPressed/100)
     match PedalType:
@@ -121,7 +122,35 @@ def triangularWave(PedalType,PercentPressed, Values):
 
         case "BSE":
             Values[2] = mapPercentageToBSEVoltage(randomPercentPressed)
-            print(mapPercentageToBSEVoltage(randomPercentPressed))
+
+
+#Create 1 spike per wave form. Precision will control how
+#values seperate each spike, and cycles will determine the total
+#amount of spikes per simulation
+def spikeWave(PedalType,PercentPressed,Values):
+
+    
+    if (PercentPressed == 0):
+    
+        match PedalType:
+            case "APPS1":
+                Values[0] = APPS1maxVoltageReading
+                
+            case "APPS2":
+                Values[1] = APPS2maxVoltageReading
+
+            case "BSE":
+                Values[2] = BSEmaxVoltageReading
+    else:
+        match PedalType:
+            case "APPS1":
+                Values[0] = APPS1minVoltageReading
+                
+            case "APPS2":
+                Values[1] = APPS2minVoltageReading
+
+            case "BSE":
+                Values[2] = BSEminVoltageReading
         
 
 
@@ -141,9 +170,12 @@ def matchInverse(APPSWaveForm,curpercentage,Values):
             scatteredWave("BSE", 1-curpercentage, Values)
         
         case "P":
-            pass
+            
+            spikeWave("BSE",1-curpercentage, Values)
                             
-
+        case "M":
+            Values[2] = BSEVolmintageReading
+        
         case "O":
             Values[2] = BSEmaxVoltageReading
         case _:
@@ -172,12 +204,12 @@ if __name__ == "__main__":
     my_parser.add_argument('APPSWaveForm',
                            metavar='APPSWaveForm',
                            type=str,
-                           help='T = triangular \n S = sinusodial \n R = Random \n P = Spike Values \n     O = APPS Values set to 0 ')
+                           help='T = triangular S = sinusodial \n R = Random \n P = Spike \n     M = Max voltage \n O = Min voltage ')
 
     my_parser.add_argument('BSEWaveForm',
                            metavar='BSEWaveForm',
                            type=str,
-                           help='T = triangular \n S = sinusodial \n R = Random \n I = Inverse of APPS \n O = Brake Values set to 0 ')
+                           help='T = triangular \n S = sinusodial \n R = Random \n P = Spike \n  M = Max voltage \n O = Min voltage I = Inverse of APPS')
 
 
     #read values from the commandline/terminal
@@ -203,14 +235,13 @@ if __name__ == "__main__":
 
 
             
-            #Total number of values to represent the input wave
+            #Total number of values to represent the chosen wave
             
-            for increment in range(0,precision):
+            for increment in range(0,precision+1):
                 #NOTE: percentage always represented as a number [0,1] not [0,100]
-                curpercentage = (increment/precision)
+                curpercentage = (increment/(precision))
                 
-                
-                 
+                #Sets values [APPS1, APPS2 ,    ]
                 match APPSWaveForm:
                     case "S":
                         sinWave("APPS1",curpercentage, Values)
@@ -225,8 +256,12 @@ if __name__ == "__main__":
                         scatteredWave("APPS2",curpercentage, Values)
 
                     case "P":
-                        pass
-                        
+                        spikeWave("APPS1",curpercentage, Values)
+                        spikeWave("APPS2",curpercentage, Values)
+
+                    case "M":
+                        Values[0] = APPS1maxVoltageReading 
+                        Values[1] = APPS2maxVoltageReading
 
                     case "O":
                         #lowest possible values
@@ -237,7 +272,7 @@ if __name__ == "__main__":
                         print("APPS waveform" , APPSWaveForm, "is not an option")
                         exit()
                         
-                #Changes [ , , BSE] 
+                #Sets values  [ , , BSE] 
                 match BSEWaveForm:
                     case "S":
                         sinWave("BSE",curpercentage, Values)
@@ -251,6 +286,12 @@ if __name__ == "__main__":
 
                     case "I":     
                         matchInverse(APPSWaveForm,curpercentage,Values)
+
+                    case "P":
+                        spikeWave("BSE",curpercentage, Values)
+
+                    case "M":
+                        Values[2] = BSEmaxVoltageReading
                             
                     case "O":
                         Values[2] = BSEminVoltageReading
@@ -263,8 +304,6 @@ if __name__ == "__main__":
                 
 
             
-        
-        #APPS wave forms must allow to be tested independantly from BSE
 
     #Defined in ThrottleValue Simulator 
     Throttle_Value_Simulator.sendValsFromFile('csv_file.csv') #uncomment this line to send values to VCU
