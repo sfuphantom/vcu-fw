@@ -174,7 +174,7 @@ def matchInverse(APPSWaveForm,curpercentage,Values):
             spikeWave("BSE",1-curpercentage, Values)
                             
         case "M":
-            Values[2] = BSEVolmintageReading
+            Values[2] = BSEminVoltageReading
         
         case "O":
             Values[2] = BSEmaxVoltageReading
