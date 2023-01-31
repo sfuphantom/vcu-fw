@@ -74,6 +74,8 @@ def mapPedalAngleToVoltage(Angle, PedalType):
             return percentPressed*(APPS2maxVoltageReading - APPS2minVoltageReading)
         case "BSE":
             return percentPressed*(BSEmaxVoltageReading - BSEminVoltageReading)
+        case _:
+            return 0
             
 
 
@@ -104,11 +106,11 @@ def percentToCosWave(percent):
     
 
 #/|/|/| shape, not /\/\/\/\ like typical triangularWaves
-def triangularWave(cycles,BSEForm,f):
+def triangularWave(cycles, APPSForm, BSEForm,f):
     
     writer = csv.writer(f)
-    curpercent = 0
-    array = [0,0,0]
+    curAPPSAngle = APPSminPedalAngle 
+    pedalVals = [0,0,0]
     #25 total increments, and since maxpedal = 50
     #and the VCU accepts data every 20ms, this would model
     #pressing the pedal down all the way in 0.5 seconds
@@ -120,15 +122,20 @@ def triangularWave(cycles,BSEForm,f):
     #
     for cycle in range(cycles):
         
-        while (curpercent <= maxPercentPressed):
-            pedalAngleToVolt = round(linearPercentToVoltMapping(curpercent),3)
+        while (curAPPSAngle <= APPSmaxPercentPressed):
+
+            match triangularWave
+
             
-            APPS1 =  mapVoltToAPPS1(pedalAngleToVolt)
-            APPS2 =  mapVoltToAPPS2(pedalAngleToVolt)
+            APPS1 =  mapPedalAngleToVoltage(curAPPSAngle, "APPS1")
+            APPS2 =  mapPedalAngleToVoltage(curAPPSAngle, "APPS2")
+            BSE =    mapPedalAngleToVoltage(curAPPSAngle, "BSE")
+
+
+            pedalVals[0] = APPS1
+            pedalVals[1] = APPS2
+
             
-            
-            array[0] = APPS1
-            array[1] = APPS2
 
 
             #arr[2] = 0 -> currently only testing while break percent is 0
@@ -221,7 +228,7 @@ def RandomVals(cycles, BSEForm, f):
             
         
         
-#pass newline ='' as argument to avoid spaces between excel lines  
+ 
 if __name__ == "__main__":
 
     my_parser = argparse.ArgumentParser(description='Arbitrary Wave Form Generator')
@@ -243,12 +250,13 @@ if __name__ == "__main__":
 
     args = my_parser.parse_args()
 
-    
+    #pass newline ='' as argument to avoid spaces between excel rows    
     with open('csv_file.csv', 'w', newline = '') as f:
         
         numcycles = args.Cycles
 
         BSEtype = args.BSEWaveForm
+        APPStype = args.APPSWaveForm 
         
         if (args.APPSWaveForm == "T"):
             triangularWave(numcycles,BSEtype,f)
@@ -257,8 +265,8 @@ if __name__ == "__main__":
         if(args.APPSWaveForm == "R"):
             RandomVals(numcycles,BSEtype,f)
 
-    #Defined in ThrottleValue Simulator
-    #Throttle_Value_Simulator.sendValsFromFile('csv_file.csv')
+    #Defined in ThrottleValue Simulator 
+    #Throttle_Value_Simulator.sendValsFromFile('csv_file.csv') #uncomment this line to send values to VCU
             
 
         
