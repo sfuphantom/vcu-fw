@@ -26,13 +26,12 @@ APPS2minVoltageReading = 0
 BSEmaxVoltageReading = 4.5
 BSEminVoltageReading = 1.50
 
-#Following 4 values are not used
 
-APPSMaxPedalAngle = 225
-APPSMinPedalAngle = 180
+#APPSMaxPedalAngle = 225
+#APPSMinPedalAngle = 180
 
-BSEMaxPedalAngle = 135
-BSEMinPedalAngle = -74
+#BSEMaxPedalAngle = 135
+#BSEMinPedalAngle = -74
 
 
 
@@ -180,6 +179,35 @@ def matchInverse(APPSWaveForm,curpercentage,Values):
             Values[2] = BSEmaxVoltageReading
         case _:
             pass
+
+#check that the input arguments are legal inputs
+def checkArguments(cycles, precision, APPS, BSE):
+    APPSWaves = ["S", "T", "R", "P", "M", "O"]
+    BSEWaves =  ["S", "T", "R", "P", "M", "O", "I"]
+    errorfound = False
+    
+    if (cycles < 1):
+        print("cycles must be at least 1")
+        errorfound = True
+    if (precision < 3):
+        print("precision must be atleast 3")
+        errorfound = True
+    if (APPS not in APPSWaves):
+        print(APPS, "is not an available waveform to model the APPS")
+        errorfound = True
+    if (BSE not in BSEWaves):
+        print(BSE, "is not an available waveform to model the BSE")
+        errorfound = True
+
+        
+    if (errorfound):
+        exit()
+    else:
+        #print("simulation will take", float(cycles*precision*35/1000), "seconds to complete")
+
+        
+    
+    
     
 
 if __name__ == "__main__":
@@ -193,7 +221,7 @@ if __name__ == "__main__":
     my_parser.add_argument('Cycles',
                            metavar='Cyles',
                            type=int,
-                           help=' Range :     0 <= int <= 100')
+                           help=' Range : int >= 1')
 
     my_parser.add_argument('Precision',
                            metavar='Precision',
@@ -217,6 +245,8 @@ if __name__ == "__main__":
 
     
 
+    
+
     #pass newline ='' as argument to avoid spaces between excel rows    
     with open('csv_file.csv', 'w', newline = '') as f:
         
@@ -225,6 +255,8 @@ if __name__ == "__main__":
 
         BSEWaveForm= args.BSEWaveForm
         APPSWaveForm = args.APPSWaveForm
+
+        checkArguments(numcycles,precision,APPSWaveForm,BSEWaveForm)
 
         #placeholder for values [APPS1, APPS2, BSE]
         #Will be changed based on the arguments and the current percentage pressed
@@ -269,8 +301,8 @@ if __name__ == "__main__":
                         Values[1] = APPS2minVoltageReading
 
                     case _:
-                        print("APPS waveform" , APPSWaveForm, "is not an option")
-                        exit()
+                        #will never get to this point
+                        pass
                         
                 #Sets values  [ , , BSE] 
                 match BSEWaveForm:
@@ -296,8 +328,8 @@ if __name__ == "__main__":
                     case "O":
                         Values[2] = BSEminVoltageReading
                     case _:
-                        print("BSE waveform" , APPSWaveForm, "is not an option")
-                        exit()
+                        #will never get to this point
+                        pass
                            
                 #Writes the set of values to the CSV file           
                 csv.writer(f).writerow(Values)           
