@@ -198,12 +198,11 @@ def checkArguments(cycles, precision, APPS, BSE):
     if (BSE not in BSEWaves):
         print(BSE, "is not an available waveform to model the BSE")
         errorfound = True
-
-        
     if (errorfound):
         exit()
     else:
-        #print("simulation will take", float(cycles*precision*35/1000), "seconds to complete")
+        TotalTime= cycles*precision*(Throttle_Value_Simulator.delayVCUReceiveValues())
+        print("Simulation will take", "%.4f" % TotalTime, "seconds to complete")
 
         
     

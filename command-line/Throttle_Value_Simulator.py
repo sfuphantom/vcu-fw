@@ -105,6 +105,11 @@ if __name__ == "__main__":
     ser.write("\n".encode('utf-8'))
 
     
+def delayVCUReceiveValues():
+     #measured in seconds
+     #35 ms delay
+     delay = 0.035
+     return delay
 
 def sendValsFromFile(filename):
 
@@ -131,8 +136,7 @@ def sendValsFromFile(filename):
                 ser.write(",".encode('utf-8'))
             
             ser.write("\n".encode('utf-8'))
-            #delay 20ms
-            time.sleep(0.02)
+            time.sleep(delayVCUReceiveValues())
             
         
     
