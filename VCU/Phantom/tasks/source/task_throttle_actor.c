@@ -173,14 +173,18 @@ static void vThrottleActorTask(void* arg)
         // i.e. map from 0.6V (60) to 4.5V (450) or something like that, instead of 0->500 (0V -> 5V)
         MCP48FV_Set_Value(throttle); // send throttle value to DAC driver
 
+		#ifdef VCU_SIM_MODE
         UARTprintln("%d", throttle);
+        #endif
     }
     else
     {
         // send 0 to DAC
         MCP48FV_Set_Value(0);
 
+        #ifdef VCU_SIM_MODE
         UARTprintln("0");
+        #endif
 
         isThrottleAvailable = false;
     }

@@ -14,8 +14,6 @@
 extern "C" {
 #endif
 
-// defined here, since everyone who cares about sim mode must need to rely on UART 
-#define VCU_SIM_MODE 1  
 #define START_SIM_DATA 's'
 #define END_SIM_DATA '\n'
 

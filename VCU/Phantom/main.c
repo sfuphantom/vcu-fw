@@ -6,10 +6,6 @@
  */
 
 /* USER CODE BEGIN (0) */
-
-// uncomment to switch to simulation mode
-// #define VCU_SIM_MODE
-
 #include "rti.h"
 #include "sci.h"
 #include "gio.h"
@@ -69,9 +65,14 @@ void phantomDriversInit()
 
 void phantomTasksInit()
 {
-//    Task_testInit();
+    #ifndef VCU_SIM_MODE
     ReceiveTaskInit();
+    #else
+    UARTprintln("Entering VCU Simulation Mode...");
+    #endif
+
     ThrottleInit();
+
     InterruptInit();
     throttleAgentInit();
 

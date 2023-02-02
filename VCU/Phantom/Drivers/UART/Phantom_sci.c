@@ -97,11 +97,14 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 {
 //    sciSend(sci, 1, (unsigned char*) &data);
 
+	#ifdef VCU_SIM_MODE
     if (messageCounter < NUMBER_OF_SIMULATION_MESSAGES)
     {
         serialData |= data << (messageCounter*8);
 
         messageCounter++;
     }
+    #else
+    #endif
 }
 
