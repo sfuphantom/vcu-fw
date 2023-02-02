@@ -1,4 +1,9 @@
 eclipse.preferences.version=1
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1090225820.180725957/HERCULES_MAC_DIR/delimiter=\:
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1090225820.180725957/HERCULES_MAC_DIR/operation=append
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1090225820.180725957/HERCULES_MAC_DIR/value=/Applications/ti/Hercules
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1090225820.180725957/append=true
+environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1090225820.180725957/appendContributed=true
 environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1090225820/HERCULES_MAC_DIR/delimiter=\:
 environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1090225820/HERCULES_MAC_DIR/operation=append
 environment/project/com.ti.ccstudio.buildDefinitions.TMS470.Debug.710972052.1090225820/HERCULES_MAC_DIR/value=/Applications/ti/Hercules
