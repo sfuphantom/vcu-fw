@@ -81,12 +81,12 @@ void ThrottleInit(void)
     // blocks indefinitely if task creation failed
     taskHandle = Phantom_createTask(&task, "ThrottleActorTask", THROTTLE_ACT_STACK_SIZE, THROTTLE_ACT_PRIORITY);
 
-    APPS1RangeFaultTimer = Phantom_createTimer("APPS1_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS1_SEVERE_RANGE_FAULT_CALLBACK);
-    APPS2RangeFaultTimer = Phantom_createTimer("APPS2_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS2_SEVERE_RANGE_FAULT_CALLBACK);
-    BSERangeFaultTimer = Phantom_createTimer("BSE_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, BSE_SEVERE_RANGE_FAULT_CALLBACK);
-    FPDiffFaultTimer = Phantom_createTimer("FP_DIFF_FAULT_Timer", 100, NO_RELOAD, NULL, FP_DIFF_SEVERE_FAULT_CALLBACK);
-
-    RTDSTimer = Phantom_createTimer("RTDS_Timer", 2000, NO_RELOAD, NULL, RTDS_CALLBACK);
+//    APPS1RangeFaultTimer = Phantom_createTimer("APPS1_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS1_SEVERE_RANGE_FAULT_CALLBACK);
+//    APPS2RangeFaultTimer = Phantom_createTimer("APPS2_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS2_SEVERE_RANGE_FAULT_CALLBACK);
+//    BSERangeFaultTimer = Phantom_createTimer("BSE_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, BSE_SEVERE_RANGE_FAULT_CALLBACK);
+//    FPDiffFaultTimer = Phantom_createTimer("FP_DIFF_FAULT_Timer", 100, NO_RELOAD, NULL, FP_DIFF_SEVERE_FAULT_CALLBACK);
+//
+//    RTDSTimer = Phantom_createTimer("RTDS_Timer", 2000, NO_RELOAD, NULL, RTDS_CALLBACK);
 
     (void) taskHandle;
     
