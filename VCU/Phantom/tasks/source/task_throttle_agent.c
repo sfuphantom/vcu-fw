@@ -91,6 +91,7 @@ static pedal_reading_t readPedals()
     /* extract and parse the byte message. See VCU Firmware Simulation document */
     uint16_t apps1 = (data & 0b111111111111) + 1500; 
     uint16_t apps2 = ((data & 0b1111111111 << 12) >> 12) + 500; 
+    // TODO: Add the rest of the direct VCU inputs to the encoding scheme
     
     pedal_reading_t throttleData = {
       .bse=1300,
