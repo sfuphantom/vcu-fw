@@ -25,6 +25,7 @@ void UARTInit(sciBASE_t *sci, uint32 baud)
     _enable_IRQ();
     sciInit();
     sciSetBaudrate(sci, baud);
+
     sciEnableNotification(sci, SCI_RX_INT);
     sciReceive(sci, 1, (unsigned char*)NULL); // clear interrupt flag
 }
@@ -60,10 +61,6 @@ void UARTprintln(const char *_format, ...)
 
     length = vsnprintf(str, sizeof(str), _format, argList);
 
-	// only diff between this and UARTprintf because passing variable args between functions in C are weird and I don't wanna deal with it rn 
-    str[125] = '\r';
-    str[126] = '\n';
-
     str[127] = '\0';
 
     va_end( argList );
@@ -71,10 +68,10 @@ void UARTprintln(const char *_format, ...)
     if (length > 0)
     {
         sciSend(PC_UART, (unsigned)length, (unsigned char*)str);
+
+	    // only diff between this and UARTprintf because passing variable args between functions in C are weird and I don't wanna deal with it rn 
+        sciSend(PC_UART, 2, "\r\n");
     }
-
-
-
 }
 
 
