@@ -108,7 +108,6 @@ uint32_t getSimData()
 
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 {
-//    sciSend(sci, 1, (unsigned char*) &data);
 
 	#ifdef VCU_SIM_MODE
     if (messageCounter < NUMBER_OF_SIMULATION_MESSAGES)
@@ -123,7 +122,7 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 
         case TASK_LIST:
 
-            // use interrupt task (this aborts because it's too many chars to send in an IRQ)
+            // TODO: use interrupt task (this aborts because it's too many chars to send in an IRQ)
             // vTaskGetRunTimeStats(ptrTaskList);
             // UARTSend(PC_UART, ptrTaskList);
             // vTaskList(ptrTaskList);

@@ -56,9 +56,9 @@ static bool FP_DIFF_FAULT_TIMER_EXPIRED = false;       //added by jaypacamarra
 /* Brake Light readability */
 #define BRAKE_LIGHT_ON      0
 #define BRAKE_LIGHT_OFF     1
-static bool brake_light_state = BRAKE_LIGHT_ON; // Default = BRAKE_LIGHT_ON
+static bool brake_light_state = BRAKE_LIGHT_ON; 
 
-static bool isThrottleAvailable = false; // is this necessary anymore? TODO
+static bool isThrottleAvailable = false; 
 static uint32_t faultCode = 0;
 
 static void vThrottleActorTask(void* arg);
@@ -81,16 +81,17 @@ void ThrottleInit(void)
     // blocks indefinitely if task creation failed
     taskHandle = Phantom_createTask(&task, "ThrottleActorTask", THROTTLE_ACT_STACK_SIZE, THROTTLE_ACT_PRIORITY);
 
-//    APPS1RangeFaultTimer = Phantom_createTimer("APPS1_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS1_SEVERE_RANGE_FAULT_CALLBACK);
-//    APPS2RangeFaultTimer = Phantom_createTimer("APPS2_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS2_SEVERE_RANGE_FAULT_CALLBACK);
-//    BSERangeFaultTimer = Phantom_createTimer("BSE_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, BSE_SEVERE_RANGE_FAULT_CALLBACK);
-//    FPDiffFaultTimer = Phantom_createTimer("FP_DIFF_FAULT_Timer", 100, NO_RELOAD, NULL, FP_DIFF_SEVERE_FAULT_CALLBACK);
-//
-//    RTDSTimer = Phantom_createTimer("RTDS_Timer", 2000, NO_RELOAD, NULL, RTDS_CALLBACK);
+    /*     
+    APPS1RangeFaultTimer = Phantom_createTimer("APPS1_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS1_SEVERE_RANGE_FAULT_CALLBACK);
+    APPS2RangeFaultTimer = Phantom_createTimer("APPS2_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, APPS2_SEVERE_RANGE_FAULT_CALLBACK);
+    BSERangeFaultTimer = Phantom_createTimer("BSE_RANGE_FAULT_Timer", 100, NO_RELOAD, NULL, BSE_SEVERE_RANGE_FAULT_CALLBACK);
+    FPDiffFaultTimer = Phantom_createTimer("FP_DIFF_FAULT_Timer", 100, NO_RELOAD, NULL, FP_DIFF_SEVERE_FAULT_CALLBACK);
+    RTDSTimer = Phantom_createTimer("RTDS_Timer", 2000, NO_RELOAD, NULL, RTDS_CALLBACK); 
+    */
 
     (void) taskHandle;
     
-    MCP48FV_Init();             // Initialize DAC Library
+    MCP48FV_Init();             
 }
 
 static void vThrottleActorTask(void* arg)
@@ -136,15 +137,17 @@ static void vThrottleActorTask(void* arg)
     uint32_t BSESensorSum = pedalReadings.bse;
     if (brake_light_state == BRAKE_LIGHT_OFF && BSESensorSum > (BRAKING_THRESHOLD + HYSTERESIS))
     {
-        // turn on brake lights
+        
         gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, BRAKE_LIGHT_ON);
+
         // update brake light enable in the vcu data structure
         brake_light_state = BRAKE_LIGHT_ON;
     }
     else if (brake_light_state == BRAKE_LIGHT_ON && BSESensorSum < (BRAKING_THRESHOLD - HYSTERESIS))
     {
-        // turn off brake lights
+        
         gioSetBit(BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN, BRAKE_LIGHT_OFF);
+
         // update brake light enable in the vcu data structure
         brake_light_state = BRAKE_LIGHT_OFF;
     }
@@ -163,10 +166,10 @@ static void vThrottleActorTask(void* arg)
 
     if (state == RUNNING && isThrottleAvailable)
     {
-        // update throttle percentage in vcu data structure
+        
         float apps_percent_avg = (apps1PedalPercent + apps2PedalPercent) / 2;
 
-        // VCUData_setThrottlePercentage(apps_percent_avg);
+        
         // send DAC to inverter
         int16_t throttle = 390 * apps_percent_avg + 60;        // equation mapping the averaged signals to 0->500 for the DAC driver
         // ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
@@ -189,8 +192,6 @@ static void vThrottleActorTask(void* arg)
         isThrottleAvailable = false;
     }
 }
-
-// Other helper functions and callbacks goes here...
 
 /** @fn void calculatePedalPercents(void)
 *   @brief Calculates the percent pressed of the brake pedal

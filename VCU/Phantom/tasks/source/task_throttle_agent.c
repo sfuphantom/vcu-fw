@@ -54,12 +54,10 @@ uint8_t throttleAgentInit(void)
     footPedals.prevReadings = (pedal_reading_t) {0, 0 ,0};
 
     return footPedals.pipeline.q && footPedals.pipeline.taskHandle;
-
 }
 
 static void vThrottleAgentTask(void* arg)
 {
-
     footPedals.readings = readPedals();
 
     // apply a low pass filter with ALPHA of 0.5
