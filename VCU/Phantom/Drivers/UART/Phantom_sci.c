@@ -7,11 +7,27 @@
 #include "stdarg.h"
 #include "stdio.h"
 #include "board_hardware.h"
+#include "FreeRTOS.h"
+#include "os_task.h"
 
 
 #define NUMBER_OF_SIMULATION_MESSAGES 3
 static volatile uint8_t messageCounter = 0;
 static volatile uint32_t serialData = 0; // there is 24 bit standard type so when we cast, we have to cast to 32 bit hence 4 bytes
+
+extern volatile unsigned long ulHighFrequencyTimerTicks;
+static char ptrTaskList[500];
+
+enum eCommands{
+
+    ECHO_THROTTLE='1',
+    ECHO_APPS1='2',
+    ECHO_APPS2='3',
+    ECHO_BSE='4',
+    STAT_RUN='5',  // vTaskGetRunTimeStats
+    STAT_START='6',  // xTaskGetTickCount
+    TASK_LIST='7'// vTaskList
+};
 
 
 void UARTSend(sciBASE_t *sci, char data[])
@@ -102,6 +118,46 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
         messageCounter++;
     }
     #else
+
+    switch(data){
+
+        case TASK_LIST:
+
+            // use interrupt task (this aborts because it's too many chars to send in an IRQ)
+            // vTaskGetRunTimeStats(ptrTaskList);
+            // UARTSend(PC_UART, ptrTaskList);
+            // vTaskList(ptrTaskList);
+            // UARTSend(PC_UART, ptrTaskList);
+
+            break;
+        case ECHO_THROTTLE:
+            UARTSend(PC_UART, "No data available yet.");
+            UARTSend(PC_UART, "\r");
+            break;
+        case ECHO_APPS1:
+            UARTSend(PC_UART, "No data available yet.");
+            UARTSend(PC_UART, "\r");
+            break;
+        case ECHO_APPS2:
+            UARTSend(PC_UART, "No data available yet.");
+            UARTSend(PC_UART, "\r");
+            break;
+        case ECHO_BSE:
+            UARTSend(PC_UART, "No data available yet.");
+            UARTSend(PC_UART, "\r");
+            break;
+        case STAT_START:            
+            UARTprintf("%d", xTaskGetTickCount());
+            UARTSend(PC_UART, "\r");
+            break;
+        default:
+            UARTprintln("Unknown command: %c", data);
+            putchar(data);
+            break;
+    }
+
     #endif
 }
+
+
 
