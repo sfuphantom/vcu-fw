@@ -74,10 +74,16 @@ void phantomTasksInit()
     ThrottleInit();
 
     InterruptInit();
-    throttleAgentInit();
+
+    if (!throttleAgentInit())
+    {
+        while(1) UARTprintf("Throttle not initialized\r\n");
+    }
 
 }
+
 volatile unsigned long ulHighFrequencyTimerTicks;
+
 void rtiNotification(uint32 notification)
 {
     ulHighFrequencyTimerTicks++;
@@ -98,9 +104,9 @@ void main(void)
     halcogenInit();
     phantomDriversInit();
 
-    phantomTasksInit();
-
     UARTInit(PC_UART, 9600); // something up above overwrites the configuration set here. Make sure this goes last!
+
+    phantomTasksInit();
 
     // Phantom_startTaskScheduler is Blocking
     Phantom_startTaskScheduler();
