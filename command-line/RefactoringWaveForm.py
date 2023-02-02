@@ -20,7 +20,7 @@ APPS1maxVoltageReading = 4.5
 APPS1minVoltageReading = 1.50
 
 APPS2maxVoltageReading = 1.5
-APPS2minVoltageReading = 0
+APPS2minVoltageReading = 0.5
 
 
 BSEmaxVoltageReading = 4.5
