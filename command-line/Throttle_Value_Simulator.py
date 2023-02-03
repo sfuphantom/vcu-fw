@@ -7,6 +7,7 @@ import serial.tools.list_ports
 import argparse
 import operator
 import time
+import csv
 
 import os
 import sys
@@ -121,21 +122,28 @@ def sendValsFromFile(filename):
     ser = serial.Serial(selected_port,9600)
     
     with open(filename) as csv_file:
-        csv_reader = csv.reader(filename, delimiter=',')
-        line_count = 0
+        csv_reader = csv.reader(csv_file, delimiter=',')
+        next(csv_file) #skip the header when reading the file
+       
         for row in csv_reader:
+
 
             #so that VCU knows where to start reading data from; use arbitrary value "s" to represent the start
             ser.write("s".encode('utf-8'))
             for val in range(3):
-
+                
+                num = float(row[val])
+                scalednum = num*1000
+                roundednum = int(scalednum)
+                #print(roundednum)
                 #currently sending a float, so will need to multiply to a scale and cast to int in order
                 #to send as valid bits without losing decimal precision
-                ser.write(int(row[val]*1000))
+                ser.write(roundednum)
         
                 ser.write(",".encode('utf-8'))
             
             ser.write("\n".encode('utf-8'))
+            print(row)
             time.sleep(delayVCUReceiveValues())
             
         

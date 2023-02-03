@@ -4,7 +4,7 @@ import random;
 import argparse 
 import math
 import Throttle_Value_Simulator
-
+import time
 
 import csv
 
@@ -201,8 +201,12 @@ def checkArguments(cycles, precision, APPS, BSE):
     if (errorfound):
         exit()
     else:
-        TotalTime= cycles*precision*(Throttle_Value_Simulator.delayVCUReceiveValues())
-        print("Simulation will take", "%.4f" % TotalTime, "seconds to complete")
+        pass
+        #TODO: Total Time is a theoretical estimate of how long a simulation shold take
+        #TotalTime= cycles*precision*(Throttle_Value_Simulator.delayVCUReceiveValues())
+        #Actual running time takes 50% longer
+        #print("Simulation will take", "%.3f" % TotalTime, "seconds to complete")
+        
 
         
     
@@ -256,6 +260,9 @@ if __name__ == "__main__":
         APPSWaveForm = args.APPSWaveForm
 
         checkArguments(numcycles,precision,APPSWaveForm,BSEWaveForm)
+
+        csv.writer(f).writerow(["APPS1","APPS2","BSE"])
+        
 
         #placeholder for values [APPS1, APPS2, BSE]
         #Will be changed based on the arguments and the current percentage pressed
