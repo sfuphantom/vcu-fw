@@ -251,7 +251,7 @@ if __name__ == "__main__":
     
 
     #pass newline ='' as argument to avoid spaces between excel rows    
-    with open('csv_file.csv', 'w', newline = '') as f:
+    with open('SimulatedValues.csv', 'w', newline = '') as f:
         
         numcycles = args.Cycles
         precision = args.Precision
@@ -344,4 +344,4 @@ if __name__ == "__main__":
             
 
     #Defined in ThrottleValue Simulator 
-    Throttle_Value_Simulator.sendValsFromFile('csv_file.csv') #uncomment this line to send values to VCU
+    Throttle_Value_Simulator.sendValsFromFile('SimulatedValues.csv') #uncomment this line to send values to VCU
