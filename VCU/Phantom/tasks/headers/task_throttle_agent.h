@@ -11,7 +11,7 @@
 #include "vcu_common.h"
 
 
-void throttleAgentInit(void);
+uint8_t throttleAgentInit(void);
 uint8_t receivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms);
 
 

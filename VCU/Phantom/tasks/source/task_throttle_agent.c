@@ -14,6 +14,15 @@
 #include "board_hardware.h"
 #include "adc.h"
 
+#include "Phantom_sci.h"
+
+#include <stdlib.h>
+#include "sys_common.h"
+#include "string.h"
+#include "sci.h"
+#include "stdio.h"
+#include "math.h"
+
 typedef struct ThrottleAgent_t{
     PipeTask_t pipeline;
     pedal_reading_t readings;
@@ -26,25 +35,29 @@ static void vThrottleAgentTask(void* arg);
 
 static pedal_reading_t readPedals();
 
+
 /* Public API */
 uint8_t receivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms)
 {
-    return Phantom_receive(footPedals.pipeline.q, pdreading, wait_time_ms) == pdTRUE;
+    return xQueueReceive(footPedals.pipeline.q, pdreading, wait_time_ms) == pdTRUE;
 }
 
-void throttleAgentInit(void)
+uint8_t throttleAgentInit(void)
 {
-    footPedals.pipeline.task = (Task) {vThrottleAgentTask, THROTTLE_AGT_PERIOD_MS};
+    footPedals.pipeline.task = (Task) {vThrottleAgentTask, 0};
 
     // blocks indefinitely if task creation failed
     footPedals.pipeline.taskHandle = Phantom_createTask(&footPedals.pipeline.task, "ThrottleAgentTask", THROTTLE_AGT_STACK_SIZE, THROTTLE_AGT_PRIORITY);
 
-    footPedals.pipeline.q = Phantom_createMailBox(sizeof(pedal_reading_t));
+    footPedals.pipeline.q = xQueueCreate(50, sizeof(pedal_reading_t));
+
+    footPedals.prevReadings = (pedal_reading_t) {0, 0 ,0};
+
+    return footPedals.pipeline.q && footPedals.pipeline.taskHandle;
 }
 
 static void vThrottleAgentTask(void* arg)
 {
-
     footPedals.readings = readPedals();
 
     // apply a low pass filter with ALPHA of 0.5
@@ -55,14 +68,14 @@ static void vThrottleAgentTask(void* arg)
     // update prev filtered values
     footPedals.prevReadings =  footPedals.readings;
 
-    // send filtered values to mailbox
-    Phantom_overwrite(footPedals.pipeline.q, &footPedals.readings);
+    // send filtered values to mailbox (task_throttle_actor.c)
+   xQueueSend(footPedals.pipeline.q, &footPedals.readings, 1000);
 }
 
 static pedal_reading_t readPedals()
 {
 
-    #ifndef SIM_MODE 
+    #ifndef VCU_SIM_MODE 
     // Get pedal readings from ADC
     adcData_t FP_data[3];
     adcStartConversion(adcREG1, adcGROUP1);
@@ -73,10 +86,19 @@ static pedal_reading_t readPedals()
     return (pedal_reading_t) {FP_data[0].value, FP_data[1].value, FP_data[2].value};
 
     #else
+    uint32_t data = getSimData();
 
-    // TODO: Write sim mode variant  
+    /* extract and parse the byte message. See VCU Firmware Simulation document */
+    uint16_t apps1 = (data & 0b111111111111) + 1500; 
+    uint16_t apps2 = ((data & 0b1111111111 << 12) >> 12) + 500; 
+    // TODO: Add the rest of the direct VCU inputs to the encoding scheme
+    
+    pedal_reading_t throttleData = {
+      .bse=1300,
+      .fp1=apps1,
+      .fp2=apps2
+    };
 
+    return throttleData;
     #endif
-
-
 }

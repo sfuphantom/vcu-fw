@@ -6,10 +6,6 @@
  */
 
 /* USER CODE BEGIN (0) */
-
-// uncomment to switch to simulation mode
-// #define VCU_SIM_MODE
-
 #include "rti.h"
 #include "sci.h"
 #include "gio.h"
@@ -34,6 +30,7 @@
 #include "task_interrupt.h"
 #include "task_receive.h"
 #include "task_throttle_actor.h"
+#include "task_throttle_agent.h"
 #include "task_statemachine.h"
 #include "task_watchdog.h"
 #include "task_eeprom.h"
@@ -68,13 +65,25 @@ void phantomDriversInit()
 
 void phantomTasksInit()
 {
-//    Task_testInit();
+    #ifndef VCU_SIM_MODE
     ReceiveTaskInit();
+    #else
+    UARTprintln("Entering VCU Simulation Mode...");
+    #endif
+
     ThrottleInit();
+
     InterruptInit();
 
+    if (!throttleAgentInit())
+    {
+        while(1) UARTprintf("Throttle not initialized\r\n");
+    }
+
 }
+
 volatile unsigned long ulHighFrequencyTimerTicks;
+
 void rtiNotification(uint32 notification)
 {
     ulHighFrequencyTimerTicks++;
@@ -95,10 +104,13 @@ void main(void)
     halcogenInit();
     phantomDriversInit();
 
+    UARTInit(PC_UART, 9600); // something up above overwrites the configuration set here. Make sure this goes last!
+
     phantomTasksInit();
 
     // Phantom_startTaskScheduler is Blocking
     Phantom_startTaskScheduler();
+    while(1);
    
 /* USER CODE END */
 }

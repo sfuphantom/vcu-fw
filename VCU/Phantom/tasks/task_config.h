@@ -24,8 +24,8 @@
  *                              TASK PRIORITIES
  *********************************************************************************/
 #define THROTTLE_AGT_PRIORITY           4
-#define THROTTLE_AGT_SIM_PRIORITY       4
-#define THROTTLE_ACT_PRIORITY           4
+#define THROTTLE_AGT_SIM_PRIORITY       THROTTLE_AGT_PRIORITY
+#define THROTTLE_ACT_PRIORITY           5
 #define STATE_MACHINE_TASK_PRIORITY     2
 #define EEPROM_TASK_PRIORITY            0
 #define WATCHDOG_TASK_PRIORITY          0    // same as idle task
