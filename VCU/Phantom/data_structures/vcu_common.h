@@ -6,7 +6,13 @@
 #include "os_queue.h"
 #include "os_task.h"
 
+#include "stdarg.h"
 #include "hal_stdtypes.h"
+
+bool any(uint8_t num, ...);
+
+bool all(uint8_t num, ...);
+
 
 typedef struct SystemTasks_t{
 	TaskHandle_t throttleAgent;

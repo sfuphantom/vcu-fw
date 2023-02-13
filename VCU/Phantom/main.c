@@ -81,7 +81,7 @@ void phantomTasksInit()
         .throttleAgent=throttleAgentInit()
     };
 
-    if (!(t.EventHandler && t.Logger && t.throttleActor && t.throttleAgent))
+    if (!all(4, t.EventHandler, t.Logger, t.throttleActor, t.throttleAgent))
     {
         while(1) UARTprintln("Some tasks not initialized: %d, %d, %d, %d", t.EventHandler, t.Logger, t.throttleActor, t.throttleAgent);
     }
