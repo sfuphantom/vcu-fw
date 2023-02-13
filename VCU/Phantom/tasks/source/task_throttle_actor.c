@@ -5,9 +5,8 @@
  *  Created on: Sept 18, 2021
  *      Author: jaypacamarra, Joshua Guo
  */
-#include "phantom_task.h"
+
 #include "phantom_timer.h"
-#include "phantom_queue.h"
 
 #include <math.h>           // for fabsf function
 #include "hal_stdtypes.h"
@@ -24,7 +23,10 @@
 
 #include "task_throttle_agent.h"    // for access to mailbox
 #include "task_throttle_actor.h"    // for access to mailbox
-#include "task_statemachine.h"      // for access to mailbox & queue
+#include "state_machine.h"      // for access to mailbox & queue
+#include "task_logger.h"      
+
+
 
 static Task task;
 static TaskHandle_t taskHandle;
@@ -34,6 +36,7 @@ static TimerHandle_t APPS2RangeFaultTimer;
 static TimerHandle_t BSERangeFaultTimer;
 static TimerHandle_t FPDiffFaultTimer;
 static TimerHandle_t RTDSTimer;
+static TimerHandle_t AgentSoftwareWatchdog;
 
 /* For calculating throttle padding */
 /* Padding will eliminate unintended range faults at 0% or 100% pedal presses */
@@ -45,18 +48,9 @@ static TimerHandle_t RTDSTimer;
 #define PADDED_APPS2_MIN_VALUE  (APPS2_MIN_VALUE * (1U + PADDING_PERCENT))
 #define PADDED_APPS2_MAX_VALUE  (APPS2_MAX_VALUE * (1U - PADDING_PERCENT))
 
-#define HYSTERESIS      (200U)
 
 #define THROTTLE_FAULTS_MASK (APPS1_RANGE_SEVERE_FAULT | APPS2_RANGE_SEVERE_FAULT | BSE_RANGE_SEVERE_FAULT | APPS_10DIFF_SEVERE_FAULT | BSE_APPS_SIMULTANEOUS_MINOR_FAULT)
-static bool APPS1_RANGE_FAULT_TIMER_EXPIRED = false;   //added by jaypacamarra
-static bool APPS2_RANGE_FAULT_TIMER_EXPIRED = false;   //added by jaypacamarra
-static bool BSE_RANGE_FAULT_TIMER_EXPIRED = false;     //added by jaypacamarra
-static bool FP_DIFF_FAULT_TIMER_EXPIRED = false;       //added by jaypacamarra
 
-/* Brake Light readability */
-#define BRAKE_LIGHT_ON      0
-#define BRAKE_LIGHT_OFF     1
-static bool brake_light_state = BRAKE_LIGHT_ON; 
 
 static bool isThrottleAvailable = false; 
 static uint32_t faultCode = 0;
@@ -185,34 +179,22 @@ static float calculatePedalPercent(uint32_t pedalValue, float minValue, float ma
         return (pedalValue - minValue) / (maxValue - minValue);
 }
 
-/** @fn bool check_Pedal_Range_Fault(void)
+/** @fn bool UpdatePedalRangeFaultTimer(void)
 *   @brief Checks if the Pedal is in the right voltage range
 *   @Return This function returns:
 *           True -> Fault
 *           False -> No Fault
 */
-static bool check_Pedal_Range_Fault(uint32_t pedalValue, uint32_t minValue, uint32_t maxValue, TimerHandle_t faultTimer, bool* timerFlag) {
-    bool is_there_pedal_range_fault = false;
+static void UpdatePedalRangeFaultTimer(uint32_t pedalValue, uint32_t minValue, uint32_t maxValue, TimerHandle_t faultTimer) {
 
     if (pedalValue < minValue || pedalValue > maxValue) // BSE assumed shorted to GND or shorted to VCC
     {
-        if(!Phantom_isTimerActive(faultTimer))
-        {
-            if(!Phantom_startTimer(faultTimer, 50)) // start software timer for bse range fault
-            {
-                for(;;); // TODO: when watchdog is worked on, remember to also change this
-            }
-        }
-        is_there_pedal_range_fault = *timerFlag;
+        Phantom_startTimer(faultTimer, 50); // start software timer for bse range fault
     }
     else
     {
-        // Stop fault timer
         Phantom_stopTimer(faultTimer, MAX_WAIT_TIME_MS);
-        *timerFlag = false;
     }
-
-    return is_there_pedal_range_fault;
 }
 
 /** @fn bool check10PercentAPPS(void)
@@ -222,83 +204,39 @@ static bool check_Pedal_Range_Fault(uint32_t pedalValue, uint32_t minValue, uint
 *           True -> Fault
 *           False -> No Fault
 */
-static bool check_10PercentAPPS_Fault(float Percent_APPS1_Pressed, float Percent_APPS2_Pressed) {
-    bool is_there_10DIFF_fault = false;
+static void UpdateAPPS10PercentFaultTimer(float Percent_APPS1_Pressed, float Percent_APPS2_Pressed) {
+
     float FP_sensor_diff = fabsf(Percent_APPS2_Pressed - Percent_APPS1_Pressed); // Calculate absolute difference between APPS1 and APPS2 readings
 
     if (FP_sensor_diff > 0.10)
     {
-        if(!Phantom_isTimerActive(FPDiffFaultTimer))
-        {
-            if(!Phantom_startTimer(FPDiffFaultTimer, 50)) // start software timer for apps1 range fault
-            {
-                for(;;); // TODO: when watchdog is worked on, remember to also change this
-            }
-        }
-        is_there_10DIFF_fault = FP_DIFF_FAULT_TIMER_EXPIRED;
+        Phantom_startTimer(FPDiffFaultTimer, 50); 
     }
     else
     {
-        // Stop the fault timer
         Phantom_stopTimer(FPDiffFaultTimer, MAX_WAIT_TIME_MS);
-        FP_DIFF_FAULT_TIMER_EXPIRED = false;
     }
-
-    return is_there_10DIFF_fault;
 }
 
-/** @fn bool check_Brake_Plausibility_Fault(void)
+/** @fn bool CheckBrakePlausibility(void)
 *   @brief Checks if the brakes and accelerator are pressed at the same time.
 *          A fault means the brake is pressed and the APPS reads 25% or higher.
 *   @Return This function returns:
 *           True -> Fault
 *           False -> No Fault
 */
-static bool check_Brake_Plausibility_Fault(uint32_t BSE_sensor_sum, float Percent_APPS1_Pressed, float Percent_APPS2_Pressed) {
-    static bool is_there_brake_plausibility_fault = false;
+static void CheckBrakePlausibility(uint32_t BSE_sensor_sum, float Percent_APPS1_Pressed, float Percent_APPS2_Pressed) {
 
     if (BSE_sensor_sum >= BRAKING_THRESHOLD + HYSTERESIS &&
         Percent_APPS1_Pressed >= 0.25 && Percent_APPS2_Pressed >= 0.25)
     {
-        // Set fault
-        is_there_brake_plausibility_fault = true;
+        NotifyStateMachine(EVENT_BRAKE_PLAUSIBILITY_FAULT);
     }
     else if (Percent_APPS1_Pressed < 0.05 && Percent_APPS2_Pressed < 0.05)
     {
         // APPS/Brake plausibility fault only clears if APPS returns to less than 5% pedal position
         // with or without brake operation (see EV.5.7.2) - jaypacamarra
-    
-        // No fault
-        is_there_brake_plausibility_fault = false;
+        NotifyStateMachine(EVENT_BRAKE_PLAUSIBILITY_CLEARED);
     }
-
-    return is_there_brake_plausibility_fault;
 }
 
-static void RTDS_CALLBACK(TimerHandle_t xTimers)
-{
-    isThrottleAvailable = true;
-}
-
-//++ Added by Jay Pacamarra
-/* Timer callback when APPS1 Range fault occurs for 100 ms*/
-static void APPS1_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers)
-{
-    APPS1_RANGE_FAULT_TIMER_EXPIRED = true;
-}
-/* Timer callback when APPS2 Range fault occurs for 100 ms*/
-static void APPS2_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers)
-{
-    APPS2_RANGE_FAULT_TIMER_EXPIRED = true;
-}
-/* Timer callback when BSE Range fault occurs for 100 ms*/
-static void BSE_SEVERE_RANGE_FAULT_CALLBACK(TimerHandle_t xTimers)
-{
-    BSE_RANGE_FAULT_TIMER_EXPIRED = true;
-}
-/* Timer callback when APPS1 and APPS2 differ by 10% or more for 100 ms*/
-static void FP_DIFF_SEVERE_FAULT_CALLBACK(TimerHandle_t xTimers)
-{
-    FP_DIFF_FAULT_TIMER_EXPIRED = true;
-}
-//++ Added by Jay Pacamarra
