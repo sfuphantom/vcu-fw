@@ -20,21 +20,14 @@
 #include "board_hardware.h"     // contains hardware defines for specific board used (i.e. VCU or launchpad)
 #include "vcu_data.h"           // VCU Data structure interface written by Joshua Guo (DEPRECATED)
 
-#include "phantom_queue.h"      // os_queue wrapper written by Joshua Guo
-#include "phantom_task.h"       // os_task wrapper written by Joshua Guo
 #include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
 #include "state_machine.h"
 
 #include "execution_timer.h"
 
-#include "task_test.h"
-#include "task_interrupt.h"
-#include "task_receive.h"
+
 #include "task_throttle_actor.h"
 #include "task_throttle_agent.h"
-#include "task_statemachine.h"
-#include "task_watchdog.h"
-#include "task_eeprom.h"
 #include "task_event_handler.h"
 #include "task_logger.h"
 

@@ -69,6 +69,11 @@ typedef struct _pedal_reading {
 } pedal_reading_t;
 
 typedef struct {
+    TaskFunction_t functionPtr;
+    uint32 frequencyMs;
+} Task;
+
+typedef struct {
     Task task;
     TaskHandle_t taskHandle;
     QueueHandle_t q;
