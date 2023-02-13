@@ -1,9 +1,40 @@
 #ifndef _PHANTOM_VCU_COMMON_DEFINES_H_
 #define _PHANTOM_VCU_COMMON_DEFINES_H_
 
-#include "phantom_task.h"
 #include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
 #include "os_queue.h"
+#include "os_task.h"
+
+#include "hal_stdtypes.h"
+
+typedef struct SystemTasks_t{
+	TaskHandle_t throttleAgent;
+	TaskHandle_t throttleActor;
+	TaskHandle_t Logger;
+	TaskHandle_t EventHandler;
+}SystemTasks_t;
+
+typedef enum eCarEvents{
+    BEGIN_OF_EVENTS=0,
+
+    EVENT_APPS1_RANGE_FAULT, 
+    EVENT_APPS2_RANGE_FAULT, 
+    EVENT_BSE_RANGE_FAULT, 
+    EVENT_FP_DIFF_FAULT, 
+    EVENT_RESET_CAR,
+    EVENT_READY_TO_DRIVE,
+    EVENT_TRACTIVE_ON,
+    EVENT_BRAKE_PLAUSIBILITY_CLEARED,
+    EVENT_BRAKE_PLAUSIBILITY_FAULT,
+    
+
+    END_OF_EVENTS
+} eCarEvents;
+typedef enum eSource{
+	FROM_ISR,
+	FROM_SCHEDULER
+} eSource;
 
 /**
  * @brief Machine states for the VCU.
