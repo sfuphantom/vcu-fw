@@ -23,12 +23,13 @@
 /*********************************************************************************
  *                              TASK PRIORITIES
  *********************************************************************************/
-#define THROTTLE_AGT_PRIORITY           4
+#define THROTTLE_AGT_PRIORITY           1
 #define THROTTLE_AGT_SIM_PRIORITY       THROTTLE_AGT_PRIORITY
 #define THROTTLE_ACT_PRIORITY           5
-#define STATE_MACHINE_TASK_PRIORITY     2
 #define EEPROM_TASK_PRIORITY            0
 #define WATCHDOG_TASK_PRIORITY          0    // same as idle task
+#define EVENT_HANDLER_PRIORITY          5
+#define LOGGER_PRIORITY                 0
 
 #define TEST_TASK_PRIORITY              1
 
@@ -39,12 +40,11 @@
 /*********************************************************************************
  *                              TASK STACK SIZES
  *********************************************************************************/
-#define THROTTLE_AGT_STACK_SIZE         150
-#define THROTTLE_AGT_SIM_STACK_SIZE     150
-#define THROTTLE_ACT_STACK_SIZE         150
-#define STATE_MACHINE_TASK_STACK_SIZE   150
-#define EEPROM_TASK_STACK_SIZE          150
-#define WATCHDOG_TASK_STACK_SIZE        150    // same as idle task
+#define THROTTLE_AGT_STACK_SIZE         500
+#define THROTTLE_AGT_SIM_STACK_SIZE     500
+#define THROTTLE_ACT_STACK_SIZE         500
+// #define EEPROM_TASK_STACK_SIZE          750
+// #define WATCHDOG_TASK_STACK_SIZE        750    // same as idle task
 
 #define TEST_TASK_STACK_SIZE            150
 
