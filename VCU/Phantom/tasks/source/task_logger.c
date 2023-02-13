@@ -15,7 +15,6 @@
 
 static PipeTask_t rtos_handles;
 
-static Task task;
 static void LoggerThread(void* pvParams);
 
 typedef uint64_t segment_t;

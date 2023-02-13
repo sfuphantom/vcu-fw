@@ -28,7 +28,6 @@
 
 
 
-static Task task;
 static TaskHandle_t taskHandle;
 
 static TimerHandle_t APPS1RangeFaultTimer;
@@ -47,13 +46,6 @@ static TimerHandle_t AgentSoftwareWatchdog;
 #define PADDED_APPS1_MAX_VALUE  (APPS1_MAX_VALUE * (1U - PADDING_PERCENT))
 #define PADDED_APPS2_MIN_VALUE  (APPS2_MIN_VALUE * (1U + PADDING_PERCENT))
 #define PADDED_APPS2_MAX_VALUE  (APPS2_MAX_VALUE * (1U - PADDING_PERCENT))
-
-
-#define THROTTLE_FAULTS_MASK (APPS1_RANGE_SEVERE_FAULT | APPS2_RANGE_SEVERE_FAULT | BSE_RANGE_SEVERE_FAULT | APPS_10DIFF_SEVERE_FAULT | BSE_APPS_SIMULTANEOUS_MINOR_FAULT)
-
-
-static bool isThrottleAvailable = false; 
-static uint32_t faultCode = 0;
 
 static void vThrottleActorTask(void* arg);
 
@@ -137,7 +129,6 @@ static void vThrottleActorTask(void* arg)
          Set Throttle
         *********************************************************************************/
 
-
         float apps_percent_avg = (apps1PedalPercent + apps2PedalPercent) / 2;
 
         // send DAC to inverter
@@ -159,8 +150,6 @@ static void vThrottleActorTask(void* arg)
         #ifdef VCU_SIM_MODE
         UARTprintln("0");
         #endif
-
-        isThrottleAvailable = false;
     }
 }
 
@@ -193,7 +182,7 @@ static void UpdatePedalRangeFaultTimer(uint32_t pedalValue, uint32_t minValue, u
     }
     else
     {
-        Phantom_stopTimer(faultTimer, MAX_WAIT_TIME_MS);
+        Phantom_stopTimer(faultTimer, portMAX_DELAY);
     }
 }
 
@@ -214,7 +203,7 @@ static void UpdateAPPS10PercentFaultTimer(float Percent_APPS1_Pressed, float Per
     }
     else
     {
-        Phantom_stopTimer(FPDiffFaultTimer, MAX_WAIT_TIME_MS);
+        Phantom_stopTimer(FPDiffFaultTimer, portMAX_DELAY);
     }
 }
 

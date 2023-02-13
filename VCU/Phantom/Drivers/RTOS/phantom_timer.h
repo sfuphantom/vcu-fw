@@ -13,10 +13,6 @@
 
 #include "os_timer.h"
 
-typedef void (*TimerCallbackFunction_t)(TimerHandle_t xTimer);
-
-#define MAX_WAIT_TIME_MS (((uint32_t) ~0) >> 10)
-
 #define AUTO_RELOAD true
 #define NO_RELOAD   false 
 

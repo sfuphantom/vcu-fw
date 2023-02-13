@@ -20,7 +20,6 @@ typedef struct event_t
 
 static PipeTask_t rtos_handles;
 
-static Task task;
 static void ThreadEventHandler(void* pvParams);
 
 typedef enum ePriority{
@@ -46,7 +45,7 @@ TaskHandle_t EventHandlerInit()
 	return rtos_handles.taskHandle;
 }
 
-void QueueEvent(event_t event, eSource source, ePriority priority)
+uint8_t QueueEvent(event_t event, eSource source, ePriority priority)
 {	
 	uint8_t ret;
 	BaseType_t xHigherPriorityTaskWoken;
@@ -74,6 +73,8 @@ void QueueEvent(event_t event, eSource source, ePriority priority)
 	{
 		ret = 0; 
 	}
+
+	return ret;
 }
 
 

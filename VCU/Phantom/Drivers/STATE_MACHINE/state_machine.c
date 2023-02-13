@@ -12,7 +12,6 @@
 
 #include "task_event_handler.h"
 #include "task_logger.h"
-#include "stdarg.h"
 #include "ansi_colors.h"
 
 static void UpdateStateMachine(void* data);
@@ -25,24 +24,6 @@ void StateMachineInit(SystemTasks_t tasks)
 	system_tasks.throttleActor = tasks.throttleActor;
 	system_tasks.EventHandler = tasks.EventHandler;
 	system_tasks.Logger = tasks.Logger;
-}
-
-bool any(uint8_t num, ...)
-{
-	va_list valist;
-	bool result = 0;
-
-	va_start(valist, num);
-
-	int i;
-	for (i = 0; i < num; i++)
-	{
-		result = result || va_arg(valist, int);
-	}
-
-	va_end(valist);
-
-	return result;
 }
 
 void NotifyStateMachine(eCarEvents event)
