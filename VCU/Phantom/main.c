@@ -23,6 +23,7 @@
 #include "phantom_queue.h"      // os_queue wrapper written by Joshua Guo
 #include "phantom_task.h"       // os_task wrapper written by Joshua Guo
 #include "Phantom_sci.h"     // UART wrapper written by Mahmoud Kamaleldin
+#include "state_machine.h"
 
 #include "execution_timer.h"
 
@@ -34,6 +35,8 @@
 #include "task_statemachine.h"
 #include "task_watchdog.h"
 #include "task_eeprom.h"
+#include "task_event_handler.h"
+#include "task_logger.h"
 
 /* USER CODE END */
 
@@ -61,33 +64,45 @@ void phantomDriversInit()
     VCUData_init();             // Initialize VCU Data Structure
     RTD_Buzzer_Init();          // Initialize Ready to Drive buzzer
     RGB_init();             // Initialize RGB LEDs to start off
+
+//    rtiInit();
+//    rtiEnableNotification(rtiNOTIFICATION_COMPARE1);
+//    _enable_IRQ();
+//    rtiStartCounter(rtiNOTIFICATION_COUNTER1);
+//    uint32 x= rtiGetPeriod(rtiNOTIFICATION_COMPARE1);
 }
 
 void phantomTasksInit()
 {
     #ifndef VCU_SIM_MODE
-    ReceiveTaskInit();
+//    ReceiveTaskInit();
     #else
     UARTprintln("Entering VCU Simulation Mode...");
     #endif
 
-    ThrottleInit();
 
-    InterruptInit();
+    SystemTasks_t t = {
+        .EventHandler=EventHandlerInit(),
+        .Logger=LoggerInit(),
+        .throttleActor=ThrottleInit(),
+        .throttleAgent=throttleAgentInit()
+    };
 
-    if (!throttleAgentInit())
+    if (!(t.EventHandler && t.Logger && t.throttleActor && t.throttleAgent))
     {
-        while(1) UARTprintf("Throttle not initialized\r\n");
+        while(1) UARTprintln("Some tasks not initialized: %d, %d, %d, %d", t.EventHandler, t.Logger, t.throttleActor, t.throttleAgent);
     }
 
+    StateMachineInit(t);
 }
 
 volatile unsigned long ulHighFrequencyTimerTicks;
 
+// TODO: Never actually triggered
 void rtiNotification(uint32 notification)
 {
     ulHighFrequencyTimerTicks++;
-    // should probably add a check to see if the right timer 
+    // should probably add a check to see if the right timer
     // was called but VCU only has one active hardware timer atm
 }
 /* USER CODE END */
@@ -97,20 +112,20 @@ void rtiNotification(uint32 notification)
 void main(void)
 {
 /* USER CODE BEGIN (3) */
-    rtiInit();
-    rtiEnableNotification(rtiNOTIFICATION_COMPARE0);
-    _enable_IRQ();
 
     halcogenInit();
+
     phantomDriversInit();
 
-    UARTInit(PC_UART, 9600); // something up above overwrites the configuration set here. Make sure this goes last!
+    UARTInit(PC_UART, 115200); // something up above overwrites the configuration set here. Make sure this goes last!
 
     phantomTasksInit();
 
-    // Phantom_startTaskScheduler is Blocking
-    Phantom_startTaskScheduler();
-    while(1);
+    UARTprintln("Starting scheduler!");
+
+    vTaskStartScheduler();
+
+    while(1) UARTprintf("Scheduler exited!");
    
 /* USER CODE END */
 }
