@@ -10,13 +10,15 @@
 #include "FreeRTOS.h"
 #include "os_task.h"
 
+#include "task_logger.h"
+#include "task_event_handler.h"
+#include "state_machine.h"
 
 #define NUMBER_OF_SIMULATION_MESSAGES 3
 static volatile uint8_t messageCounter = 0;
 static volatile uint32_t serialData = 0; // there is 24 bit standard type so when we cast, we have to cast to 32 bit hence 4 bytes
 
-extern volatile unsigned long ulHighFrequencyTimerTicks;
-static char ptrTaskList[500];
+#define TASK_LIST_SIZE 512
 
 enum eCommands{
 
@@ -90,7 +92,6 @@ void UARTprintln(const char *_format, ...)
     }
 }
 
-
 uint32_t getSimData()
 {
     while(messageCounter < NUMBER_OF_SIMULATION_MESSAGES);
@@ -105,6 +106,21 @@ uint32_t getSimData()
 
     return ret;
 }
+
+void GetRuntimeStatistics(void* x)
+{
+    char ptrTaskList[TASK_LIST_SIZE];
+    // TODO: not configured!
+//    vTaskGetRunTimeStats(ptrTaskList);
+//    UARTSend(PC_UART, ptrTaskList);
+
+    vTaskList(ptrTaskList);
+    UARTSend(PC_UART, ptrTaskList);
+
+    UARTprintf("\r\n");
+}
+
+
 
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 {
@@ -121,13 +137,7 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
     switch(data){
 
         case TASK_LIST:
-
-            // TODO: use interrupt task (this aborts because it's too many chars to send in an IRQ)
-            // vTaskGetRunTimeStats(ptrTaskList);
-            // UARTSend(PC_UART, ptrTaskList);
-            // vTaskList(ptrTaskList);
-            // UARTSend(PC_UART, ptrTaskList);
-
+        	HandleToBack(GetRuntimeStatistics, 0, FROM_ISR);
             break;
         case ECHO_THROTTLE:
             UARTSend(PC_UART, "No data available yet.");
