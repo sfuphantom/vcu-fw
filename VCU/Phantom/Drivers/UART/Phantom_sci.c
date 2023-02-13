@@ -28,7 +28,10 @@ enum eCommands{
     ECHO_BSE='4',
     STAT_RUN='5',  // vTaskGetRunTimeStats
     STAT_START='6',  // xTaskGetTickCount
-    TASK_LIST='7'// vTaskList
+    TASK_LIST='7', // vTaskList
+    RESET_CAR='r',
+    START_ENGINE='s',
+    TURN_TRACTIVE_ON='o',
 };
 
 
@@ -134,35 +137,59 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
     }
     #else
 
+    char buffer[16];
+
     switch(data){
 
         case TASK_LIST:
         	HandleToBack(GetRuntimeStatistics, 0, FROM_ISR);
             break;
+
         case ECHO_THROTTLE:
-            UARTSend(PC_UART, "No data available yet.");
-            UARTSend(PC_UART, "\r");
+        	LogFromISR(UWHT, "No data available yet.");
+
             break;
         case ECHO_APPS1:
-            UARTSend(PC_UART, "No data available yet.");
-            UARTSend(PC_UART, "\r");
+        	LogFromISR(UWHT, "No data available yet.");
             break;
         case ECHO_APPS2:
-            UARTSend(PC_UART, "No data available yet.");
-            UARTSend(PC_UART, "\r");
+        	LogFromISR(UWHT, "No data available yet.");
             break;
         case ECHO_BSE:
-            UARTSend(PC_UART, "No data available yet.");
-            UARTSend(PC_UART, "\r");
+        	LogFromISR(UWHT, "No data available yet.");
             break;
         case STAT_START:            
-            UARTprintf("%d", xTaskGetTickCount());
-            UARTSend(PC_UART, "\r");
+        {
+            snprintf(buffer, 16, "%dms", xTaskGetTickCountFromISR());
+
+            LogFromISR(UWHT, buffer);
             break;
+        }
+        case TURN_TRACTIVE_ON:
+        {
+            NotifyStateMachineFromISR(EVENT_TRACTIVE_ON);
+
+            break;
+        }
+        case START_ENGINE:
+        {
+            NotifyStateMachineFromISR(EVENT_READY_TO_DRIVE);
+
+            break;
+        }
+        case RESET_CAR:
+        {
+            NotifyStateMachineFromISR(EVENT_RESET_CAR);
+
+            break;
+        }
         default:
-            UARTprintln("Unknown command: %c", data);
-            putchar(data);
+        {
+            LogFromISR(UWHT, "Unknown: ");
+
+            // HandleCritical(putchar, &data, FROM_ISR);
             break;
+        }
     }
 
     #endif
