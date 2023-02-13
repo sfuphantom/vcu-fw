@@ -4,8 +4,6 @@
  *  Created on: July 15, 2022
  *      Author: Joshua Guo
  */
-#include "phantom_task.h"
-#include "phantom_queue.h"
 
 #include "task_throttle_agent.h"
 #include "task_config.h"
@@ -13,6 +11,7 @@
 #include "vcu_common.h"
 #include "board_hardware.h"
 #include "adc.h"
+#include "gio.h"
 
 #include "Phantom_sci.h"
 
@@ -22,6 +21,11 @@
 #include "sci.h"
 #include "stdio.h"
 #include "math.h"
+
+#include "task_logger.h"
+#include "task_event_handler.h"
+
+#define BRAKE_LIGHT BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN
 
 typedef struct ThrottleAgent_t{
     PipeTask_t pipeline;
@@ -35,47 +39,89 @@ static void vThrottleAgentTask(void* arg);
 
 static pedal_reading_t readPedals();
 
-
 /* Public API */
 uint8_t receivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms)
 {
-    return xQueueReceive(footPedals.pipeline.q, pdreading, wait_time_ms) == pdTRUE;
+    if (footPedals.pipeline.q)
+    {
+        return xQueueReceive(footPedals.pipeline.q, pdreading, wait_time_ms) == pdTRUE;
+    }
+    else
+    {
+        vTaskDelay(pdMS_TO_TICKS(1000));
+
+        return 0;
+    }
 }
 
-uint8_t throttleAgentInit(void)
+TaskHandle_t throttleAgentInit(void)
 {
-    footPedals.pipeline.task = (Task) {vThrottleAgentTask, 0};
+	xTaskCreate(
+		vThrottleAgentTask,
+		"ThrottleAgent",
+		200,
+		NULL,
+        1,
+		&footPedals.pipeline.taskHandle 
+	);
 
-    // blocks indefinitely if task creation failed
-    footPedals.pipeline.taskHandle = Phantom_createTask(&footPedals.pipeline.task, "ThrottleAgentTask", THROTTLE_AGT_STACK_SIZE, THROTTLE_AGT_PRIORITY);
-
-    footPedals.pipeline.q = xQueueCreate(50, sizeof(pedal_reading_t));
+    footPedals.pipeline.q = xQueueCreate(10, sizeof(pedal_reading_t));
 
     footPedals.prevReadings = (pedal_reading_t) {0, 0 ,0};
 
-    return footPedals.pipeline.q && footPedals.pipeline.taskHandle;
+	return footPedals.pipeline.taskHandle;
 }
+
+
+static void SetBrakeLight(void* data)
+{
+    uint8_t value = *(uint8_t*) data;
+
+    char buffer[32];
+    sprintf(buffer, "Setting brakelight: %d", value);
+    Log(buffer);
+
+    gioSetBit(BRAKE_LIGHT, value);
+}
+
 
 static void vThrottleAgentTask(void* arg)
 {
-    footPedals.readings = readPedals();
+	Log("Starting thread");
 
-    // apply a low pass filter with ALPHA of 0.5
-    footPedals.readings.bse = (footPedals.readings.bse + footPedals.prevReadings.bse) >> 1;
-    footPedals.readings.fp1 = (footPedals.readings.fp1 + footPedals.prevReadings.fp1) >> 1;
-    footPedals.readings.fp2 = (footPedals.readings.fp2 + footPedals.prevReadings.fp2) >> 1;
+    while(true)
+    {
+        footPedals.readings = readPedals();
 
-    // update prev filtered values
-    footPedals.prevReadings =  footPedals.readings;
+        // apply a low pass filter with ALPHA of 0.5
+        footPedals.readings.bse = (footPedals.readings.bse + footPedals.prevReadings.bse) >> 1;
+        footPedals.readings.fp1 = (footPedals.readings.fp1 + footPedals.prevReadings.fp1) >> 1;
+        footPedals.readings.fp2 = (footPedals.readings.fp2 + footPedals.prevReadings.fp2) >> 1;
 
-    // send filtered values to mailbox (task_throttle_actor.c)
-   xQueueSend(footPedals.pipeline.q, &footPedals.readings, 1000);
+        // update prev filtered values
+        footPedals.prevReadings =  footPedals.readings;
+
+        uint32_t BSESensorSum = footPedals.readings.bse; 
+
+        uint8_t brakelight_value = BSESensorSum > (BRAKING_THRESHOLD + HYSTERESIS);
+
+        if (gioGetBit(BRAKE_LIGHT) != brakelight_value)
+        {
+            HandleToFront(SetBrakeLight, brakelight_value, FROM_SCHEDULER);
+        }
+        
+        // send filtered values to mailbox (task_throttle_actor.c)
+        xQueueSend(footPedals.pipeline.q, &footPedals.readings, 1);
+    }
 }
 
 static pedal_reading_t readPedals()
 {
+    vTaskDelay(pdMS_TO_TICKS(20));
 
     #ifndef VCU_SIM_MODE 
+
+
     // Get pedal readings from ADC
     adcData_t FP_data[3];
     adcStartConversion(adcREG1, adcGROUP1);
@@ -83,6 +129,7 @@ static pedal_reading_t readPedals()
     adcGetData(adcREG1, adcGROUP1, FP_data);
 
     // must map each value explicitly because compiler may not have the same mem packing rules for struct as arrays
+
     return (pedal_reading_t) {FP_data[0].value, FP_data[1].value, FP_data[2].value};
 
     #else
