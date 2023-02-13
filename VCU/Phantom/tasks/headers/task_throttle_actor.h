@@ -8,6 +8,6 @@
 #ifndef PHANTOM_TASKS_TASK_THROTTLE_ACTOR_H_
 #define PHANTOM_TASKS_TASK_THROTTLE_ACTOR_H_
 
-void ThrottleInit(void);
+TaskHandle_t ThrottleInit(void);
 
 #endif

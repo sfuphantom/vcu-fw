@@ -11,7 +11,9 @@
 #include "vcu_common.h"
 
 
-uint8_t throttleAgentInit(void);
+#define HYSTERESIS      (200U)
+
+TaskHandle_t throttleAgentInit(void);
 uint8_t receivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms);
 
 
