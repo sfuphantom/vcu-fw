@@ -72,11 +72,10 @@ TaskHandle_t throttleAgentInit(void)
 	return footPedals.pipeline.taskHandle;
 }
 
+/* Internal Implementation */
 
-static void SetBrakeLight(void* data)
+static void SetBrakeLight(uint8_t value)
 {
-    uint8_t value = *(uint8_t*) data;
-
     char buffer[32];
     sprintf(buffer, "Setting brakelight: %d", value);
     Log(buffer);
@@ -107,7 +106,7 @@ static void vThrottleAgentTask(void* arg)
 
         if (gioGetBit(BRAKE_LIGHT) != brakelight_value)
         {
-            HandleToFront(SetBrakeLight, brakelight_value, FROM_SCHEDULER);
+            SetBrakeLight(brakelight_value);
         }
         
         // send filtered values to mailbox (task_throttle_actor.c)
@@ -120,8 +119,6 @@ static pedal_reading_t readPedals()
     vTaskDelay(pdMS_TO_TICKS(20));
 
     #ifndef VCU_SIM_MODE 
-
-
     // Get pedal readings from ADC
     adcData_t FP_data[3];
     adcStartConversion(adcREG1, adcGROUP1);

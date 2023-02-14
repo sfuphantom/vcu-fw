@@ -21,7 +21,6 @@ static volatile uint32_t serialData = 0; // there is 24 bit standard type so whe
 #define TASK_LIST_SIZE 512
 
 enum eCommands{
-
     ECHO_THROTTLE='1',
     ECHO_APPS1='2',
     ECHO_APPS2='3',
@@ -123,8 +122,6 @@ void GetRuntimeStatistics(void* x)
     UARTprintf("\r\n");
 }
 
-
-
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 {
 
@@ -187,7 +184,6 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
         {
             LogFromISR(UWHT, "Unknown: ");
 
-            // HandleCritical(putchar, &data, FROM_ISR);
             break;
         }
     }

@@ -26,10 +26,11 @@
 #include "state_machine.h"      // for access to mailbox & queue
 #include "task_logger.h"      
 
-
-
 static TaskHandle_t taskHandle;
 
+// ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
+// i.e. map from 0.6V (60) to 4.5V (450) or something like that, instead of 0->500 (0V -> 5V)
+#define MAP_PERCENT_TO_VOLTAGE(x) 390 * apps_percent_avg + 60  // equation mapping the averaged signals to 0->500 for the DAC driver
 typedef struct FaultTimers_t{
     TimerHandle_t APPS1Range;
     TimerHandle_t APPS2Range;
@@ -68,10 +69,24 @@ static void TurnOffThrottle(TimerHandle_t timer)
 	LogColor(RED, "Turning off throttle");
 }
 
-#define APPS_SENSOR_TIMEOUT 1000
+static void CheckFaultConditions(const pedal_reading_t* pedalReadings)
+{
+    // check for short to GND/VCC on APPS sensor 1
+    UpdatePedalRangeFaultTimer(pedalReadings->fp1, APPS1_MIN_VALUE, APPS1_MAX_VALUE, faultTimers.APPS1Range);
+
+    // TODO: Add range fault checks
+//     // check for short to GND/VCC on APPS sensor 2
+//     UpdatePedalRangeFaultTimer(pedalReadings->fp2, APPS2_MIN_VALUE, APPS2_MAX_VALUE, APPS2RangeFaultTimer, &APPS2_RANGE_FAULT_TIMER_EXPIRED);
+//     // check for short to GND/VCC on BSE
+//     UpdatePedalRangeFaultTimer(pedalReadings->bse, BSE_MIN_VALUE, BSE_MAX_VALUE, BSERangeFaultTimer, &BSE_RANGE_FAULT_TIMER_EXPIRED);
+//     // Check if APPS1 and APPS2 are within 10% of each other
+//     UpdateAPPS10PercentFaultTimer(apps1PedalPercent, apps2PedalPercent);
+//     // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25%
+//     CheckBrakePlausibility(pedalReadings->bse, apps1PedalPercent, apps2PedalPercent);
+}
+
 TaskHandle_t ThrottleInit(void)
 {
-
     xTaskCreate(
 		vThrottleActorTask,
 		"ThrottleActor",
@@ -80,7 +95,6 @@ TaskHandle_t ThrottleInit(void)
         THROTTLE_ACT_PRIORITY,
 		&taskHandle
 	);
-
 
     faultTimers.APPS1Range = Phantom_createTimer("Apps1RangeCheck", 100, NO_RELOAD, EVENT_APPS1_RANGE_FAULT, NotifyStateMachineFromTimer);
     // faultTimers.APPS2Range = Phantom_createTimer("Apps2RangeCheck", 100, NO_RELOAD, EVENT_APPS2_RANGE_FAULT, NotifyStateMachineFromTimer);
@@ -97,13 +111,14 @@ TaskHandle_t ThrottleInit(void)
 
 static void vThrottleActorTask(void* arg)
 {
-	Log("Suspending thread on initialization");
+    char buffer[32];
 
+	Log("Suspending thread on initialization");
     vTaskSuspend(NULL);
 
     while(true)
     { 
-        TimerStart(AgentSoftwareWatchdog, 1);
+        xTimerStart(AgentSoftwareWatchdog, 1);
 
         pedal_reading_t pedalReadings;
 
@@ -112,47 +127,24 @@ static void vThrottleActorTask(void* arg)
             continue; 
         }
 
+		/* Get pedal percentages */
         float apps1PedalPercent = calculatePedalPercent(pedalReadings.fp1, PADDED_APPS1_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
         float apps2PedalPercent = calculatePedalPercent(pedalReadings.fp2, PADDED_APPS2_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
         float bsePedalPercent = calculatePedalPercent(pedalReadings.bse, PADDED_BSE_MIN_VALUE, PADDED_BSE_MAX_VALUE);
 
-        // TODO: Add range fault checks
-
-        // // check for short to GND/VCC on APPS sensor 1
-        UpdatePedalRangeFaultTimer(pedalReadings.fp1, APPS1_MIN_VALUE, APPS1_MAX_VALUE, faultTimers.APPS1Range);
-        // // check for short to GND/VCC on APPS sensor 2
-        // UpdatePedalRangeFaultTimer(pedalReadings.fp2, APPS2_MIN_VALUE, APPS2_MAX_VALUE, APPS2RangeFaultTimer, &APPS2_RANGE_FAULT_TIMER_EXPIRED);
-        // // check for short to GND/VCC on BSE
-        // UpdatePedalRangeFaultTimer(pedalReadings.bse, BSE_MIN_VALUE, BSE_MAX_VALUE, BSERangeFaultTimer, &BSE_RANGE_FAULT_TIMER_EXPIRED);
-        // // Check if APPS1 and APPS2 are within 10% of each other
-        // UpdateAPPS10PercentFaultTimer(apps1PedalPercent, apps2PedalPercent);
-        // // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25%
-        // CheckBrakePlausibility(pedalReadings.bse, apps1PedalPercent, apps2PedalPercent);
-
-        /*********************************************************************************
-         Set Throttle
-        *********************************************************************************/
+        CheckFaultConditions(&pedalReadings);
 
         float apps_percent_avg = (apps1PedalPercent + apps2PedalPercent) / 2;
 
-        // send DAC to inverter
-        int16_t throttle = 390 * apps_percent_avg + 60;        // equation mapping the averaged signals to 0->500 for the DAC driver
+        /* Set throttle voltage value */ 
+        int16_t throttle = MAP_PERCENT_TO_VOLTAGE(apps_percent_avg);
+        MCP48FV_Set_Value(throttle); 
 
-        // ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
-        // i.e. map from 0.6V (60) to 4.5V (450) or something like that, instead of 0->500 (0V -> 5V)
-        MCP48FV_Set_Value(throttle); // send throttle value to DAC driver
+        Log( "Running throttle actor");
 
-        char buffer[32];
-        snprintf(buffer, 32, "Running throttle actor");
+        #ifdef VCU_SIM_MODE
+        snprintf(buffer, 32, "%d", throttle);
         Log(buffer);
-
-        #ifdef VCU_SIM_MODE
-        UARTprintln("%d", throttle);
-        #endif
-
-
-        #ifdef VCU_SIM_MODE
-        UARTprintln("0");
         #endif
     }
 }

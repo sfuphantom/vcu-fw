@@ -5,9 +5,6 @@
  *      Author: rafgu
  */
 
-
-
-
 #include "state_machine.h"
 
 #include "task_event_handler.h"
@@ -16,7 +13,15 @@
 
 static void UpdateStateMachine(void* data);
 
+static State TractiveOff(eCarEvents event);
+static State TractiveOn(eCarEvents event);
+static State Running(eCarEvents event);
+static State SevereFault(eCarEvents event);
+
 static SystemTasks_t system_tasks;
+
+
+/* Public API */
 
 void StateMachineInit(SystemTasks_t tasks)
 {
@@ -46,6 +51,53 @@ void NotifyStateMachineFromTimer(TimerHandle_t timer)
 
 	HandleToFront(UpdateStateMachine, event, FROM_SCHEDULER);
 }
+
+
+/* Event Handler */
+static void UpdateStateMachine(void* data)
+{
+	/* static cached values */
+	static State state = TRACTIVE_OFF;
+ 	static char buffer[32];
+
+	eCarEvents event = *(uint16_t*) data;
+
+	sprintf(buffer, "Event occurred: %d", event);
+	Log(buffer);
+
+	switch(state)
+	{
+		case TRACTIVE_OFF:
+
+			state = TractiveOff(event);
+
+			break;
+
+		case TRACTIVE_ON:
+
+			state = TractiveOn(event);
+
+			break;
+
+		case RUNNING:
+
+			state = Running(event);
+
+			break;
+
+		case SEVERE_FAULT:
+		 
+			state = SevereFault(event);
+
+			break;
+		
+		default:
+			break;
+	}
+}
+
+
+/* State handlers */
 
 static State TractiveOff(eCarEvents event)
 {
@@ -116,37 +168,3 @@ static State SevereFault(eCarEvents event)
 
 	return SEVERE_FAULT;
 }
-
-
-/* Event Handler */
-static void UpdateStateMachine(void* data)
-{
-	/* static cached values */
-	static State state = TRACTIVE_OFF;
-
-	eCarEvents event = *(uint16_t*) data;
-
- 	char buffer[32];
-	sprintf(buffer, "Event occurred: %d", event);
-	Log(buffer);
-
-	switch(state)
-	{
-		case TRACTIVE_OFF:
-			state = TractiveOff(event);
-			break;
-
-		case TRACTIVE_ON:
-			state = TractiveOn(event);
-			break;
-
-		case RUNNING:
-			state = Running(event);
-			break;
-
-		case SEVERE_FAULT:
-			state = SevereFault(event);
-			break;
-	}
-}
-

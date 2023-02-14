@@ -16,6 +16,7 @@
 static PipeTask_t rtos_handles;
 
 static void LoggerThread(void* pvParams);
+#include <math.h>
 
 typedef uint64_t segment_t;
 #define SEGMENT_SIZE sizeof(segment_t)
@@ -101,17 +102,13 @@ static uint8_t LogMessage(const char* color, const char* str, eSource source)
 	
 	char buffer[16];
 	sprintf(buffer, "%s\r\n", reset);
-	AsyncPrint(source, buffer);
 
-	return 1;
+	return AsyncPrint(source, buffer);
 }
 
 
-uint8_t LogSegment(eSource source, uint8_t* data)
+uint8_t QueueSegment(eSource source, segment_t segment)
 {
-	segment_t segment;
-	memcpy(&segment, data, SEGMENT_SIZE);
-
 	uint8_t ret;
 
 	switch(source)
@@ -127,7 +124,6 @@ uint8_t LogSegment(eSource source, uint8_t* data)
 		{
 			ret = xQueueSendToBack(rtos_handles.q, &segment, 1) == pdPASS;
 
-
 			break;
 		}
 		default:
@@ -142,30 +138,31 @@ uint8_t LogSegment(eSource source, uint8_t* data)
 
 uint8_t AsyncPrint(eSource source, const char* str)
 {
-	uint8_t data[SEGMENT_SIZE];
-	memset(data, '\0', SEGMENT_SIZE);
+	/* Initialize tmp to copy segments into */
+	segment_t tmp;
+	memset(&tmp, '\0', SEGMENT_SIZE);
 
-	uint16_t num_bytes = strlen(str);
+	uint16_t total_num_bytes = strlen(str);
+	uint8_t num_segments = total_num_bytes/SEGMENT_SIZE; 
 
-	uint8_t num_segments = num_bytes/SEGMENT_SIZE ? num_bytes/SEGMENT_SIZE : 1;
+	uint8_t segment_index = 0;
 
-	uint8_t segment_num;
-	for (segment_num = 0; segment_num < num_segments; segment_num++)
+	/* Copy all full segments */
+	for (segment_index = 0; segment_index < num_segments; segment_index++)
 	{
-		memcpy(&data, str + (segment_num*SEGMENT_SIZE), SEGMENT_SIZE);
+		memcpy(&tmp, str + (segment_index*SEGMENT_SIZE), SEGMENT_SIZE);
 
-		LogSegment(source, data);
+		QueueSegment(source, tmp);
 	}
 
-	uint16_t byte_number = segment_num*SEGMENT_SIZE;
-	uint16_t bytes_left = num_bytes - byte_number;
+	uint16_t bytes_left = total_num_bytes - (segment_index*SEGMENT_SIZE);
 	
-	if (bytes_left != 0 && num_bytes >= SEGMENT_SIZE)
+	if (bytes_left != 0) 
 	{
-		memset(data, '\0', SEGMENT_SIZE);
-		memcpy(&data, str + (segment_num*SEGMENT_SIZE), bytes_left);
+		memset(&tmp, '\0', SEGMENT_SIZE);
+		memcpy(&tmp, str + (segment_index*SEGMENT_SIZE), bytes_left);
 		
-		LogSegment(source, data);
+		QueueSegment(source, tmp);
 	}
 
 	return 1;

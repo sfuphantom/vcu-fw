@@ -21,13 +21,15 @@ typedef struct event_t
 static PipeTask_t rtos_handles;
 
 static void ThreadEventHandler(void* pvParams);
+static uint8_t QueueEvent(event_t event, eSource source, ePriority priority);
 
 typedef enum ePriority{
 	CRITICAL,
 	BACKGROUND
 }ePriority;
 
-#define MAX_DATA_LENGTH 8
+
+/* Public API */
 
 TaskHandle_t EventHandlerInit()
 {
@@ -44,6 +46,44 @@ TaskHandle_t EventHandlerInit()
 
 	return rtos_handles.taskHandle;
 }
+
+void HandleToFront(event_handler_t callback, uint16_t data, eSource source)
+{	
+	event_t event;
+	event.callback = callback;
+	event.data = data;
+
+	QueueEvent(event, source, CRITICAL);
+}
+
+void HandleToBack(event_handler_t callback, uint16_t data, eSource source)
+{
+	event_t event;
+	event.callback = callback;
+	event.data = data;
+
+	QueueEvent(event, source, BACKGROUND);
+}
+
+/* Internal Implementation*/
+
+static void ThreadEventHandler(void* pvParams)
+{
+	event_t event;
+
+	Log("Starting thread");
+
+	while(1)
+	{
+		if (xQueueReceive(rtos_handles.q, &event, portMAX_DELAY) == pdFALSE)
+		{
+			continue;	
+		}
+		
+		event.callback(&event.data);
+	}
+}
+
 
 uint8_t QueueEvent(event_t event, eSource source, ePriority priority)
 {	
@@ -76,43 +116,3 @@ uint8_t QueueEvent(event_t event, eSource source, ePriority priority)
 
 	return ret;
 }
-
-
-void HandleToFront(event_handler_t callback, uint16_t data, eSource source)
-{	
-	event_t event;
-	event.callback = callback;
-	event.data = data;
-
-	QueueEvent(event, source, CRITICAL);
-}
-
-void HandleToBack(event_handler_t callback, uint16_t data, eSource source)
-{
-	event_t event;
-	event.callback = callback;
-	event.data = data;
-
-	QueueEvent(event, source, BACKGROUND);
-}
-
-/* Internal Implementation*/
-static void ThreadEventHandler(void* pvParams)
-{
-	event_t event;
-
-	Log("Starting thread");
-
-	while(1)
-	{
-		if (xQueueReceive(rtos_handles.q, &event, portMAX_DELAY) == pdFALSE)
-		{
-			continue;	
-		}
-		
-		event.callback(&event.data);
-	}
-}
-
-
-
