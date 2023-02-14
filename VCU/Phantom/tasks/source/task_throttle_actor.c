@@ -30,12 +30,16 @@
 
 static TaskHandle_t taskHandle;
 
-static TimerHandle_t APPS1RangeFaultTimer;
-static TimerHandle_t APPS2RangeFaultTimer;
-static TimerHandle_t BSERangeFaultTimer;
-static TimerHandle_t FPDiffFaultTimer;
-static TimerHandle_t RTDSTimer;
+typedef struct FaultTimers_t{
+    TimerHandle_t APPS1Range;
+    TimerHandle_t APPS2Range;
+    TimerHandle_t BSERange;
+    TimerHandle_t FPDiff;
+    TimerHandle_t RTDS;
+} FaultTimers_t;
+
 static TimerHandle_t AgentSoftwareWatchdog;
+static FaultTimers_t faultTimers;
 
 /* For calculating throttle padding */
 /* Padding will eliminate unintended range faults at 0% or 100% pedal presses */
@@ -78,11 +82,11 @@ TaskHandle_t ThrottleInit(void)
 	);
 
 
-    APPS1RangeFaultTimer = Phantom_createTimer("Apps1RangeCheck", 100, NO_RELOAD, EVENT_APPS1_RANGE_FAULT, NotifyStateMachineFromTimer);
-    // APPS2RangeFaultTimer = Phantom_createTimer("Apps2RangeCheck", 100, NO_RELOAD, EVENT_APPS2_RANGE_FAULT, NotifyStateMachineFromTimer);
-    // BSERangeFaultTimer = Phantom_createTimer("BseRangeCheck", 100, NO_RELOAD, EVENT_BSE_RANGE_FAULT, NotifyStateMachineFromTimer);
-    // FPDiffFaultTimer = Phantom_createTimer("FpDiffCheck", 100, NO_RELOAD, EVENT_FP_DIFF_FAULT, NotifyStateMachineFromTimer);
-    // RTDSTimer = Phantom_createTimer("RTDSSwitch", 2000, NO_RELOAD, 0, NotifyStateMachineFromTimer); 
+    faultTimers.APPS1Range = Phantom_createTimer("Apps1RangeCheck", 100, NO_RELOAD, EVENT_APPS1_RANGE_FAULT, NotifyStateMachineFromTimer);
+    // faultTimers.APPS2Range = Phantom_createTimer("Apps2RangeCheck", 100, NO_RELOAD, EVENT_APPS2_RANGE_FAULT, NotifyStateMachineFromTimer);
+    // faultTimers.BSERange = Phantom_createTimer("BseRangeCheck", 100, NO_RELOAD, EVENT_BSE_RANGE_FAULT, NotifyStateMachineFromTimer);
+    // faultTimers.FPDiff = Phantom_createTimer("FpDiffCheck", 100, NO_RELOAD, EVENT_FP_DIFF_FAULT, NotifyStateMachineFromTimer);
+    // faultTimers.RTDS = Phantom_createTimer("RTDSSwitch", 2000, NO_RELOAD, 0, NotifyStateMachineFromTimer); 
 
     AgentSoftwareWatchdog = Phantom_createTimer("AgentSoftwareWatchdog", APPS_SENSOR_TIMEOUT, NO_RELOAD, EVENT_APPS1_RANGE_FAULT, TurnOffThrottle);
 
@@ -99,7 +103,7 @@ static void vThrottleActorTask(void* arg)
 
     while(true)
     { 
-        xTimerStart(AgentSoftwareWatchdog, 1);
+        TimerStart(AgentSoftwareWatchdog, 1);
 
         pedal_reading_t pedalReadings;
 
@@ -115,7 +119,7 @@ static void vThrottleActorTask(void* arg)
         // TODO: Add range fault checks
 
         // // check for short to GND/VCC on APPS sensor 1
-        UpdatePedalRangeFaultTimer(pedalReadings.fp1, APPS1_MIN_VALUE, APPS1_MAX_VALUE, APPS1RangeFaultTimer);
+        UpdatePedalRangeFaultTimer(pedalReadings.fp1, APPS1_MIN_VALUE, APPS1_MAX_VALUE, faultTimers.APPS1Range);
         // // check for short to GND/VCC on APPS sensor 2
         // UpdatePedalRangeFaultTimer(pedalReadings.fp2, APPS2_MIN_VALUE, APPS2_MAX_VALUE, APPS2RangeFaultTimer, &APPS2_RANGE_FAULT_TIMER_EXPIRED);
         // // check for short to GND/VCC on BSE
@@ -199,11 +203,11 @@ static void UpdateAPPS10PercentFaultTimer(float Percent_APPS1_Pressed, float Per
 
     if (FP_sensor_diff > 0.10)
     {
-        Phantom_startTimer(FPDiffFaultTimer, 50); 
+        Phantom_startTimer(faultTimers.FPDiff, 50); 
     }
     else
     {
-        Phantom_stopTimer(FPDiffFaultTimer, portMAX_DELAY);
+        Phantom_stopTimer(faultTimers.FPDiff, portMAX_DELAY);
     }
 }
 
