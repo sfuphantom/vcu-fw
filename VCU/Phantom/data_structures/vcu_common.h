@@ -9,10 +9,9 @@
 #include "stdarg.h"
 #include "hal_stdtypes.h"
 
+
 bool any(uint8_t num, ...);
-
 bool all(uint8_t num, ...);
-
 
 typedef struct SystemTasks_t{
 	TaskHandle_t throttleAgent;
@@ -31,9 +30,10 @@ typedef enum eCarEvents{
     EVENT_RESET_CAR,
     EVENT_READY_TO_DRIVE,
     EVENT_TRACTIVE_ON,
+    EVENT_TRACTIVE_OFF,
     EVENT_BRAKE_PLAUSIBILITY_CLEARED,
     EVENT_BRAKE_PLAUSIBILITY_FAULT,
-    
+    EVENT_UNRESPONSIVE_APPS,
 
     END_OF_EVENTS
 } eCarEvents;
