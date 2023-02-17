@@ -59,7 +59,7 @@ TaskHandle_t throttleAgentInit(void)
 	xTaskCreate(
 		vThrottleAgentTask,
 		"ThrottleAgent",
-		200,
+		THROTTLE_AGT_STACK_SIZE,
 		NULL,
         1,
 		&footPedals.pipeline.taskHandle 

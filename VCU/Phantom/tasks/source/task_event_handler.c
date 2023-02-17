@@ -36,7 +36,7 @@ TaskHandle_t EventHandlerInit()
 	xTaskCreate(
 		ThreadEventHandler,
 		"EventHandler",
-		128,
+		EVENT_HANDLER_STACK_SIZE,
 		NULL,
         EVENT_HANDLER_PRIORITY,
 		&rtos_handles.taskHandle

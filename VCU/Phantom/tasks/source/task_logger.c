@@ -30,9 +30,9 @@ TaskHandle_t LoggerInit()
 	xTaskCreate(
 		LoggerThread,
 		"LoggerThread",
-		700,
+		LOGGER_STACK_SIZE,
 		0,
-		0,
+		LOGGER_PRIORITY,
 		&rtos_handles.taskHandle
 	);
 
