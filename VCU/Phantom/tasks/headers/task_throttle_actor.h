@@ -10,4 +10,6 @@
 
 TaskHandle_t ThrottleInit(void);
 
+void SuspendThrottle(TaskHandle_t);
+
 #endif

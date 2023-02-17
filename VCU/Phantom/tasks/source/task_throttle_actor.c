@@ -39,7 +39,6 @@ typedef struct FaultTimers_t{
     TimerHandle_t RTDS;
 } FaultTimers_t;
 
-static TimerHandle_t AgentSoftwareWatchdog;
 static FaultTimers_t faultTimers;
 
 /* For calculating throttle padding */
@@ -59,14 +58,15 @@ static void UpdatePedalRangeFaultTimer(uint32_t pedalValue, uint32_t minValue, u
 static void UpdateAPPS10PercentFaultTimer(float Percent_APPS1_Pressed, float Percent_APPS2_Pressed);
 static void CheckBrakePlausibility(uint32_t BSE_sensor_sum, float Percent_APPS1_Pressed, float Percent_APPS2_Pressed);
 
-static void TurnOffThrottle(TimerHandle_t timer)
+void SuspendThrottle(TaskHandle_t self)
 {
-	static char buffer[64];
-	snprintf(buffer, 64, "(%s): Expired after %dms", pcTimerGetTimerName(timer), xTimerGetPeriod(timer));
-	LogColor(YEL, buffer);
+    if (self == taskHandle)
+    {
+        MCP48FV_Set_Value(0); // send throttle value to DAC driver
+        LogColor(RED, "Turning off throttle");
 
-    MCP48FV_Set_Value(0); // send throttle value to DAC driver
-	LogColor(RED, "Turning off throttle");
+        vTaskSuspend(self);
+    }
 }
 
 static void CheckFaultConditions(const pedal_reading_t* pedalReadings)
@@ -102,8 +102,6 @@ TaskHandle_t ThrottleInit(void)
     // faultTimers.FPDiff = Phantom_createTimer("FpDiffCheck", 100, NO_RELOAD, EVENT_FP_DIFF_FAULT, NotifyStateMachineFromTimer);
     // faultTimers.RTDS = Phantom_createTimer("RTDSSwitch", 2000, NO_RELOAD, 0, NotifyStateMachineFromTimer); 
 
-    AgentSoftwareWatchdog = Phantom_createTimer("AgentSoftwareWatchdog", APPS_SENSOR_TIMEOUT, NO_RELOAD, EVENT_APPS1_RANGE_FAULT, TurnOffThrottle);
-
     MCP48FV_Init();
 
     return taskHandle;
@@ -111,19 +109,16 @@ TaskHandle_t ThrottleInit(void)
 
 static void vThrottleActorTask(void* arg)
 {
-    char buffer[32];
-
-	Log("Suspending thread on initialization");
-    vTaskSuspend(NULL);
+    SuspendThrottle(taskHandle);
 
     while(true)
     { 
-        xTimerStart(AgentSoftwareWatchdog, 1);
-
         pedal_reading_t pedalReadings;
 
-        if (!receivePedalReadings(&pedalReadings, portMAX_DELAY))
+        if (!receivePedalReadings(&pedalReadings, APPS_SENSOR_TIMEOUT))
         {
+            SuspendThrottle(taskHandle);
+
             continue; 
         }
 

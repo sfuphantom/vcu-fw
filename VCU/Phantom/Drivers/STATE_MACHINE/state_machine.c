@@ -8,11 +8,13 @@
 #include "state_machine.h"
 
 #include "task_event_handler.h"
+#include "task_throttle_actor.h"
 #include "task_logger.h"
 #include "ansi_colors.h"
 
 static void UpdateStateMachine(void* data);
 
+static State VariousStates(State state, eCarEvents event);
 static State TractiveOff(eCarEvents event);
 static State TractiveOn(eCarEvents event);
 static State Running(eCarEvents event);
@@ -58,13 +60,12 @@ static void UpdateStateMachine(void* data)
 {
 	/* static cached values */
 	static State state = TRACTIVE_OFF;
- 	static char buffer[32];
 
 	eCarEvents event = *(uint16_t*) data;
 
-	sprintf(buffer, "Event occurred: %d", event);
-	Log(buffer);
-
+	/* Events that change state from multiple states */
+	state = VariousStates(state, event);
+	
 	switch(state)
 	{
 		case TRACTIVE_OFF:
@@ -98,6 +99,29 @@ static void UpdateStateMachine(void* data)
 
 
 /* State handlers */
+
+static State VariousStates(State state, eCarEvents event)
+{
+	bool faults = any(6, 
+		event == EVENT_APPS1_RANGE_FAULT,
+		event == EVENT_APPS2_RANGE_FAULT, 
+		event == EVENT_BRAKE_PLAUSIBILITY_FAULT,
+		event == EVENT_BSE_RANGE_FAULT,
+		event == EVENT_FP_DIFF_FAULT,
+		event == EVENT_UNRESPONSIVE_APPS
+	);
+
+	if (faults)
+	{
+		LogColor(RED, "Suspending throttle actor.");
+		SuspendThrottle(system_tasks.throttleActor);
+		
+		LogColor(RED, "Moving to SevereFault state");
+		return SEVERE_FAULT;
+	}
+
+	return state;
+}
 
 static State TractiveOff(eCarEvents event)
 {
@@ -136,15 +160,10 @@ static State TractiveOn(eCarEvents event)
 
 static State Running(eCarEvents event)
 {
-	bool agentFault = any(4, EVENT_APPS1_RANGE_FAULT, EVENT_APPS2_RANGE_FAULT, EVENT_BSE_RANGE_FAULT, EVENT_FP_DIFF_FAULT);
-	if (agentFault)
+	
+	if (false)
 	{
-		LogColor(RED, "Moving from Running to SevereFault");
 
-		LogColor(RED, "Suspending throttle actor.");
-		vTaskSuspend(system_tasks.throttleActor);	
-
-		return SEVERE_FAULT;
 	}
 	else
 	{
