@@ -35,11 +35,19 @@ void StateMachineInit(SystemTasks_t tasks)
 
 void NotifyStateMachine(eCarEvents event)
 {
+ 	char buffer[32];
+	sprintf(buffer, "Event occurred: %d", event);
+	Log(buffer);
+
 	HandleToFront(UpdateStateMachine, event, FROM_SCHEDULER);
 }
 
 void NotifyStateMachineFromISR(eCarEvents event)
 {
+ 	char buffer[32];
+	sprintf(buffer, "Event occurred: %d", event);
+	LogFromISR(UWHT, buffer);
+
 	HandleToFront(UpdateStateMachine, event, FROM_ISR);
 }
 
