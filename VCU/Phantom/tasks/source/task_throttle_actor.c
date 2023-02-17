@@ -135,8 +135,6 @@ static void vThrottleActorTask(void* arg)
         int16_t throttle = MAP_PERCENT_TO_VOLTAGE(apps_percent_avg);
         MCP48FV_Set_Value(throttle); 
 
-        Log( "Running throttle actor");
-
         #ifdef VCU_SIM_MODE
         snprintf(buffer, 32, "%d", throttle);
         Log(buffer);

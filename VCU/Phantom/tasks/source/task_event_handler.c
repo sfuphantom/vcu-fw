@@ -18,15 +18,17 @@ typedef struct event_t
 	uint16_t data;
 }event_t;
 
-static PipeTask_t rtos_handles;
-
-static void ThreadEventHandler(void* pvParams);
-static uint8_t QueueEvent(event_t event, eSource source, ePriority priority);
-
 typedef enum ePriority{
 	CRITICAL,
 	BACKGROUND
 }ePriority;
+
+static PipeTask_t rtos_handles;
+
+
+static void ThreadEventHandler(void* pvParams);
+static uint8_t QueueEvent(event_t event, eSource source, ePriority priority);
+
 
 
 /* Public API */
