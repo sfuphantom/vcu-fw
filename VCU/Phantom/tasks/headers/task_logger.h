@@ -19,6 +19,7 @@ uint8_t Log(const char* str);
 uint8_t LogColor(const char* color, const char* str);
 uint8_t LogFromISR(const char* color, const char* str);
 void GetLogHeader(eSource source, const char* color, char* str);
+void FlushLogger(uint16_t waitms);
 
 
 #endif /* PHANTOM_TASKS_HEADERS_TASK_LOGGER_H_ */

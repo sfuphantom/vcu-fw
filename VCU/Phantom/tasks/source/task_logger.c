@@ -40,6 +40,13 @@ TaskHandle_t LoggerInit()
 
 	return rtos_handles.taskHandle;
 }
+ 
+void FlushLogger(uint16_t waitms)
+{
+	vTaskPrioritySet(rtos_handles.taskHandle, configMAX_PRIORITIES-1);
+	vTaskDelay(pdMS_TO_TICKS(waitms)); 
+	vTaskPrioritySet(rtos_handles.taskHandle, 0);
+}
 
 uint8_t LogColor(const char* color, const char* str)
 {
