@@ -111,15 +111,14 @@ uint32_t getSimData()
 
 void GetRuntimeStatistics(void* x)
 {
-    char ptrTaskList[TASK_LIST_SIZE];
     // TODO: not configured!
-//    vTaskGetRunTimeStats(ptrTaskList);
-//    UARTSend(PC_UART, ptrTaskList);
+    // vTaskGetRunTimeStats(ptrTaskList);
 
+    char ptrTaskList[TASK_LIST_SIZE];
     vTaskList(ptrTaskList);
-    UARTSend(PC_UART, ptrTaskList);
 
-    UARTprintf("\r\n");
+    UARTSend(PC_UART, ptrTaskList);
+    UARTprintln("\r");
 }
 
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
