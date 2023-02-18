@@ -23,7 +23,7 @@ def latency_checker(a1, a2, response, sleep_ms):
 def test_throttle_output(i=320, latency_checker=lambda *args: None):
 
     ret = []
-    board = serial.Serial(port=sys.argv[1])
+    board = serial.Serial(port=sys.argv[1], baudrate=460800)
 
     n = 0
     while True:
@@ -43,7 +43,7 @@ def test_throttle_output(i=320, latency_checker=lambda *args: None):
         response = board.read_all().decode()
 
         ret.append(response)
-        assert throttle_output_on_startup[n] in response, f'{throttle_output_on_startup[n]=} not in {response=}' 
+        assert f'throttle={throttle_output_on_startup[n]}' in response, f'throttle={throttle_output_on_startup[n]} not in {response=}' 
         
         latency_checker(a1, a2, response)
 
@@ -106,6 +106,6 @@ def send_output(apps1: Iterable, apps2: Iterable):
 
 
 if __name__ == '__main__':
-    print(test_throttle_output())
+    print('\n'.join(test_throttle_output()))
     
     # print(send_output(APPS_RANGES[0], APPS_RANGES[1]))

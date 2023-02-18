@@ -110,7 +110,7 @@ void main(void)
 
     phantomDriversInit();
 
-    UARTInit(PC_UART, 115200); // something up above overwrites the configuration set here. Make sure this goes last!
+    UARTInit(PC_UART, 460800); // something up above overwrites the configuration set here. Make sure this goes last!
 
     phantomTasksInit();
 
