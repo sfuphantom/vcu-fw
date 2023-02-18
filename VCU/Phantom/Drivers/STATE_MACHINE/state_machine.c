@@ -66,6 +66,11 @@ void NotifyStateMachineFromTimer(TimerHandle_t timer)
 /* Event Handler */
 static void UpdateStateMachine(void* data)
 {
+    #ifdef VCU_SIM_MODE
+    LogColor(YEL, "VCU is in Simulation Mode. Events do not affect the state machine.");
+	return;
+    #endif
+
 	/* static cached values */
 	static State state = TRACTIVE_OFF;
 

@@ -67,13 +67,6 @@ void phantomDriversInit()
 
 void phantomTasksInit()
 {
-    #ifndef VCU_SIM_MODE
-//    ReceiveTaskInit();
-    #else
-    UARTprintln("Entering VCU Simulation Mode...");
-    #endif
-
-
     SystemTasks_t t = {
         .EventHandler=EventHandlerInit(),
         .Logger=LoggerInit(),
@@ -85,6 +78,7 @@ void phantomTasksInit()
     {
         while(1) UARTprintln("Some tasks not initialized: %d, %d, %d, %d", t.EventHandler, t.Logger, t.throttleActor, t.throttleAgent);
     }
+
 
     StateMachineInit(t);
 }

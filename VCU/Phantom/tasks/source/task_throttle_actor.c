@@ -60,6 +60,7 @@ static void CheckBrakePlausibility(uint32_t BSE_sensor_sum, float Percent_APPS1_
 
 void SuspendThrottle(TaskHandle_t self)
 {
+    #ifndef VCU_SIM_MODE
     if (self == taskHandle)
     {
         MCP48FV_Set_Value(0); // send throttle value to DAC driver
@@ -67,6 +68,9 @@ void SuspendThrottle(TaskHandle_t self)
 
         vTaskSuspend(self);
     }
+    #else
+    LogColor(GRN, "Cannot suspend throttle in VCU Sim Mode.");
+    #endif
 }
 
 static void CheckFaultConditions(const pedal_reading_t* pedalReadings)
@@ -136,7 +140,8 @@ static void vThrottleActorTask(void* arg)
         MCP48FV_Set_Value(throttle); 
 
         #ifdef VCU_SIM_MODE
-        snprintf(buffer, 32, "%d", throttle);
+        char buffer[32];
+        snprintf(buffer, 32, "throttle=%d", throttle);
         Log(buffer);
         #endif
     }
