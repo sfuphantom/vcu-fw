@@ -26,6 +26,8 @@
 #include "state_machine.h"      // for access to mailbox & queue
 #include "task_logger.h"      
 
+#define APPS_SENSOR_TIMEOUT 1000
+
 static TaskHandle_t taskHandle;
 
 // ^ this equation may need to be modified for the curtis voltage lower limit and upper limit
@@ -73,20 +75,20 @@ void SuspendThrottle(TaskHandle_t self)
     #endif
 }
 
-static void CheckFaultConditions(const pedal_reading_t* pedalReadings)
+static void CheckFaultConditions(const pedal_reading_t* pedalReadings, float apps1_percent, float apps2_percent)
 {
     // check for short to GND/VCC on APPS sensor 1
     UpdatePedalRangeFaultTimer(pedalReadings->fp1, APPS1_MIN_VALUE, APPS1_MAX_VALUE, faultTimers.APPS1Range);
 
     // TODO: Add range fault checks
-//     // check for short to GND/VCC on APPS sensor 2
-//     UpdatePedalRangeFaultTimer(pedalReadings->fp2, APPS2_MIN_VALUE, APPS2_MAX_VALUE, APPS2RangeFaultTimer, &APPS2_RANGE_FAULT_TIMER_EXPIRED);
-//     // check for short to GND/VCC on BSE
-//     UpdatePedalRangeFaultTimer(pedalReadings->bse, BSE_MIN_VALUE, BSE_MAX_VALUE, BSERangeFaultTimer, &BSE_RANGE_FAULT_TIMER_EXPIRED);
-//     // Check if APPS1 and APPS2 are within 10% of each other
-//     UpdateAPPS10PercentFaultTimer(apps1PedalPercent, apps2PedalPercent);
-//     // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25%
-//     CheckBrakePlausibility(pedalReadings->bse, apps1PedalPercent, apps2PedalPercent);
+    // check for short to GND/VCC on APPS sensor 2
+    UpdatePedalRangeFaultTimer(pedalReadings->fp2, APPS2_MIN_VALUE, APPS2_MAX_VALUE, faultTimers.APPS2Range);
+    // check for short to GND/VCC on BSE
+    UpdatePedalRangeFaultTimer(pedalReadings->bse, BSE_MIN_VALUE, BSE_MAX_VALUE, faultTimers.BSERange);
+    // Check if APPS1 and APPS2 are within 10% of each other
+    UpdateAPPS10PercentFaultTimer(apps1_percent, apps2_percent);
+    // Check if brakes are pressed and accelerator pedal is pressed greater than or equal to 25%
+    CheckBrakePlausibility(pedalReadings->bse, apps1_percent, apps2_percent);
 }
 
 TaskHandle_t ThrottleInit(void)
@@ -101,10 +103,10 @@ TaskHandle_t ThrottleInit(void)
 	);
 
     faultTimers.APPS1Range = Phantom_createTimer("Apps1RangeCheck", 100, NO_RELOAD, EVENT_APPS1_RANGE_FAULT, NotifyStateMachineFromTimer);
-    // faultTimers.APPS2Range = Phantom_createTimer("Apps2RangeCheck", 100, NO_RELOAD, EVENT_APPS2_RANGE_FAULT, NotifyStateMachineFromTimer);
-    // faultTimers.BSERange = Phantom_createTimer("BseRangeCheck", 100, NO_RELOAD, EVENT_BSE_RANGE_FAULT, NotifyStateMachineFromTimer);
-    // faultTimers.FPDiff = Phantom_createTimer("FpDiffCheck", 100, NO_RELOAD, EVENT_FP_DIFF_FAULT, NotifyStateMachineFromTimer);
-    // faultTimers.RTDS = Phantom_createTimer("RTDSSwitch", 2000, NO_RELOAD, 0, NotifyStateMachineFromTimer); 
+    faultTimers.APPS2Range = Phantom_createTimer("Apps2RangeCheck", 100, NO_RELOAD, EVENT_APPS2_RANGE_FAULT, NotifyStateMachineFromTimer);
+    faultTimers.BSERange = Phantom_createTimer("BseRangeCheck", 100, NO_RELOAD, EVENT_BSE_RANGE_FAULT, NotifyStateMachineFromTimer);
+    faultTimers.FPDiff = Phantom_createTimer("FpDiffCheck", 100, NO_RELOAD, EVENT_FP_DIFF_FAULT, NotifyStateMachineFromTimer);
+    faultTimers.RTDS = Phantom_createTimer("RTDSSwitch", 2000, NO_RELOAD, 0, NotifyStateMachineFromTimer); 
 
     MCP48FV_Init();
 
@@ -129,9 +131,8 @@ static void vThrottleActorTask(void* arg)
 		/* Get pedal percentages */
         float apps1PedalPercent = calculatePedalPercent(pedalReadings.fp1, PADDED_APPS1_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
         float apps2PedalPercent = calculatePedalPercent(pedalReadings.fp2, PADDED_APPS2_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
-        float bsePedalPercent = calculatePedalPercent(pedalReadings.bse, PADDED_BSE_MIN_VALUE, PADDED_BSE_MAX_VALUE);
 
-        CheckFaultConditions(&pedalReadings);
+        CheckFaultConditions(&pedalReadings, apps1PedalPercent, apps2PedalPercent);
 
         float apps_percent_avg = (apps1PedalPercent + apps2PedalPercent) / 2;
 
