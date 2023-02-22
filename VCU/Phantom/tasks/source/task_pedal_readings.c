@@ -109,7 +109,7 @@ static void vPedalReadingsTask(void* arg)
             SetBrakeLight(brakelight_value);
         }
         
-        // send filtered values to mailbox (task_throttle_actor.c)
+        // send filtered values to mailbox (task_throttle.c)
         xQueueSend(footPedals.pipeline.q, &footPedals.readings, 1);
     }
 }

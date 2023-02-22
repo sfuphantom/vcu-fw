@@ -8,7 +8,7 @@
 #include "state_machine.h"
 
 #include "task_event_handler.h"
-#include "task_throttle_actor.h"
+#include "task_throttle.h"
 #include "task_logger.h"
 #include "ansi_colors.h"
 
@@ -28,7 +28,7 @@ static SystemTasks_t system_tasks;
 void StateMachineInit(SystemTasks_t tasks)
 {
 	system_tasks.PedalReadings = tasks.PedalReadings;
-	system_tasks.throttleActor = tasks.throttleActor;
+	system_tasks.Throttle = tasks.Throttle;
 	system_tasks.EventHandler = tasks.EventHandler;
 	system_tasks.Logger = tasks.Logger;
 }
@@ -126,8 +126,8 @@ static State VariousStates(State state, eCarEvents event)
 
 	if (faults)
 	{
-		LogColor(RED, "Suspending throttle actor.");
-		SuspendThrottle(system_tasks.throttleActor);
+		LogColor(RED, "Suspending throttle task.");
+		SuspendThrottle(system_tasks.Throttle);
 		
 		LogColor(RED, "Moving to SevereFault state");
 		return SEVERE_FAULT;
@@ -158,8 +158,8 @@ static State TractiveOn(eCarEvents event)
 	{
 		LogColor(GRN, "Moving from TractiveOn to Running");
 
-		LogColor(GRN, "Resuming throttle actor.");
-		vTaskResume(system_tasks.throttleActor);
+		LogColor(GRN, "Resuming throttle task.");
+		vTaskResume(system_tasks.Throttle);
 
 		return RUNNING;
 	}

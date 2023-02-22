@@ -1,5 +1,5 @@
 /*
- *  task_throttle.c 
+ *  task_task_throttle.c 
  *  refactored for 2022
  * 
  *  Created on: Sept 18, 2021
@@ -22,7 +22,7 @@
 #include "task_config.h"
 
 #include "task_pedal_readings.h"    // for access to mailbox
-#include "task_throttle_actor.h"    // for access to mailbox
+#include "task_throttle.h"    // for access to mailbox
 #include "state_machine.h"      // for access to mailbox & queue
 #include "task_logger.h"      
 
@@ -53,7 +53,7 @@ static FaultTimers_t faultTimers;
 #define PADDED_APPS2_MIN_VALUE  (APPS2_MIN_VALUE * (1U + PADDING_PERCENT))
 #define PADDED_APPS2_MAX_VALUE  (APPS2_MAX_VALUE * (1U - PADDING_PERCENT))
 
-static void vThrottleActorTask(void* arg);
+static void vThrottleTask(void* arg);
 
 static float calculatePedalPercent(uint32_t pedalValue, float minValue, float maxValue);
 static void UpdatePedalRangeFaultTimer(uint32_t pedalValue, uint32_t minValue, uint32_t maxValue, TimerHandle_t faultTimer);
@@ -94,8 +94,8 @@ static void CheckFaultConditions(const pedal_reading_t* pedalReadings, float app
 TaskHandle_t ThrottleInit(void)
 {
     xTaskCreate(
-		vThrottleActorTask,
-		"ThrottleActor",
+		vThrottleTask,
+		"Throttle",
 		THROTTLE_ACT_STACK_SIZE,
 		0,
         THROTTLE_ACT_PRIORITY,
@@ -113,7 +113,7 @@ TaskHandle_t ThrottleInit(void)
     return taskHandle;
 }
 
-static void vThrottleActorTask(void* arg)
+static void vThrottleTask(void* arg)
 {
     SuspendThrottle(taskHandle);
 
