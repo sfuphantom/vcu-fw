@@ -14,7 +14,7 @@ bool any(uint8_t num, ...);
 bool all(uint8_t num, ...);
 
 typedef struct SystemTasks_t{
-	TaskHandle_t throttleAgent;
+	TaskHandle_t PedalReadings;
 	TaskHandle_t throttleActor;
 	TaskHandle_t Logger;
 	TaskHandle_t EventHandler;

@@ -23,7 +23,7 @@
 /*********************************************************************************
  *                              TASK PRIORITIES
  *********************************************************************************/
-#define THROTTLE_AGT_PRIORITY           2
+#define PEDAL_READINGS_PRIORITY         2
 #define THROTTLE_ACT_PRIORITY           4
 #define EVENT_HANDLER_PRIORITY          5
 #define LOGGER_PRIORITY                 1

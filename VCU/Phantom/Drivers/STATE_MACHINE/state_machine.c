@@ -27,7 +27,7 @@ static SystemTasks_t system_tasks;
 
 void StateMachineInit(SystemTasks_t tasks)
 {
-	system_tasks.throttleAgent = tasks.throttleAgent;
+	system_tasks.PedalReadings = tasks.PedalReadings;
 	system_tasks.throttleActor = tasks.throttleActor;
 	system_tasks.EventHandler = tasks.EventHandler;
 	system_tasks.Logger = tasks.Logger;

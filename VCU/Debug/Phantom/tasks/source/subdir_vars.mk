@@ -12,7 +12,7 @@ C_SRCS += \
 ../Phantom/tasks/source/task_statemachine.c \
 ../Phantom/tasks/source/task_test.c \
 ../Phantom/tasks/source/task_throttle_actor.c \
-../Phantom/tasks/source/task_throttle_agent.c \
+../Phantom/tasks/source/task_pedal_readings.c \
 ../Phantom/tasks/source/task_watchdog.c 
 
 C_DEPS += \
@@ -22,7 +22,7 @@ C_DEPS += \
 ./Phantom/tasks/source/task_statemachine.d \
 ./Phantom/tasks/source/task_test.d \
 ./Phantom/tasks/source/task_throttle_actor.d \
-./Phantom/tasks/source/task_throttle_agent.d \
+./Phantom/tasks/source/task_pedal_readings.d \
 ./Phantom/tasks/source/task_watchdog.d 
 
 OBJS += \
@@ -32,7 +32,7 @@ OBJS += \
 ./Phantom/tasks/source/task_statemachine.obj \
 ./Phantom/tasks/source/task_test.obj \
 ./Phantom/tasks/source/task_throttle_actor.obj \
-./Phantom/tasks/source/task_throttle_agent.obj \
+./Phantom/tasks/source/task_pedal_readings.obj \
 ./Phantom/tasks/source/task_watchdog.obj 
 
 OBJS__QUOTED += \
@@ -42,7 +42,7 @@ OBJS__QUOTED += \
 "Phantom\tasks\source\task_statemachine.obj" \
 "Phantom\tasks\source\task_test.obj" \
 "Phantom\tasks\source\task_throttle_actor.obj" \
-"Phantom\tasks\source\task_throttle_agent.obj" \
+"Phantom\tasks\source\task_pedal_readings.obj" \
 "Phantom\tasks\source\task_watchdog.obj" 
 
 C_DEPS__QUOTED += \
@@ -52,7 +52,7 @@ C_DEPS__QUOTED += \
 "Phantom\tasks\source\task_statemachine.d" \
 "Phantom\tasks\source\task_test.d" \
 "Phantom\tasks\source\task_throttle_actor.d" \
-"Phantom\tasks\source\task_throttle_agent.d" \
+"Phantom\tasks\source\task_pedal_readings.d" \
 "Phantom\tasks\source\task_watchdog.d" 
 
 C_SRCS__QUOTED += \
@@ -62,7 +62,7 @@ C_SRCS__QUOTED += \
 "../Phantom/tasks/source/task_statemachine.c" \
 "../Phantom/tasks/source/task_test.c" \
 "../Phantom/tasks/source/task_throttle_actor.c" \
-"../Phantom/tasks/source/task_throttle_agent.c" \
+"../Phantom/tasks/source/task_pedal_readings.c" \
 "../Phantom/tasks/source/task_watchdog.c" 
 
 

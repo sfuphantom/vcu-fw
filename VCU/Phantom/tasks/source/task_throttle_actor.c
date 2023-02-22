@@ -21,7 +21,7 @@
 
 #include "task_config.h"
 
-#include "task_throttle_agent.h"    // for access to mailbox
+#include "task_pedal_readings.h"    // for access to mailbox
 #include "task_throttle_actor.h"    // for access to mailbox
 #include "state_machine.h"      // for access to mailbox & queue
 #include "task_logger.h"      
@@ -121,7 +121,7 @@ static void vThrottleActorTask(void* arg)
     { 
         pedal_reading_t pedalReadings;
 
-        if (!receivePedalReadings(&pedalReadings, APPS_SENSOR_TIMEOUT))
+        if (!ReceivePedalReadings(&pedalReadings, APPS_SENSOR_TIMEOUT))
         {
             SuspendThrottle(taskHandle);
 

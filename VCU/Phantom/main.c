@@ -27,7 +27,7 @@
 
 
 #include "task_throttle_actor.h"
-#include "task_throttle_agent.h"
+#include "task_pedal_readings.h"
 #include "task_event_handler.h"
 #include "task_logger.h"
 
@@ -71,12 +71,12 @@ void phantomTasksInit()
         .EventHandler=EventHandlerInit(),
         .Logger=LoggerInit(),
         .throttleActor=ThrottleInit(),
-        .throttleAgent=throttleAgentInit()
+        .PedalReadings=PedalReadingsInit()
     };
 
-    if (!all(4, t.EventHandler, t.Logger, t.throttleActor, t.throttleAgent))
+    if (!all(4, t.EventHandler, t.Logger, t.throttleActor, t.PedalReadings))
     {
-        while(1) UARTprintln("Some tasks not initialized: %d, %d, %d, %d", t.EventHandler, t.Logger, t.throttleActor, t.throttleAgent);
+        while(1) UARTprintln("Some tasks not initialized: %d, %d, %d, %d", t.EventHandler, t.Logger, t.throttleActor, t.PedalReadings);
     }
 
 

@@ -1,11 +1,11 @@
 /*
- *  task_throttle_agent.c
+ *  task_pedal_readings.c
  * 
  *  Created on: July 15, 2022
  *      Author: Joshua Guo
  */
 
-#include "task_throttle_agent.h"
+#include "task_pedal_readings.h"
 #include "task_config.h"
 
 #include "vcu_common.h"
@@ -27,20 +27,20 @@
 
 #define BRAKE_LIGHT BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN
 
-typedef struct ThrottleAgent_t{
+typedef struct PedalReadings_t{
     PipeTask_t pipeline;
     pedal_reading_t readings;
     pedal_reading_t prevReadings;
-}ThrottleAgent_t;
+}PedalReadings_t;
 
-static ThrottleAgent_t footPedals;
+static PedalReadings_t footPedals;
 
-static void vThrottleAgentTask(void* arg);
+static void vPedalReadingsTask(void* arg);
 
 static pedal_reading_t readPedals();
 
 /* Public API */
-uint8_t receivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms)
+uint8_t ReceivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms)
 {
     if (footPedals.pipeline.q)
     {
@@ -54,11 +54,11 @@ uint8_t receivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms
     }
 }
 
-TaskHandle_t throttleAgentInit(void)
+TaskHandle_t PedalReadingsInit(void)
 {
 	xTaskCreate(
-		vThrottleAgentTask,
-		"ThrottleAgent",
+		vPedalReadingsTask,
+		"PedalReadings",
 		THROTTLE_AGT_STACK_SIZE,
 		NULL,
         1,
@@ -84,7 +84,7 @@ static void SetBrakeLight(uint8_t value)
 }
 
 
-static void vThrottleAgentTask(void* arg)
+static void vPedalReadingsTask(void* arg)
 {
 	Log("Starting thread");
 
