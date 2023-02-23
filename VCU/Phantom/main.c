@@ -79,7 +79,6 @@ void phantomTasksInit()
         while(1) UARTprintln("Some tasks not initialized: %d, %d, %d, %d", t.EventHandler, t.Logger, t.Throttle, t.PedalReadings);
     }
 
-
     StateMachineInit(t);
 }
 

@@ -27,7 +27,7 @@ static uint8_t AsyncPrint(eSource source, const char* str);
 
 TaskHandle_t LoggerInit()
 {
-	xTaskCreate(
+	BaseType_t ret = xTaskCreate(
 		LoggerThread,
 		"LoggerThread",
 		LOGGER_STACK_SIZE,
@@ -38,7 +38,7 @@ TaskHandle_t LoggerInit()
 
     rtos_handles.q = xQueueCreate(128, sizeof(segment_t)); 
 
-	return rtos_handles.taskHandle;
+	return ret == pdPASS && !rtos_handles.q ? rtos_handles.taskHandle : NULL;
 }
  
 void FlushLogger(uint16_t waitms)

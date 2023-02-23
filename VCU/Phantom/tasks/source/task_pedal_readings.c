@@ -56,7 +56,7 @@ uint8_t ReceivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms
 
 TaskHandle_t PedalReadingsInit(void)
 {
-	xTaskCreate(
+	BaseType_t ret = xTaskCreate(
 		vPedalReadingsTask,
 		"PedalReadings",
 		THROTTLE_AGT_STACK_SIZE,
@@ -69,7 +69,7 @@ TaskHandle_t PedalReadingsInit(void)
 
     footPedals.prevReadings = (pedal_reading_t) {0, 0 ,0};
 
-	return footPedals.pipeline.taskHandle;
+	return ret == pdPASS && !footPedals.pipeline.q ? footPedals.pipeline.taskHandle : NULL;
 }
 
 /* Internal Implementation */

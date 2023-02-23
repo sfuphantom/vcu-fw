@@ -93,7 +93,7 @@ static void CheckFaultConditions(const pedal_reading_t* pedalReadings, float app
 
 TaskHandle_t ThrottleInit(void)
 {
-    xTaskCreate(
+    BaseType_t ret = xTaskCreate(
 		vThrottleTask,
 		"Throttle",
 		THROTTLE_ACT_STACK_SIZE,
@@ -110,7 +110,7 @@ TaskHandle_t ThrottleInit(void)
 
     MCP48FV_Init();
 
-    return taskHandle;
+    return ret == pdPASS ? taskHandle : NULL;
 }
 
 static void vThrottleTask(void* arg)

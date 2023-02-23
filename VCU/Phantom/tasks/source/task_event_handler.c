@@ -35,7 +35,7 @@ static uint8_t QueueEvent(event_t event, eSource source, ePriority priority);
 
 TaskHandle_t EventHandlerInit()
 {
-	xTaskCreate(
+	BaseType_t ret = xTaskCreate(
 		ThreadEventHandler,
 		"EventHandler",
 		EVENT_HANDLER_STACK_SIZE,
@@ -46,7 +46,7 @@ TaskHandle_t EventHandlerInit()
 
     rtos_handles.q = xQueueCreate(16, sizeof(event_t));
 
-	return rtos_handles.taskHandle;
+	return ret == pdPASS && !rtos_handles.q ? rtos_handles.taskHandle : NULL;
 }
 
 void HandleToFront(event_handler_t callback, uint16_t data, eSource source)
