@@ -138,7 +138,7 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
     switch(data){
 
         case TASK_LIST:
-        	HandleToBack(GetRuntimeStatistics, 0, FROM_ISR);
+        	HandleEventFromISR(GetRuntimeStatistics, 0);
             break;
 
         case ECHO_THROTTLE:

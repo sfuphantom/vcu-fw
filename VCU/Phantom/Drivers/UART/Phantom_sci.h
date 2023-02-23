@@ -14,9 +14,6 @@
 extern "C" {
 #endif
 
-#define START_SIM_DATA 's'
-#define END_SIM_DATA '\n'
-
 void UARTInit(sciBASE_t *sci, uint32 baud);
 void UARTSend(sciBASE_t *sci, char data[]);
 void UARTprintf(const char *_format, ...);

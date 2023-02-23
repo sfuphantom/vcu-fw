@@ -5,6 +5,7 @@
 #include "FreeRTOSConfig.h"
 #include "os_queue.h"
 #include "os_task.h"
+#include "task_config.h"
 
 #include "stdarg.h"
 #include "hal_stdtypes.h"
