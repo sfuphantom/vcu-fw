@@ -14,7 +14,7 @@ typedef void (*event_handler_t)(void*);
 
 TaskHandle_t EventHandlerInit();
 
-void HandleToBack(event_handler_t callback, uint16_t data, eSource source);
-void HandleToFront(event_handler_t callback, uint16_t data, eSource source);
+bool HandleEvent(event_handler_t callback, uint16_t data);
+bool HandleEventFromISR(event_handler_t callback, uint16_t data);
 
 #endif /* PHANTOM_TASKS_HEADERS_TASK_EVENT_HANDLER_H_ */

@@ -5,10 +5,9 @@
  *      Author: rafgu
  */
 
-
 #include "task_event_handler.h"
-#include "Phantom_sci.h"
 
+/* Phantom tasks */
 #include "task_config.h"
 #include "task_logger.h"
 
@@ -18,17 +17,10 @@ typedef struct event_t
 	uint16_t data;
 }event_t;
 
-typedef enum ePriority{
-	CRITICAL,
-	BACKGROUND
-}ePriority;
 
 static PipeTask_t rtos_handles;
 
-
 static void ThreadEventHandler(void* pvParams);
-static uint8_t QueueEvent(event_t event, eSource source, ePriority priority);
-
 
 
 /* Public API */
@@ -49,29 +41,34 @@ TaskHandle_t EventHandlerInit()
 	return ret == pdPASS && !rtos_handles.q ? rtos_handles.taskHandle : NULL;
 }
 
-void HandleToFront(event_handler_t callback, uint16_t data, eSource source)
+
+bool HandleEvent(event_handler_t callback, uint16_t data)
 {	
 	event_t event;
 	event.callback = callback;
 	event.data = data;
 
-	QueueEvent(event, source, CRITICAL);
+	xQueueSendToBack(rtos_handles.q, &event, 1) == pdPASS;
 }
 
-void HandleToBack(event_handler_t callback, uint16_t data, eSource source)
+
+bool  HandleEventFromISR(event_handler_t callback, uint16_t data)
 {
+	BaseType_t xHigherPriorityTaskWoken;
+
 	event_t event;
 	event.callback = callback;
 	event.data = data;
 
-	QueueEvent(event, source, BACKGROUND);
+	return xQueueSendToBackFromISR(rtos_handles.q, &event, &xHigherPriorityTaskWoken) == pdPASS;
 }
 
-/* Internal Implementation*/
+
+/* Internal Implementation */
 
 static void ThreadEventHandler(void* pvParams)
 {
-	event_t event;
+	static event_t event;
 
 	Log("Starting thread");
 
@@ -84,37 +81,4 @@ static void ThreadEventHandler(void* pvParams)
 		
 		event.callback(&event.data);
 	}
-}
-
-
-uint8_t QueueEvent(event_t event, eSource source, ePriority priority)
-{	
-	uint8_t ret;
-	BaseType_t xHigherPriorityTaskWoken;
-
-	if (priority == BACKGROUND && source == FROM_SCHEDULER)
-	{
-		ret = xQueueSendToBack(rtos_handles.q, &event, 1) == pdPASS;
-	}
-	else if (priority == BACKGROUND && source == FROM_ISR)
-	{
-		ret = xQueueSendToBackFromISR(rtos_handles.q, &event, &xHigherPriorityTaskWoken) == pdPASS;
-
-	}
-	else if (priority == CRITICAL && source == FROM_SCHEDULER){
-
-		ret = xQueueSendToFront(rtos_handles.q, &event, 1) == pdPASS;
-
-	} else if (priority == CRITICAL && source == FROM_ISR)
-	{
-		BaseType_t xHigherPriorityTaskWoken;
-
-		ret = xQueueSendToFrontFromISR(rtos_handles.q, &event, &xHigherPriorityTaskWoken) == pdPASS;
-	}
-	else
-	{
-		ret = 0; 
-	}
-
-	return ret;
 }

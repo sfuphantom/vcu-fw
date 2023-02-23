@@ -7,18 +7,21 @@
 
 #include "state_machine.h"
 
+/* Phantom modules */
+#include "ansi_colors.h"
+
+/* Phantom tasks */
 #include "task_event_handler.h"
 #include "task_throttle.h"
 #include "task_logger.h"
-#include "ansi_colors.h"
 
 static void UpdateStateMachine(void* data);
-
 static State VariousStates(State state, eCarEvents event);
 static State TractiveOff(eCarEvents event);
 static State TractiveOn(eCarEvents event);
 static State Running(eCarEvents event);
 static State SevereFault(eCarEvents event);
+
 
 static SystemTasks_t system_tasks;
 
@@ -39,7 +42,7 @@ void NotifyStateMachine(eCarEvents event)
 	sprintf(buffer, "Event occurred: %d", event);
 	Log(buffer);
 
-	HandleToFront(UpdateStateMachine, event, FROM_SCHEDULER);
+	HandleEvent(UpdateStateMachine, event);
 }
 
 void NotifyStateMachineFromISR(eCarEvents event)
@@ -48,7 +51,7 @@ void NotifyStateMachineFromISR(eCarEvents event)
 	sprintf(buffer, "Event occurred: %d", event);
 	LogFromISR(UWHT, buffer);
 
-	HandleToFront(UpdateStateMachine, event, FROM_ISR);
+	HandleEventFromISR(UpdateStateMachine, event);
 }
 
 void NotifyStateMachineFromTimer(TimerHandle_t timer)
@@ -59,11 +62,13 @@ void NotifyStateMachineFromTimer(TimerHandle_t timer)
 	snprintf(buffer, 64, "(%s:%d): Expired after %dms", pcTimerGetTimerName(timer), event, xTimerGetPeriod(timer));
 	LogColor(YEL, buffer);
 
-	HandleToFront(UpdateStateMachine, event, FROM_SCHEDULER);
+	HandleEvent(UpdateStateMachine, event);
 }
 
 
-/* Event Handler */
+/* Internal implementation */
+
+/* Event callback */
 static void UpdateStateMachine(void* data)
 {
     #ifdef VCU_SIM_MODE
@@ -76,38 +81,46 @@ static void UpdateStateMachine(void* data)
 
 	eCarEvents event = *(uint16_t*) data;
 
-	/* Events that change state from multiple states */
-	state = VariousStates(state, event);
-	
-	switch(state)
+	/* Events that have an effect on multiple states */
+	State new_state = VariousStates(state, event);
+
+	// no state change occurred; let's try normal state specific events
+	if (new_state == state)
 	{
-		case TRACTIVE_OFF:
+		switch(state)
+		{
+			case TRACTIVE_OFF:
 
-			state = TractiveOff(event);
+				new_state = TractiveOff(event);
 
-			break;
+				break;
 
-		case TRACTIVE_ON:
+			case TRACTIVE_ON:
 
-			state = TractiveOn(event);
+				new_state = TractiveOn(event);
 
-			break;
+				break;
 
-		case RUNNING:
+			case RUNNING:
 
-			state = Running(event);
+				new_state = Running(event);
 
-			break;
+				break;
 
-		case SEVERE_FAULT:
-		 
-			state = SevereFault(event);
+			case SEVERE_FAULT:
+			
+				new_state = SevereFault(event);
 
-			break;
-		
-		default:
-			break;
+				break;
+			
+			default:
+				break;
+		}
+
 	}
+
+	// update state
+	state = new_state;
 }
 
 
@@ -148,7 +161,6 @@ static State TractiveOff(eCarEvents event)
 		Log("Event is irrelevant. Staying at TractiveOff");
 	}
 
-
 	return TRACTIVE_OFF;
 }
 
@@ -176,7 +188,7 @@ static State Running(eCarEvents event)
 	
 	if (false)
 	{
-
+		// ...
 	}
 	else
 	{
