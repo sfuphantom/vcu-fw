@@ -10,11 +10,9 @@
 
 #include "vcu_common.h"
 
-
-#define HYSTERESIS      (200U)
+#define HYSTERESIS 200U
 
 TaskHandle_t PedalReadingsInit(void);
 uint8_t ReceivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms);
-
 
 #endif

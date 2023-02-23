@@ -5,27 +5,29 @@
  *      Author: Joshua Guo
  */
 
-#include "task_pedal_readings.h"
-#include "task_config.h"
-
 #include "vcu_common.h"
-#include "board_hardware.h"
-#include "adc.h"
-#include "gio.h"
 
-#include "Phantom_sci.h"
-
-#include <stdlib.h>
-#include "sys_common.h"
+/* C standard libs */
+#include "stdlib.h"
 #include "string.h"
 #include "sci.h"
 #include "stdio.h"
 #include "math.h"
 
+/* Halcogen drivers */
+#include "sys_common.h"
+#include "adc.h"
+#include "gio.h"
+
+/* Phantom modules */
+#include "Phantom_sci.h"
+#include "board_hardware.h"
+
+/* Phantom tasks */
+#include "task_pedal_readings.h"
 #include "task_logger.h"
 #include "task_event_handler.h"
 
-#define BRAKE_LIGHT BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN
 
 typedef struct PedalReadings_t{
     PipeTask_t pipeline;
@@ -36,8 +38,8 @@ typedef struct PedalReadings_t{
 static PedalReadings_t footPedals;
 
 static void vPedalReadingsTask(void* arg);
-
-static pedal_reading_t readPedals();
+static pedal_reading_t ReadPedals();
+static void SetBrakeLight(uint8_t value);
 
 /* Public API */
 uint8_t ReceivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms)
@@ -48,8 +50,6 @@ uint8_t ReceivePedalReadings(pedal_reading_t* pdreading, TickType_t wait_time_ms
     }
     else
     {
-        vTaskDelay(pdMS_TO_TICKS(1000));
-
         return 0;
     }
 }
@@ -74,51 +74,37 @@ TaskHandle_t PedalReadingsInit(void)
 
 /* Internal Implementation */
 
-static void SetBrakeLight(uint8_t value)
-{
-    char buffer[32];
-    sprintf(buffer, "Setting brakelight: %d", value);
-    Log(buffer);
-
-    gioSetBit(BRAKE_LIGHT, value);
-}
-
-
 static void vPedalReadingsTask(void* arg)
 {
 	Log("Starting thread");
 
     while(true)
     {
-        footPedals.readings = readPedals();
+        footPedals.readings = ReadPedals();
 
         // apply a low pass filter with ALPHA of 0.5
-        footPedals.readings.bse = (footPedals.readings.bse + footPedals.prevReadings.bse) >> 1;
         footPedals.readings.fp1 = (footPedals.readings.fp1 + footPedals.prevReadings.fp1) >> 1;
         footPedals.readings.fp2 = (footPedals.readings.fp2 + footPedals.prevReadings.fp2) >> 1;
+        footPedals.readings.bse = (footPedals.readings.bse + footPedals.prevReadings.bse) >> 1;
 
-        // update prev filtered values
-        footPedals.prevReadings =  footPedals.readings;
-
-        uint32_t BSESensorSum = footPedals.readings.bse; 
-
-        uint8_t brakelight_value = BSESensorSum > (BRAKING_THRESHOLD + HYSTERESIS);
-
-        if (gioGetBit(BRAKE_LIGHT) != brakelight_value)
-        {
-            SetBrakeLight(brakelight_value);
-        }
-        
-        // send filtered values to mailbox (task_throttle.c)
+        uint8_t brakelight_value = footPedals.readings.bse  > (BRAKING_THRESHOLD + HYSTERESIS);
+        SetBrakeLight(brakelight_value);
+       
+        // send to throttle 
         xQueueSend(footPedals.pipeline.q, &footPedals.readings, 1);
+
+        footPedals.prevReadings =  footPedals.readings;
     }
 }
 
-static pedal_reading_t readPedals()
+
+static pedal_reading_t ReadPedals()
 {
-    vTaskDelay(pdMS_TO_TICKS(20));
 
     #ifndef VCU_SIM_MODE 
+    // delay must occur here because sim mode has no delay (frequency determined by incoming serial data)
+    vTaskDelay(pdMS_TO_TICKS(20)); 
+
     // Get pedal readings from ADC
     adcData_t FP_data[3];
     adcStartConversion(adcREG1, adcGROUP1);
@@ -145,4 +131,16 @@ static pedal_reading_t readPedals()
 
     return throttleData;
     #endif
+}
+
+static void SetBrakeLight(uint8_t value)
+{
+    if (gioGetBit(BRAKE_LIGHT) != value)
+    {
+        char buffer[32];
+        sprintf(buffer, "Setting brakelight: %d", value);
+        Log(buffer);
+
+        gioSetBit(BRAKE_LIGHT, value);
+    }
 }
