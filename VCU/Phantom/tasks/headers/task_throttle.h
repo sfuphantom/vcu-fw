@@ -9,7 +9,6 @@
 #define PHANTOM_TASKS_throttle_H_
 
 TaskHandle_t ThrottleInit(void);
-
 void SuspendThrottle(TaskHandle_t);
 
 #endif
