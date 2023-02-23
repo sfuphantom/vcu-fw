@@ -6,24 +6,26 @@
  */
 
 #include "task_logger.h"
+
+/* C standard libs */
+#include "math.h"
+
+/* Phantom modules */
 #include "Phantom_sci.h"
 
-#include "task_config.h"
-
-#include "stdio.h"
-#include <string.h>
-
-static PipeTask_t rtos_handles;
-
-static void LoggerThread(void* pvParams);
-#include <math.h>
 
 typedef uint64_t segment_t;
 #define SEGMENT_SIZE sizeof(segment_t)
 
+static PipeTask_t rtos_handles;
+
+static void LoggerThread(void* pvParams);
 static uint8_t LogMessage(const char* color, const char* str, eSource source);
 static uint8_t LogSegment(eSource source, uint8_t* data);
 static uint8_t AsyncPrint(eSource source, const char* str);
+
+
+/* Public API */
 
 TaskHandle_t LoggerInit()
 {
@@ -41,27 +43,34 @@ TaskHandle_t LoggerInit()
 	return ret == pdPASS && !rtos_handles.q ? rtos_handles.taskHandle : NULL;
 }
  
-void FlushLogger(uint16_t waitms)
-{
-	vTaskPrioritySet(rtos_handles.taskHandle, configMAX_PRIORITIES-1);
-	vTaskDelay(pdMS_TO_TICKS(waitms)); 
-	vTaskPrioritySet(rtos_handles.taskHandle, 0);
-}
-
-uint8_t LogColor(const char* color, const char* str)
-{
-	return LogMessage(color, str, FROM_SCHEDULER);
-}
 
 uint8_t Log(const char* str)
 {
 	return LogMessage(WHT, str, FROM_SCHEDULER);
 }
 
+
+uint8_t LogColor(const char* color, const char* str)
+{
+	return LogMessage(color, str, FROM_SCHEDULER);
+}
+
+
 uint8_t LogFromISR(const char* color, const char* str)
 {
 	return LogMessage(color, str, FROM_ISR);
 }
+
+
+void FlushLogger(uint16_t waitms)
+{
+	vTaskPrioritySet(rtos_handles.taskHandle, configMAX_PRIORITIES-1);
+
+	vTaskDelay(pdMS_TO_TICKS(waitms)); 
+
+	vTaskPrioritySet(rtos_handles.taskHandle, 0);
+}
+
 
 void GetLogHeader(eSource source, const char* color, char* str)
 {
@@ -80,11 +89,12 @@ void GetLogHeader(eSource source, const char* color, char* str)
 	}
 }
 
+
 /* Internal Implementation*/
 
 static void LoggerThread(void* pvParams)
 {
-	segment_t segment;
+	static segment_t segment;
 
 	Log("Starting thread");
 
@@ -101,12 +111,15 @@ static void LoggerThread(void* pvParams)
 
 static uint8_t LogMessage(const char* color, const char* str, eSource source)
 {
+	// prepare timestamp 
 	char header[64];
 	GetLogHeader(source, color, header);
 	AsyncPrint(source, header);
 
+	// queue user string 
 	AsyncPrint(source, str);
 	
+	// queue strings to reset console position and format
 	char buffer[16];
 	sprintf(buffer, "%s\r\n", reset);
 
@@ -123,6 +136,7 @@ uint8_t QueueSegment(eSource source, segment_t segment)
 		case FROM_ISR:
 		{
 			BaseType_t xHigherPriorityTaskWoken;
+
 			ret = xQueueSendToBackFromISR(rtos_handles.q, &segment, &xHigherPriorityTaskWoken) == pdPASS;
 
 			break;
@@ -164,6 +178,7 @@ uint8_t AsyncPrint(eSource source, const char* str)
 
 	uint16_t bytes_left = total_num_bytes - (segment_index*SEGMENT_SIZE);
 	
+	/* Queue remaining segments */
 	if (bytes_left != 0) 
 	{
 		memset(&tmp, '\0', SEGMENT_SIZE);
