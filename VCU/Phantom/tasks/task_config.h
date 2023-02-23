@@ -30,11 +30,7 @@
 
 // #define EEPROM_TASK_PRIORITY            0
 // #define WATCHDOG_TASK_PRIORITY          0    // same as idle task
-// #define TEST_TASK_PRIORITY              1
 
-// there may also be interrupt/ISR priorities for:
-// CAN messages
-// GPIOs (ready to drive, shutdown circuit GPIOs..)
 
 /*********************************************************************************
  *                              TASK STACK SIZES
@@ -45,8 +41,6 @@
 #define EVENT_HANDLER_STACK_SIZE        128
 // #define EEPROM_TASK_STACK_SIZE          750
 // #define WATCHDOG_TASK_STACK_SIZE        750    // same as idle task
-
-#define TEST_TASK_STACK_SIZE            150
 
 
 #endif /* TASKS_PRIORITIES_H_ */

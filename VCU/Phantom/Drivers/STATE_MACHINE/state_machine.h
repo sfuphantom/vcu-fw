@@ -20,3 +20,4 @@ void NotifyStateMachineFromTimer(TimerHandle_t timer);
 
 
 #endif /* PHANTOM_DRIVERS_STATE_MACHINE_STATE_MACHINE_H_ */
+
