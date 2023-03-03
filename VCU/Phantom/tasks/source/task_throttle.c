@@ -98,6 +98,7 @@ void SuspendThrottle(TaskHandle_t self)
         MCP48FV_Set_Value(0); // send throttle value to DAC driver
         LogColor(RED, "Turning off throttle");
 
+		LogColor(RED, "Suspending throttle task.");
         vTaskSuspend(self);
     }
     #else
