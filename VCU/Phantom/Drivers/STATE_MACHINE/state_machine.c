@@ -43,10 +43,6 @@ void NotifyStateMachine(eCarEvents event)
 
 void NotifyStateMachineFromISR(eCarEvents event)
 {
- 	char buffer[32];
-	sprintf(buffer, "Event occurred: %d", event);
-	LogFromISR(UWHT, buffer);
-
 	HandleEventFromISR(UpdateStateMachine, event);
 }
 

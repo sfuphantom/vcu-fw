@@ -125,7 +125,7 @@ static uint8_t LogMessage(const char* color, const char* str, eSource source)
 	
 	// queue strings to reset console position and format
 	char buffer[16];
-	sprintf(buffer, "%s\n", reset);
+	sprintf(buffer, "%s\n\r", reset);
 
 	return AsyncPrint(source, buffer);
 }
@@ -165,7 +165,7 @@ uint8_t AsyncPrint(eSource source, const char* str)
 {
 	/* Initialize tmp to copy segments into */
 	segment_t tmp;
-	memset(&tmp, ' ', SEGMENT_SIZE);
+	memset(&tmp, '\0', SEGMENT_SIZE);
 
 	uint16_t total_num_bytes = strlen(str);
 	uint8_t num_segments = total_num_bytes/SEGMENT_SIZE; 
@@ -185,7 +185,7 @@ uint8_t AsyncPrint(eSource source, const char* str)
 	/* Queue remaining segments */
 	if (bytes_left != 0) 
 	{
-		memset(&tmp, ' ', SEGMENT_SIZE);
+		memset(&tmp, '\0', SEGMENT_SIZE);
 		memcpy(&tmp, str + (segment_index*SEGMENT_SIZE), bytes_left);
 		
 		QueueSegment(source, tmp);

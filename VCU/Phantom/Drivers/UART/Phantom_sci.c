@@ -117,6 +117,7 @@ void GetRuntimeStatistics(void* x)
     char ptrTaskList[TASK_LIST_SIZE];
     vTaskList(ptrTaskList);
 
+    UARTprintln("\n");
     UARTSend(PC_UART, ptrTaskList);
     UARTprintln("\r");
 }
