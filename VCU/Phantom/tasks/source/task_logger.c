@@ -68,7 +68,7 @@ void FlushLogger(uint16_t waitms)
 
 	vTaskDelay(pdMS_TO_TICKS(waitms)); 
 
-	vTaskPrioritySet(rtos_handles.taskHandle, 0);
+	vTaskPrioritySet(rtos_handles.taskHandle, LOGGER_PRIORITY);
 }
 
 
@@ -105,7 +105,11 @@ static void LoggerThread(void* pvParams)
 			continue;	
 		}
 
+		vTaskPrioritySet(rtos_handles.taskHandle, configMAX_PRIORITIES-1);
+
 		UARTprintf((char*)&segment);
+
+		vTaskPrioritySet(rtos_handles.taskHandle, LOGGER_PRIORITY);
 	}
 }
 
