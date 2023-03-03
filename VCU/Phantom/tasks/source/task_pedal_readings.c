@@ -69,7 +69,7 @@ TaskHandle_t PedalReadingsInit(void)
 
     footPedals.prevReadings = (pedal_reading_t) {0, 0 ,0};
 
-	return ret == pdPASS && !footPedals.pipeline.q ? footPedals.pipeline.taskHandle : NULL;
+	return ret == pdPASS && footPedals.pipeline.q ? footPedals.pipeline.taskHandle : NULL;
 }
 
 /* Internal Implementation */

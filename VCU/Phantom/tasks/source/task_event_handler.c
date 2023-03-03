@@ -38,7 +38,7 @@ TaskHandle_t EventHandlerInit()
 
     rtos_handles.q = xQueueCreate(16, sizeof(event_t));
 
-	return ret == pdPASS && !rtos_handles.q ? rtos_handles.taskHandle : NULL;
+	return ret == pdPASS && rtos_handles.q ? rtos_handles.taskHandle : NULL;
 }
 
 
@@ -48,7 +48,7 @@ bool HandleEvent(event_handler_t callback, uint16_t data)
 	event.callback = callback;
 	event.data = data;
 
-	xQueueSendToBack(rtos_handles.q, &event, 1) == pdPASS;
+	return xQueueSendToBack(rtos_handles.q, &event, 1) == pdPASS;
 }
 
 

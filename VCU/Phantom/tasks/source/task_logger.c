@@ -38,9 +38,9 @@ TaskHandle_t LoggerInit()
 		&rtos_handles.taskHandle
 	);
 
-    rtos_handles.q = xQueueCreate(128, sizeof(segment_t)); 
+    rtos_handles.q = xQueueCreate(128, sizeof(segment_t));
 
-	return ret == pdPASS && !rtos_handles.q ? rtos_handles.taskHandle : NULL;
+	return ret == pdPASS && rtos_handles.q ? rtos_handles.taskHandle : NULL;
 }
  
 
