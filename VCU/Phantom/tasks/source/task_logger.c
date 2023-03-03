@@ -94,7 +94,7 @@ void GetLogHeader(eSource source, const char* color, char* str)
 
 static void LoggerThread(void* pvParams)
 {
-	static segment_t segment;
+	segment_t segment;
 
 	Log("Starting thread");
 
