@@ -10,23 +10,27 @@
 #include "FreeRTOS.h"
 #include "os_task.h"
 
+#include "task_logger.h"
+#include "task_event_handler.h"
+#include "state_machine.h"
 
 #define NUMBER_OF_SIMULATION_MESSAGES 3
 static volatile uint8_t messageCounter = 0;
 static volatile uint32_t serialData = 0; // there is 24 bit standard type so when we cast, we have to cast to 32 bit hence 4 bytes
 
-extern volatile unsigned long ulHighFrequencyTimerTicks;
-static char ptrTaskList[500];
+#define TASK_LIST_SIZE 512
 
 enum eCommands{
-
     ECHO_THROTTLE='1',
     ECHO_APPS1='2',
     ECHO_APPS2='3',
     ECHO_BSE='4',
     STAT_RUN='5',  // vTaskGetRunTimeStats
     STAT_START='6',  // xTaskGetTickCount
-    TASK_LIST='7'// vTaskList
+    TASK_LIST='7', // vTaskList
+    RESET_CAR='r',
+    START_ENGINE='s',
+    TURN_TRACTIVE_ON='o',
 };
 
 
@@ -90,7 +94,6 @@ void UARTprintln(const char *_format, ...)
     }
 }
 
-
 uint32_t getSimData()
 {
     while(messageCounter < NUMBER_OF_SIMULATION_MESSAGES);
@@ -106,6 +109,19 @@ uint32_t getSimData()
     return ret;
 }
 
+void GetRuntimeStatistics(void* x)
+{
+    // TODO: not configured!
+    // vTaskGetRunTimeStats(ptrTaskList);
+
+    char ptrTaskList[TASK_LIST_SIZE];
+    vTaskList(ptrTaskList);
+
+    UARTprintln("\n");
+    UARTSend(PC_UART, ptrTaskList);
+    UARTprintln("\r");
+}
+
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 {
 
@@ -118,41 +134,58 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
     }
     #else
 
+    char buffer[16];
+
     switch(data){
 
         case TASK_LIST:
-
-            // TODO: use interrupt task (this aborts because it's too many chars to send in an IRQ)
-            // vTaskGetRunTimeStats(ptrTaskList);
-            // UARTSend(PC_UART, ptrTaskList);
-            // vTaskList(ptrTaskList);
-            // UARTSend(PC_UART, ptrTaskList);
-
+        	HandleEventFromISR(GetRuntimeStatistics, 0);
             break;
+
         case ECHO_THROTTLE:
-            UARTSend(PC_UART, "No data available yet.");
-            UARTSend(PC_UART, "\r");
+        	LogFromISR(UWHT, "No data available yet.");
+
             break;
         case ECHO_APPS1:
-            UARTSend(PC_UART, "No data available yet.");
-            UARTSend(PC_UART, "\r");
+        	LogFromISR(UWHT, "No data available yet.");
             break;
         case ECHO_APPS2:
-            UARTSend(PC_UART, "No data available yet.");
-            UARTSend(PC_UART, "\r");
+        	LogFromISR(UWHT, "No data available yet.");
             break;
         case ECHO_BSE:
-            UARTSend(PC_UART, "No data available yet.");
-            UARTSend(PC_UART, "\r");
+        	LogFromISR(UWHT, "No data available yet.");
             break;
         case STAT_START:            
-            UARTprintf("%d", xTaskGetTickCount());
-            UARTSend(PC_UART, "\r");
+        {
+            snprintf(buffer, 16, "%dms", xTaskGetTickCountFromISR());
+
+            LogFromISR(UWHT, buffer);
             break;
+        }
+        case TURN_TRACTIVE_ON:
+        {
+            NotifyStateMachineFromISR(EVENT_TRACTIVE_ON);
+
+            break;
+        }
+        case START_ENGINE:
+        {
+            NotifyStateMachineFromISR(EVENT_READY_TO_DRIVE);
+
+            break;
+        }
+        case RESET_CAR:
+        {
+            NotifyStateMachineFromISR(EVENT_RESET_CAR);
+
+            break;
+        }
         default:
-            UARTprintln("Unknown command: %c", data);
-            putchar(data);
+        {
+            LogFromISR(UWHT, "Unknown: ");
+
             break;
+        }
     }
 
     #endif

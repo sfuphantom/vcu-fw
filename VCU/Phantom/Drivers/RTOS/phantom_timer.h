@@ -7,15 +7,16 @@
 #ifndef PHANTOM_TIMER_H_
 #define PHANTOM_TIMER_H_
 
+#include "vcu_common.h"
+
 #include "hal_stdtypes.h"
 
-#define MAX_WAIT_TIME_MS (((uint32_t) ~0) >> 10)
-
-typedef void *TimerHandle_t;
-typedef void (*TimerCallbackFunction_t)(TimerHandle_t xTimer);
+#include "os_timer.h"
 
 #define AUTO_RELOAD true
 #define NO_RELOAD   false 
+
+typedef uint16_t TimerID_t;
 
 /*
     timerName:          Just a text name, not used by the RTOS kernel.
@@ -27,7 +28,7 @@ typedef void (*TimerCallbackFunction_t)(TimerHandle_t xTimer);
 TimerHandle_t Phantom_createTimer(char* const timerName, 
                                   uint32 periodMS, 
                                   bool isAutoReloading, 
-                                  void* counterPtr, 
+                                  TimerID_t timerID,
                                   TimerCallbackFunction_t callbackFunction);
 
 uint8 Phantom_startTimer(TimerHandle_t timer, uint32 waitTimeMs);

@@ -264,6 +264,7 @@
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.ENUM_TYPE.1651611372" name="Designate enum type (--enum_type)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.ENUM_TYPE" value="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.ENUM_TYPE.packed" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.INCLUDE_PATH.2058602792" name="Add dir to #include search path (--include_path, -I)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.INCLUDE_PATH" valueType="includePath">
 									<listOptionValue builtIn="false" value="${HERCULES_FOLDER}/F021 Flash API/02.01.01/include"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/STATE_MACHINE}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/support}"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
@@ -359,6 +360,7 @@
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.ENUM_TYPE.756688987" name="Designate enum type (--enum_type)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.ENUM_TYPE" value="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.ENUM_TYPE.packed" valueType="enumerated"/>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.INCLUDE_PATH.597251475" name="Add dir to #include search path (--include_path, -I)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.INCLUDE_PATH" valueType="includePath">
 									<listOptionValue builtIn="false" value="${HERCULES_FOLDER}/F021 Flash API/02.01.01/include"/>
+									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/Drivers/STATE_MACHINE}"/>
 									<listOptionValue builtIn="false" value="${workspace_loc:/${ProjName}/Phantom/support}"/>
 									<listOptionValue builtIn="false" value="${PROJECT_ROOT}"/>
 									<listOptionValue builtIn="false" value="${CG_TOOL_ROOT}/include"/>
@@ -379,7 +381,7 @@
 								</option>
 								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="true" id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.PREINCLUDE.1657259802" name="Specify a preinclude file (--preinclude)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.PREINCLUDE" valueType="includeFiles"/>
 								<option id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.OPT_LEVEL.1128941080" name="Optimization level (--opt_level, -O)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.OPT_LEVEL" value="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.OPT_LEVEL.off" valueType="enumerated"/>
-								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.DEFINE.2074496387" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.DEFINE" valueType="definedSymbols">
+								<option IS_BUILTIN_EMPTY="false" IS_VALUE_EMPTY="false" id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.DEFINE.2074496387" name="Pre-define NAME (--define, -D)" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compilerID.DEFINE" valueType="definedSymbols">
 									<listOptionValue builtIn="false" value="VCU_SIM_MODE"/>
 								</option>
 								<inputType id="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compiler.inputType__C_SRCS.1442936630" name="C Sources" superClass="com.ti.ccstudio.buildDefinitions.TMS470_18.12.compiler.inputType__C_SRCS"/>

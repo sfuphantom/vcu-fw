@@ -1,9 +1,47 @@
 #ifndef _PHANTOM_VCU_COMMON_DEFINES_H_
 #define _PHANTOM_VCU_COMMON_DEFINES_H_
 
-#include "phantom_task.h"
 #include "FreeRTOS.h"
+#include "FreeRTOSConfig.h"
 #include "os_queue.h"
+#include "os_task.h"
+#include "task_config.h"
+
+#include "stdarg.h"
+#include "hal_stdtypes.h"
+
+
+bool any(uint8_t num, ...);
+bool all(uint8_t num, ...);
+
+typedef struct SystemTasks_t{
+	TaskHandle_t PedalReadings;
+	TaskHandle_t Throttle;
+	TaskHandle_t Logger;
+	TaskHandle_t EventHandler;
+}SystemTasks_t;
+
+typedef enum eCarEvents{
+    BEGIN_OF_EVENTS=0,
+
+    EVENT_APPS1_RANGE_FAULT, 
+    EVENT_APPS2_RANGE_FAULT, 
+    EVENT_BSE_RANGE_FAULT, 
+    EVENT_FP_DIFF_FAULT, 
+    EVENT_RESET_CAR,
+    EVENT_READY_TO_DRIVE,
+    EVENT_TRACTIVE_ON,
+    EVENT_TRACTIVE_OFF,
+    EVENT_BRAKE_PLAUSIBILITY_CLEARED,
+    EVENT_BRAKE_PLAUSIBILITY_FAULT,
+    EVENT_UNRESPONSIVE_APPS,
+
+    END_OF_EVENTS
+} eCarEvents;
+typedef enum eSource{
+	FROM_ISR,
+	FROM_SCHEDULER
+} eSource;
 
 /**
  * @brief Machine states for the VCU.
@@ -36,6 +74,11 @@ typedef struct _pedal_reading {
     uint16_t fp2;
     uint16_t fp1;
 } pedal_reading_t;
+
+typedef struct {
+    TaskFunction_t functionPtr;
+    uint32 frequencyMs;
+} Task;
 
 typedef struct {
     Task task;

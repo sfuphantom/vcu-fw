@@ -14,14 +14,11 @@
 extern "C" {
 #endif
 
-#define START_SIM_DATA 's'
-#define END_SIM_DATA '\n'
-
 void UARTInit(sciBASE_t *sci, uint32 baud);
 void UARTSend(sciBASE_t *sci, char data[]);
 void UARTprintf(const char *_format, ...);
 void UARTprintln(const char *_format, ...);
-void split(char* str, const char* delimeter, char* buffer, int buffer_size);
+
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data);
 uint32_t getSimData();
 
