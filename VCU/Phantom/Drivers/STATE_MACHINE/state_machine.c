@@ -112,7 +112,6 @@ static void UpdateStateMachine(void* data)
 			default:
 				break;
 		}
-
 	}
 
 	// update state
@@ -133,12 +132,14 @@ static State VariousStates(State state, eCarEvents event)
 		event == EVENT_UNRESPONSIVE_APPS
 	);
 
-	if (faults)
+	if (faults && state != SEVERE_FAULT)
 	{
-		LogColor(RED, "Suspending throttle task.");
 		SuspendThrottle(system_tasks.Throttle);
 		
 		LogColor(RED, "Moving to SevereFault state");
+
+		FlushLogger(20); // highly likely a lot of events happened. No rush since we 've already done everything. Let's log
+
 		return SEVERE_FAULT;
 	}
 
