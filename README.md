@@ -1,20 +1,30 @@
 # VCU-FW
 Vehicle Control Unit - Firmware for the TMS570LS1227 written upon the freeRTOS v9 platform
 
+## Releases 
 
-# Debug Commands 
+Releases are read-only branches that express major milestones in development. They have been through some form of testing and are known to be stable. If you are not developing for the VCU, please use one of these branches.
 
-To interact with the VCU through a serial terminal, use the following numbers
+|                                Release                                         |                           Information                       |    Date     |
+|                                  ---                                           |                               ---                           |     ---     |
+|[PhantomRelease1](https://github.com/sfuphantom/vcu-fw/tree/VCUPhantomRelease1) |[Pull request](https://github.com/sfuphantom/vcu-fw/pull/39) |  2023-03-02 |
+
+## Debug Commands 
+
+To interact with the VCU through a serial terminal (460800 baud rate), use the following numbers
 on the keypad.
 
 ```  
-ECHO_THROTTLE=1,
-ECHO_APPS1,
-ECHO_APPS2,
-ECHO_BSE,
-STAT_RUN,  // vTaskGetRunTimeStats
-STAT_START,  // xTaskGetTickCount
-TASK_LIST, // vTaskList
+ECHO_THROTTLE='1',
+ECHO_APPS1='2',
+ECHO_APPS2='3',
+ECHO_BSE='4',
+STAT_RUN='5',  // vTaskGetRunTimeStats
+STAT_START='6',  // xTaskGetTickCount
+TASK_LIST='7', // vTaskList
+RESET_CAR='r',
+START_ENGINE='s',
+TURN_TRACTIVE_ON='o',
 ```
 ### (1,2,3,4) Echo the value of Throttle, APPS1/APPS2, and BSE respectfully
 ```
