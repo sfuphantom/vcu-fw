@@ -38,10 +38,6 @@ void StateMachineInit(SystemTasks_t tasks)
 
 void NotifyStateMachine(eCarEvents event)
 {
- 	char buffer[32];
-	sprintf(buffer, "Event occurred: %d", event);
-	Log(buffer);
-
 	HandleEvent(UpdateStateMachine, event);
 }
 
@@ -156,10 +152,6 @@ static State TractiveOff(eCarEvents event)
 		LogColor(BLU, "Moving from TractiveOff to TractiveOn");
 		return TRACTIVE_ON;
 	}
-	else
-	{
-		Log("Event is irrelevant. Staying at TractiveOff");
-	}
 
 	return TRACTIVE_OFF;
 }
@@ -175,26 +167,17 @@ static State TractiveOn(eCarEvents event)
 
 		return RUNNING;
 	}
-	else
-	{
-		Log("Event is irrelevant. Staying at TractiveOn");
-	}
 
 	return TRACTIVE_ON;
 }
 
 static State Running(eCarEvents event)
 {
-	
 	if (false)
 	{
 		// ...
 	}
-	else
-	{
-		Log("Event is irrelevant. Staying at Running");
-	}
-
+	
 	return RUNNING;
 }
 
@@ -204,10 +187,6 @@ static State SevereFault(eCarEvents event)
 	{
 		LogColor(CYN, "Moving from SevereFault to TractiveOff");
 		return TRACTIVE_OFF;
-	}
-	else
-	{
-		Log("Event is irrelevant. Staying at SevereFault");
 	}
 
 	return SEVERE_FAULT;
