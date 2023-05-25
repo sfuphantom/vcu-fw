@@ -15,8 +15,9 @@
 #include "state_machine.h"
 
 #define NUMBER_OF_SIMULATION_MESSAGES 3
+
 static volatile uint8_t messageCounter = 0;
-static volatile uint32_t serialData = 0; // there is 24 bit standard type so when we cast, we have to cast to 32 bit hence 4 bytes
+static volatile uint32_t serialData = 0;
 
 #define TASK_LIST_SIZE 512
 
@@ -94,13 +95,14 @@ void UARTprintln(const char *_format, ...)
     }
 }
 
-uint32_t getSimData()
+SerialPedalData_t getSerialPedalData()
 {
     while(messageCounter < NUMBER_OF_SIMULATION_MESSAGES);
 
     gioSetBit(gioPORTA, 5, 1);
 
-    uint32_t ret = serialData;
+	// reinterpret uint64_t as SerialPedalData_t
+    SerialPedalData_t ret = *(SerialPedalData_t*)(&serialData);
 
     // reset volatile values
     messageCounter = 0;
