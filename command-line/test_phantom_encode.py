@@ -11,7 +11,7 @@ throttle_output_on_startup = ['60', '60', '260', '274', '283', '291', '298', '30
 
 def throttle_encode(a1: int, a2: int) -> bytes:
     assert a1 in APPS_RANGES[0] and a2 in APPS_RANGES[1], 'Outside of range'
-    value = (a1-min(APPS_RANGES[0])) | (a2-min(APPS_RANGES[1])) << 12
+    value = (a1-min(APPS_RANGES[0])) | (a2-min(APPS_RANGES[1])) << 12 # shift to range to zero 
     return value.to_bytes(3, byteorder='little')
 
 def latency_checker(a1, a2, response, sleep_ms):
@@ -51,7 +51,7 @@ def test_throttle_output(i=320, latency_checker=lambda *args: None):
 
     board.close()
 
-    print('Test passed!')
+    ret.append('Test passed!')
 
     return ret
 
