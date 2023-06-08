@@ -125,11 +125,16 @@ static pedal_reading_t ReadPedals()
     uint16_t apps2 = data.apps2 + 500; 
     // TODO: Add the rest of the direct VCU inputs to the encoding scheme
 
+
     pedal_reading_t throttleData = {
       .bse=1300,
       .fp1=apps1,
       .fp2=apps2
     };
+
+    char buffer[32];
+    snprintf(buffer, 32, "%d %d", apps1, apps2);
+    Log(buffer);
 
     return throttleData;
     #endif
