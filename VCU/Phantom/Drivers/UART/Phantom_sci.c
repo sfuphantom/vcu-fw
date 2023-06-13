@@ -15,9 +15,8 @@
 #include "state_machine.h"
 
 #define NUMBER_OF_SIMULATION_MESSAGES 5
-
-static volatile uint8_t messageCounter = 0;
-static volatile uint64_t serialData = 0;
+#define SERIAL_INTRPT_MASK 0b1 << 1
+#define SERIAL_INTRPT_VALUE_MASK 0b1
 
 #define TASK_LIST_SIZE 512
 
@@ -33,6 +32,9 @@ enum eCommands{
 	START_ENGINE='s',
 	TURN_TRACTIVE_ON='o',
 };
+
+static volatile uint8_t messageCounter = 0;
+static volatile uint64_t serialData = 0;
 
 
 void UARTSend(sciBASE_t *sci, char data[])
@@ -143,7 +145,27 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 		serialData |= data << (messageCounter*8);
 
 		messageCounter++;
+
+		if (messageCounter == NUMBER_OF_SIMULATION_MESSAGES)
+		{
+			// extract tsal 
+			uint8_t tsal = (data >> 2) & 0b11;
+			uint8_t rtds = (data >> 4) & 0b11;
+
+			if (tsal & SERIAL_INTRPT_MASK)
+			{
+			    LogFromISR(RED, (tsal) & SERIAL_INTRPT_VALUE_MASK ? "EVENT_TRACTIVE_ON" : "EVENT_TRACTIVE_OFF");
+//				NotifyStateMachineFromISR(tsal & 0b1 << 1 ? EVENT_TRACTIVE_ON : EVENT_TRACTIVE_OFF);
+			}
+			// TODO: Handle switching the car off 
+			if (rtds == 0b11)
+			{
+			    LogFromISR(RED, "Ready to drive!");
+//				NotifyStateMachineFromISR(EVENT_READY_TO_DRIVE);
+			}
+		}
 	}
+
 	#else
 
 	char buffer[16];
