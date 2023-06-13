@@ -55,6 +55,7 @@ def test_throttle_output(delay_ms=33, step=20): # 33 ms seems to be our latency
 	for a1, a2, b in zip(apps1, apps2, bse):
 		assert "{} {} {}".format(a1, a2, b) in response, response + f"\nCheck failed ({delay_ms=}): {a1} {a2} {b}"
 
+	print(f"{test_throttle_output.__name__} passed!")
 	return response + "Test passed!"
 
 def test_latency():
@@ -68,30 +69,31 @@ def test_interrupt_output():
 	board = serial.Serial(port=sys.argv[1], baudrate=460800)
 
 	board.write(throttle_encode(rtds=0, tsal=0))
-	time.sleep(1)
+	time.sleep(0.5)
 	response = board.read_all().decode() 
 	assert "EVENT_TRACTIVE_OFF" in response, response
 	ret += response
 
 	board.write(throttle_encode(rtds=1, tsal=1))
-	time.sleep(1)
+	time.sleep(0.5)
 	response = board.read_all().decode() 
 	assert "EVENT_TRACTIVE_ON" in response and "Ready to drive!" in response, response
 	ret += response
 
 	board.write(throttle_encode())
-	time.sleep(1)
+	time.sleep(0.5)
 	response = board.read_all().decode() 
 	assert all(r not in response for r in ["EVENT_TRACTIVE_ON", "EVENT_TRACTIVE_OFF", "Ready to drive!"]), response
 	ret += response
 
 	board.close()
 
-	return ret + "Test passed!"
+	print(f"{test_interrupt_output.__name__} passed!")
+	return ret 
 	
 
 
 if __name__ == '__main__':
-	print(test_interrupt_output())
-	print(test_throttle_output())
+	test_interrupt_output()
+	test_throttle_output()
 	# test_latency()
