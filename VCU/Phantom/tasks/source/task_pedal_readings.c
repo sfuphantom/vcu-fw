@@ -116,27 +116,7 @@ static pedal_reading_t ReadPedals()
     return (pedal_reading_t) {FP_data[0].value, FP_data[1].value, FP_data[2].value};
 
     #else
-    SerialPedalData_t data = getSerialPedalData();
-
-
-    /* extract and parse the byte message. See VCU Firmware Simulation document */
-
-    uint16_t apps1 = data.apps1 + 1500; 
-    uint16_t apps2 = data.apps2 + 500; 
-    // TODO: Add the rest of the direct VCU inputs to the encoding scheme
-
-
-    pedal_reading_t throttleData = {
-      .bse=1300,
-      .fp1=apps1,
-      .fp2=apps2
-    };
-
-    char buffer[32];
-    snprintf(buffer, 32, "%d %d", apps1, apps2);
-    Log(buffer);
-
-    return throttleData;
+    return getSerialPedalData();
     #endif
 }
 

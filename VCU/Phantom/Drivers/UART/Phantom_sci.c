@@ -14,10 +14,10 @@
 #include "task_event_handler.h"
 #include "state_machine.h"
 
-#define NUMBER_OF_SIMULATION_MESSAGES 3
+#define NUMBER_OF_SIMULATION_MESSAGES 5
 
 static volatile uint8_t messageCounter = 0;
-static volatile uint32_t serialData = 0;
+static volatile uint64_t serialData = 0;
 
 #define TASK_LIST_SIZE 512
 
@@ -95,18 +95,28 @@ void UARTprintln(const char *_format, ...)
     }
 }
 
-SerialPedalData_t getSerialPedalData()
+pedal_reading_t getSerialPedalData()
 {
     while(messageCounter < NUMBER_OF_SIMULATION_MESSAGES);
 
     gioSetBit(gioPORTA, 5, 1);
 
-	// reinterpret uint64_t as SerialPedalData_t
-    SerialPedalData_t ret = *(SerialPedalData_t*)(&serialData);
+    // extract and parse the byte message. See VCU Firmware Simulation document 
+    pedal_reading_t ret = {
+        .fp1=(serialData & 0b111111111111) + 1500,
+        .fp2=((serialData & 0b1111111111 << 12) >> 12) + 500,
+        .bse=((serialData & (unsigned int)(0b111111111111 << 22)) >> 22) + 1500
+    };
 
     // reset volatile values
     messageCounter = 0;
     serialData = 0;
+
+	// log for debugging 
+    char buffer[32];
+    snprintf(buffer, 32, "%d %d %d", ret.fp1, ret.fp2, ret.bse);
+    Log(buffer);
+    FlushLogger(2);
 
     return ret;
 }
