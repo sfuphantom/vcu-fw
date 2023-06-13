@@ -23,5 +23,4 @@ void UARTprintln(const char *_format, ...);
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data);
 pedal_reading_t getSerialPedalData();
 
-
 #endif /* INCLUDE_PHANTOM_SCI_H_ */
