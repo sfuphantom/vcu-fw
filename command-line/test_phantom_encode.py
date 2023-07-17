@@ -1,92 +1,56 @@
-import itertools
-import time
 import sys
-import serial
+from vcu_simulation import VCUSimulation
+from vcu_simulation import (
+	APPS1_MIN,
+	APPS1_MAX,
+	APPS2_MIN,
+	APPS2_MAX,
+	BSE_MIN,
+	BSE_MAX
+)
 
-BSE_MIN = 1500
-BSE_MAX = 4500
 
-APPS1_MIN = 1500
-APPS1_MAX = 4500
+def test_throttle_output(step=20): 
 
-APPS2_MIN = 500
-APPS2_MAX = 1500
-
-def throttle_encode(a1: int=APPS1_MIN, a2: int=APPS2_MIN, bse: int=BSE_MIN, tsal: bool = None, rtds: bool = None) -> bytes:
-
-	# determine if we want to send interrupts
-	tsal_interrupt_flag = tsal is not None 
-	rtds_interrupt_flag = rtds is not None 
-
-	# if we're sending interrupts, add their signal value
-	tsal_val = tsal_interrupt_flag << 1 | bool(tsal)
-	rtds_val = rtds_interrupt_flag << 1 | bool(rtds)
-
-	assert a1 in range(APPS1_MIN, APPS1_MAX+1)  and a2 in range(APPS2_MIN, APPS2_MAX+1), 'Outside of range'
-	value = (a1-APPS1_MIN) | (a2-APPS2_MIN) << 12 | (bse-BSE_MIN) << 22 | tsal_val << 34 | rtds_val << 36  # shift range to zero 
-	return value.to_bytes(5, byteorder='little')
-
-def test_throttle_output(delay_ms=33, step=20): # 33 ms seems to be our latency
-
-	board = serial.Serial(port=sys.argv[1], baudrate=460800)
+	vcu = VCUSimulation(sys.argv[1], logger=print)
 
 	apps1 = range(APPS1_MIN, APPS1_MAX, step)
 	apps2 = range(APPS2_MIN, APPS2_MAX, step)
 	bse = range(BSE_MIN, BSE_MAX, step)
 
-	print(f"Testing with {delay_ms=}")
-
 	response = ""
 
 	for a1, a2, b in zip(apps1, apps2, bse):
 
-		try:
-			message = throttle_encode(a1, a2, b, rtds=False) 
-		except AssertionError:
-			break
+		response += vcu.write(a1, a2, b)
 
-		board.write(message)
-		time.sleep(delay_ms/1000)
-		response += board.read_all().decode()
-
-
-	board.close()
 
 	for a1, a2, b in zip(apps1, apps2, bse):
-		assert "{} {} {}".format(a1, a2, b) in response, response + f"\nCheck failed ({delay_ms=}): {a1} {a2} {b}"
+		assert "{} {} {}".format(a1, a2, b) in response, response + f"\nCheck failed: {a1} {a2} {b}"
+	
+	# check that values don't change if nothing provided
+	assert "{} {} {}".format(vcu.apps1, vcu.apps2, vcu.bse) in vcu.write(delay_s=5), response + "\nCheck failed: {} {} {}".format(vcu.apps1, vcu.apps2, vcu.bse)
 
 	print(f"{test_throttle_output.__name__} passed!")
 	return response + "Test passed!"
 
-def test_latency():
-
-	for i in itertools.cycle(range(35, 0, -1)): # 35 ms, step down by 1ms
-		test_throttle_output(i)
-
 def test_interrupt_output():
 
 	ret = ''
-	board = serial.Serial(port=sys.argv[1], baudrate=460800)
 
-	board.write(throttle_encode(rtds=0, tsal=0))
-	time.sleep(0.5)
-	response = board.read_all().decode() 
-	assert "EVENT_TRACTIVE_OFF" in response, response
-	ret += response
+	vcu = VCUSimulation(sys.argv[1], logger=print)
 
-	board.write(throttle_encode(rtds=1, tsal=1))
-	time.sleep(0.5)
-	response = board.read_all().decode() 
+	response = vcu.write(rtds_flip=True, tsal_flip=True, delay_s=0.5)
 	assert "EVENT_TRACTIVE_ON" in response and "Ready to drive!" in response, response
 	ret += response
 
-	board.write(throttle_encode())
-	time.sleep(0.5)
-	response = board.read_all().decode() 
-	assert all(r not in response for r in ["EVENT_TRACTIVE_ON", "EVENT_TRACTIVE_OFF", "Ready to drive!"]), response
+	response = vcu.write(rtds_flip=True, tsal_flip=True, delay_s=0.5)
+	assert "EVENT_TRACTIVE_OFF" in response, response
 	ret += response
 
-	board.close()
+	response = vcu.write(delay_s=0.5)
+	assert all(r not in response for r in ["EVENT_TRACTIVE_ON", "EVENT_TRACTIVE_OFF", "Ready to drive!"]), response
+	ret += response
 
 	print(f"{test_interrupt_output.__name__} passed!")
 	return ret 
