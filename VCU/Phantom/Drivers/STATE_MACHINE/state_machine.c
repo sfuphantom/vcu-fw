@@ -63,15 +63,19 @@ void NotifyStateMachineFromTimer(TimerHandle_t timer)
 /* Event callback */
 static void UpdateStateMachine(void* data)
 {
-    #ifdef VCU_SIM_MODE
-    LogColor(YEL, "VCU is in Simulation Mode. Events do not affect the state machine.");
+	#ifdef VCU_SIM_MODE
+	LogColor(YEL, "VCU is in Simulation Mode. Events do not affect the state machine.");
 	return;
-    #endif
+	#endif
 
 	/* static cached values */
 	static State state = TRACTIVE_OFF;
 
 	eCarEvents event = *(uint16_t*) data;
+
+	char buffer[32];
+	sprintf(buffer, "NEW EVENT: %d", event);
+	Log(buffer);
 
 	/* Events that have an effect on multiple states */
 	State new_state = VariousStates(state, event);
@@ -112,6 +116,10 @@ static void UpdateStateMachine(void* data)
 
 	// update state
 	state = new_state;
+
+	char buffer[32];
+	sprintf(buffer, "NEW STATE: %d", state);
+	Log(buffer);
 }
 
 
@@ -134,7 +142,7 @@ static State VariousStates(State state, eCarEvents event)
 		
 		LogColor(RED, "Moving to SevereFault state");
 
-		FlushLogger(20); // highly likely a lot of events happened. No rush since we 've already done everything. Let's log
+		FlushLogger(20); // highly likely a lot of events happened. No rush since we've already done everything. Let's log
 
 		return SEVERE_FAULT;
 	}

@@ -9,6 +9,7 @@
 #define INCLUDE_PHANTOM_SCI_H_
 
 #include <halcogen_vcu/include/sci.h>
+#include "vcu_common.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -20,7 +21,6 @@ void UARTprintf(const char *_format, ...);
 void UARTprintln(const char *_format, ...);
 
 void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data);
-uint32_t getSimData();
-
+pedal_reading_t getSerialPedalData();
 
 #endif /* INCLUDE_PHANTOM_SCI_H_ */

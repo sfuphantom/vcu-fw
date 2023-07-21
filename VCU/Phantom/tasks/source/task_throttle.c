@@ -136,11 +136,6 @@ static void vThrottleTask(void* arg)
 
         MCP48FV_Set_Value(throttle); 
 
-        #ifdef VCU_SIM_MODE
-        char buffer[32];
-        snprintf(buffer, 32, "throttle=%d", throttle);
-        Log(buffer);
-        #endif
     }
 }
 
