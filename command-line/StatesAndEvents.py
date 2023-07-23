@@ -1,35 +1,37 @@
 from enum import Enum
 
 from typing import List
-import time
+from datetime import datetime
 
 from dataclasses import dataclass
 
 @dataclass
 class DataTimePair:
+    """
+    Abstract container to hold data value pair
+    """
     VALUE: any
-    TIME: any #TODO: @raf update so that TIME
-
-
+    TIME: any 
 @dataclass
-class EventsTriggers:
+class VCUEventsTriggers:
     """
-    Store events in a data class where if an event happened
-    then store
+    Data class to contain the VCU events 
     """
-    # Allow for the opportunity to allow user for the top
-    # to log unchanged events, or only log changed events
+    # Allows user to 
+    # to log all (including unchanged) events, or only log changed events
     # which will be easy to iterate over 
     #  >>> response = vcu.write(...)
     #  >>> vcu_events = response._event_triggers
     #  >>> vcu_state  = response._state
-    #  >>> if logAllEvents() == False:
+    #  >>> if logAllEvents == False:
     #  >>>    for event in vcu_events.fields():
     #  >>>        if vcu_event is not None  # This means that that it is a DataTimePair
     #  >>>             logger.log(vcu_events.event)
-    #  >>>    if logAllEvents == False:
-    #  >>>         for event in vcu_events.field():
-    #  >>>              logger.log(vcu_events.event)
+    #  >>> if logAllEvents == True:
+    #  >>>     for event in vcu_events.field():
+    #  >>>           logger.log(vcu_events.event)
+
+
     EVENT_APPS1_RANGE_FAULT : DataTimePair = None
     EVENT_APPS2_RANGE_FAULT: DataTimePair = None
     EVENT_BSE_RANGE_FAULT: DataTimePair = None
@@ -42,9 +44,42 @@ class EventsTriggers:
     EVENT_BRAKE_PLAUSIBILITY_FAULT : DataTimePair = None
     EVENT_UNRESPONSIVE_APPS: DataTimePair = None
 
+
+class VCUStates(Enum):
+    """
+    The VCU states, refer to VCU\Phantom\data_structures\vcu_common.h
+    """
+    TRACTIVE_OFF = 1
+    TRACTIVE_ON =2 
+    RUNNING = 3
+    MINOR_FAULT = 4
+    SEVERE_FAULT = 5
+
+
+@dataclass
+class ResponseVCU:
+    """
+    The data structure in which the VCU returns values via UART communication
+    """
+    EVENTS : VCUEventsTriggers
+    STATE: VCUStates
+
+
 if __name__ == "__main__":
-    x = EventsTriggers(EVENT_APPS1_RANGE_FAULT=DataTimePair(VALUE=True, TIME = time.gmtime))
-    print(x)
+    Events = VCUEventsTriggers(EVENT_APPS1_RANGE_FAULT=DataTimePair(VALUE=True, TIME = datetime.now()))
+    State = VCUStates.MINOR_FAULT
+
+    responseTest = ResponseVCU(EVENTS=Events, STATE=State)
+
+    assert responseTest.EVENTS.EVENT_APPS1_RANGE_FAULT is not None
+
+    assert responseTest.STATE is VCUStates.MINOR_FAULT
+
+    print(responseTest.EVENTS.EVENT_APPS1_RANGE_FAULT.TIME)
+    print(responseTest.STATE)
+
+
+    
 
 
 
