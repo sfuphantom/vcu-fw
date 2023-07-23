@@ -1,6 +1,8 @@
 import time
 import serial
 
+from StatesAndEvents import ResponseVCU
+
 BSE_MIN = 1500
 BSE_MAX = 4500
 
@@ -80,7 +82,8 @@ class VCUSimulation:
 		value = (a1-APPS1_MIN) | (a2-APPS2_MIN) << 12 | (bse-BSE_MIN) << 22 | tsal_val << 34 | rtds_val << 36  # shift range to zero 
 		return value.to_bytes(5, byteorder='little')
 
-	def write(self, a1: int=None, a2: int=None, bse: int=None, tsal_flip: bool=False, rtds_flip: bool=False, delay_s: int=0):
+	def write(self, a1: int=None, a2: int=None, bse: int=None, 
+	   		  tsal_flip: bool=False, rtds_flip: bool=False, delay_s: int=0) -> ResponseVCU:
 
 		# use cached values if none provided
 		a1 = self._apps1 if a1 is None else a1
