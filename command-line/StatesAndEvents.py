@@ -52,9 +52,9 @@ class ResponseVCU:
     Stores the state of the VCU and the time of change (if changed)
     """
 
-    def __init__(self, state: VCUStates):
+    def __init__(self):
         self._events: List[EventData] = []
-        self._state : StateData = StateData(state, None)
+        self._state : StateData = None
     
     def add_event(self, event_name: VCUEvents, event_time: int):
         """
@@ -118,11 +118,4 @@ class StateError(Exception):
     """
     Exceptions for VCU states 
     """
-
-    
-
-
-    
-
-
 

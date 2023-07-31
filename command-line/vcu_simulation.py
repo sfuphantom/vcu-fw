@@ -84,7 +84,10 @@ class VCUSimulation:
 
 	def write(self, a1: int=None, a2: int=None, bse: int=None, 
 	   		  tsal_flip: bool=False, rtds_flip: bool=False, delay_s: int=0) -> ResponseVCU:
-
+		
+		"""
+		:return: data structure containing the events and state changes
+		"""
 		# use cached values if none provided
 		a1 = self._apps1 if a1 is None else a1
 		a2 = self._apps2 if a2 is None else a2
