@@ -1,7 +1,6 @@
 from enum import Enum
 
 from typing import List, Union
-from datetime import datetime
 
 from dataclasses import dataclass
 
@@ -34,23 +33,30 @@ class VCUStates(Enum):
 @dataclass
 class EventData:
     EVENT: VCUEvents
-    TIME: datetime.time
+    TIME: int
 
 @dataclass
 class StateData:
     STATE: VCUStates
-    TIME: Union[datetime.time, None]
+    TIME: Union[int, None]
 
 class ResponseVCU:
     """
     The data structure in which the VCU returns values via UART communication
+    after sending a sequence of values
+
+    Allows for the same events to be stored if triggered at different times
+    It is necessary for the this class to specify the VCU state
+    
+    Stores an array of events and their time of trigger
+    Stores the state of the VCU and the time of change (if changed)
     """
 
-    def __init__(self):
+    def __init__(self, state: VCUStates):
         self._events: List[EventData] = []
-        self._state : StateData = None
+        self._state : StateData = StateData(state, None)
     
-    def add_event(self, event_name: VCUEvents, event_time: datetime.time):
+    def add_event(self, event_name: VCUEvents, event_time: int):
         """
         Add an event to the list of events
 
@@ -60,28 +66,42 @@ class ResponseVCU:
 
         #check that the event exists in the available VCU Events enum
         if not isinstance(event_name, VCUEvents):
-            raise EventError(f"Invalid event type {event_name.__class__}, should be of type {VCUEvents.__name__}")
-        
-        #check for duplicate events
-        if event_name in self.events:
-            raise EventError(f"Duplicate event : {event_name.value}")
+            raise EventError(f"Invalid event type {event_name}, should be of type {VCUEvents.__name__}")
         
         event_data = EventData(EVENT=event_name,TIME=event_time)
+        
+        if not self._check_duplicate(event_data):
+            raise EventError(f"Duplicate event : {event_name} at time {event_time}")
+    
         self._events.append(event_data)
 
-    
-    def set_state(self, state: VCUStates, state_time_trigger: datetime.time = None):
+
+    def set_state(self, state: VCUStates, state_time_trigger: int = None):
         """
         Specifify the state of the VCU and the time of state change (if changed)
 
         :param state: the current state of the VCU
-        :param state_time_trigger: time of state change, None if state was unchanged
+        :param state_time_trigger: relative time of state change, None if state was unchanged
         """
         if not isinstance(state, VCUStates):
             raise StateError(f"Invalid state {state}, should be of type {VCUStates.__name__}")
         
         self._state = StateData(STATE=state, TIME=state_time_trigger)
-    
+
+    def _check_duplicate(self, event_data: EventData) -> bool:
+        """
+        Check that there does not already exist an event
+        with the same time and type
+
+        :param event_data: the event data to compare to the existing events
+        :return: returns true if no duplicate events are given
+        """
+        for existing_event in self.events:
+            if existing_event.EVENT == event_data.EVENT \
+               and existing_event.TIME == event_data.TIME:
+                  return False
+        return True
+
     @property
     def events(self) -> List[EventData]:
         return self._events
@@ -98,19 +118,6 @@ class StateError(Exception):
     """
     Exceptions for VCU states 
     """
-
-if __name__ == "__main__":
-    # Events = VCUEventsTriggers(EVENT_APPS1_RANGE_FAULT=DataTimePair(VALUE=True, TIME = datetime.now()))
-    # State = VCUStates.MINOR_FAULT
-
-    # responseTest = ResponseVCU(EVENTS=Events, STATE=State)
-
-    # assert responseTest.EVENTS.EVENT_APPS1_RANGE_FAULT is not None
-
-    # assert responseTest.STATE is VCUStates.MINOR_FAULT
-
-    # print(responseTest.EVENTS.EVENT_APPS1_RANGE_FAULT.TIME)
-    # print(responseTest.STATE)
 
     
 
