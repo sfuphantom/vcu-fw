@@ -100,10 +100,23 @@ class ResponseVCU:
         self._state = StateData(STATE=state, TIME=state_time_trigger)
 
     def sorted_events(self, sort_by_type: bool = False, reversed: bool = False):
+        """
+        Get a sorted array of events ordered by type or time, in ascending/descending order
+
+        :param sort_by_type: set True sort events by event type, default False for sorting by time
+        :param reversed: set True to sort in descending order, default Fase
+        :return: the list of events sorted by the given parameters
+        """
+
         event_list = list(self.events)
 
         if sort_by_type:
-            event_list.sort(key = lambda eventData: eventData.EVENT, reverse=reversed)
+            event_list.sort(key = lambda eventData: eventData.EVENT.value, reverse=reversed)
+        else:
+            event_list.sort(key = lambda eventData: eventData.TIME, reverse=reversed)
+
+        return event_list
+        
     @property
     def events(self) -> List[EventData]:
         return self._events
