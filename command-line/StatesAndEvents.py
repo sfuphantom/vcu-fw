@@ -99,7 +99,11 @@ class ResponseVCU:
         
         self._state = StateData(STATE=state, TIME=state_time_trigger)
 
+    def sorted_events(self, sort_by_type: bool = False, reversed: bool = False):
+        event_list = list(self.events)
 
+        if sort_by_type:
+            event_list.sort(key = lambda eventData: eventData.EVENT, reverse=reversed)
     @property
     def events(self) -> List[EventData]:
         return self._events
