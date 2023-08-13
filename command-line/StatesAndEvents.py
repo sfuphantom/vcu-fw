@@ -64,8 +64,11 @@ class ResponseVCU:
     """
 
     def __init__(self):
-        self._events: set[EventData] = set()
-        self._state : StateData = None
+        self._events: set[EventData] = set() 
+        self._state : StateData = None # TODO: Currently does not check intermediate states.
+        
+        # Unclear if we want to keep track of multiple VCU state changes 
+        # >>> self._state: set[StateData]  = set()  
     
     def add_event(self, event_name: VCUEvents, event_time: int):
         """
