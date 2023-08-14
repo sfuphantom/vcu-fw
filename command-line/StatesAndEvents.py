@@ -59,11 +59,14 @@ class ResponseVCU:
     Allows for the same events to be stored if triggered at different times
     It is necessary for the this class to specify the VCU state
     
+    Stores the raw string parsed from the VCU
     Stores the set of events and their time of trigger
     Stores the state of the VCU and the time of change (if changed)
     """
 
-    def __init__(self):
+    def __init__(self, raw_response: str):
+        
+        self._raw_response: str = raw_response
         self._events: set[EventData] = set() 
         self._state : StateData = None # TODO: Currently does not check intermediate states.
         
@@ -119,6 +122,9 @@ class ResponseVCU:
             event_list.sort(key = lambda eventData: eventData.TIME, reverse=reversed)
 
         return event_list
+    
+    def __str__(self) -> str:
+        return self._raw_response
         
     @property
     def events(self) -> List[EventData]:
