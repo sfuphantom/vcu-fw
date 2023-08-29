@@ -1,4 +1,5 @@
 import time
+from operator import attrgetter
 import serial
 
 BSE_MIN = 1500
@@ -42,16 +43,14 @@ class VCUSimulation:
 	def rtds(self):
 		return self._rtds
 
-	@property
-	def __tsal_flip(self):
-		self._tsal = not self.tsal
-		return self.tsal
+	
+	def flip(self, attr: str, switch: bool):
+		get_current_value = lambda: attrgetter(attr)(self) 
+		if switch:
+			setattr(self, attr, not get_current_value())
 
-	@property
-	def __rtds_flip(self):
-		self._rtds = not self.rtds
-		return self.rtds
-
+		return get_current_value()
+	
 	def __init__(self, port: str, logger=lambda x: None) -> None:
 		self._port = port
 
@@ -73,8 +72,8 @@ class VCUSimulation:
 		self._bse = bse
 
 		# if we're sending interrupts, add their signal value
-		tsal_val = tsal_flip << 1 | self.__tsal_flip if tsal_flip else self.tsal
-		rtds_val = rtds_flip << 1 | self.__rtds_flip if rtds_flip else self.rtds
+		tsal_val = tsal_flip << 1 | self.flip("_tsal", tsal_flip)
+		rtds_val = rtds_flip << 1 | self.flip("_rtds", rtds_flip)
 
 		assert a1 in range(APPS1_MIN, APPS1_MAX+1)  and a2 in range(APPS2_MIN, APPS2_MAX+1), 'Outside of range'
 		value = (a1-APPS1_MIN) | (a2-APPS2_MIN) << 12 | (bse-BSE_MIN) << 22 | tsal_val << 34 | rtds_val << 36  # shift range to zero 
