@@ -18,6 +18,7 @@ class VCUSimulation:
 	_port: str
 	_rtds: bool = False
 	_tsal: bool = False
+	_set_reset: bool = False
 
 	_apps1: int = APPS1_MIN
 	_apps2: int = APPS2_MIN
@@ -64,7 +65,7 @@ class VCUSimulation:
 
 		self._logger("Initializing logger...")
 
-	def __encode(self, a1: int, a2: int, bse: int, tsal_flip: bool, rtds_flip: bool) -> bytes:
+	def __encode(self, a1: int, a2: int, bse: int, tsal_flip: bool, rtds_flip: bool, set_reset_flip: bool) -> bytes:
 
 		# update internal state values
 		self._apps1 = a1
@@ -74,19 +75,22 @@ class VCUSimulation:
 		# if we're sending interrupts, add their signal value
 		tsal_val = tsal_flip << 1 | self.flip("_tsal", tsal_flip)
 		rtds_val = rtds_flip << 1 | self.flip("_rtds", rtds_flip)
+		set_reset_val = set_reset_flip << 1 | self.flip("_set_reset", set_reset_flip)
 
 		assert a1 in range(APPS1_MIN, APPS1_MAX+1)  and a2 in range(APPS2_MIN, APPS2_MAX+1), 'Outside of range'
-		value = (a1-APPS1_MIN) | (a2-APPS2_MIN) << 12 | (bse-BSE_MIN) << 22 | tsal_val << 34 | rtds_val << 36  # shift range to zero 
+
+		# shift range to zero 
+		value = (a1-APPS1_MIN) | (a2-APPS2_MIN) << 12 | (bse-BSE_MIN) << 22 | tsal_val << 34 | rtds_val << 36 | set_reset_val << 38
 		return value.to_bytes(5, byteorder='little')
 
-	def write(self, a1: int=None, a2: int=None, bse: int=None, tsal_flip: bool=False, rtds_flip: bool=False, delay_s: int=0):
+	def write(self, a1: int=None, a2: int=None, bse: int=None, tsal_flip: bool=False, rtds_flip: bool=False, set_reset_flip: bool=False, delay_s: int=0):
 
 		# use cached values if none provided
 		a1 = self._apps1 if a1 is None else a1
 		a2 = self._apps2 if a2 is None else a2
 		bse = self._bse if bse is None else bse
 		
-		message = self.__encode(a1, a2, bse, tsal_flip, rtds_flip)
+		message = self.__encode(a1, a2, bse, tsal_flip, rtds_flip, set_reset_flip)
 
 		self._logger(f"Sending {message}...")
 
