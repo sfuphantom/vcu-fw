@@ -117,7 +117,6 @@ static void UpdateStateMachine(void* data)
 	// update state
 	state = new_state;
 
-	char buffer[32];
 	sprintf(buffer, "NEW STATE: %d", state);
 	Log(buffer);
 }
