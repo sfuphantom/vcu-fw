@@ -146,11 +146,14 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 
 		messageCounter++;
 
+		// Refer to VCU Simulation Document: https://docs.google.com/document/d/1JWH6s5qf8QeWGzkVzae5GWXK8BNsT8EGFw0WuFVnmiY/edit
+		// last byte 33:40
 		if (messageCounter == NUMBER_OF_SIMULATION_MESSAGES)
 		{
 			// extract tsal 
 			uint8_t tsal = (data >> 2) & 0b11;
 			uint8_t rtds = (data >> 4) & 0b11;
+			uint8_t set_reset = (data >> 6) & 0b11;
 
 			if (tsal & SERIAL_INTRPT_MASK)
 			{
@@ -162,6 +165,11 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 			{
 			    LogFromISR(RED, "Ready to drive!");
 //				NotifyStateMachineFromISR(EVENT_READY_TO_DRIVE);
+			}
+
+			if (set_reset & SERIAL_INTRPT_MASK)
+			{
+			    LogFromISR(RED, (set_reset) & SERIAL_INTRPT_VALUE_MASK ? "SET" : "RESET");
 			}
 		}
 	}

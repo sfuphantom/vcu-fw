@@ -48,16 +48,26 @@ def test_interrupt_output():
 	assert "EVENT_TRACTIVE_OFF" in response, response
 	ret += response
 
+	response = vcu.write(set_reset_flip=True, delay_s=0.5)
+	assert "SET" in response, response
+	ret += response
+
+	response = vcu.write(set_reset_flip=True, delay_s=0.5)
+	assert "RESET" in response, response
+	ret += response
+
+	response = vcu.write(set_reset_flip=True, delay_s=0.5)
+	assert "SET" in response, response
+	ret += response
+
 	response = vcu.write(delay_s=0.5)
-	assert all(r not in response for r in ["EVENT_TRACTIVE_ON", "EVENT_TRACTIVE_OFF", "Ready to drive!"]), response
+	assert all(r not in response for r in ["SET", "RESET", "EVENT_TRACTIVE_ON", "EVENT_TRACTIVE_OFF", "Ready to drive!"]), response
 	ret += response
 
 	print(f"{test_interrupt_output.__name__} passed!")
 	return ret 
-	
-
 
 if __name__ == '__main__':
-	test_interrupt_output()
+	# test_interrupt_output()
 	test_throttle_output()
 	# test_latency()
