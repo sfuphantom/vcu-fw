@@ -2,6 +2,8 @@ import time
 from operator import attrgetter
 import serial
 
+from StatesAndEvents import ResponseVCU
+
 BSE_MIN = 1500
 BSE_MAX = 4500
 
@@ -82,6 +84,10 @@ class VCUSimulation:
 		# shift range to zero 
 		value = (a1-APPS1_MIN) | (a2-APPS2_MIN) << 12 | (bse-BSE_MIN) << 22 | tsal_val << 34 | rtds_val << 36 | set_reset_val << 38
 		return value.to_bytes(5, byteorder='little')
+
+		"""
+		:return: data structure containing the events and state changes
+		"""
 
 	def write(self, a1: int=None, a2: int=None, bse: int=None, tsal_flip: bool=False, rtds_flip: bool=False, set_reset_flip: bool=False, delay_s: int=0):
 
