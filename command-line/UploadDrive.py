@@ -3,12 +3,12 @@ import json
 
 headers = {"Authorization": "Bearer ya29.a0AfB_byAl4p4lHJVn90vyMudsSneTlEqVp6dgz_M0grLRVGUe3nG07R7XLdBoDeeoZUOrLijvoPgY-yNGQZmGV6WskeEGt8JcwPUGipSTBpCdkH3TZXFoQwzgXev2f9TspYSpekBjm1ViQ_w9YMYZmaziTHdLmbwx69r0aCgYKAUQSARISFQGOcNnClEeC-FM7O9m-lvHPz_W9WA0171"}
 para = {
-    "name": "image_to_upload.png"
+    "name": "SimVals.csv"
 }
 
 files = {
     'data' : ('metadata', json.dumps(para), 'application/json; charset=utf-8'),
-    'file' : open("image_to_upload.png", "rb")
+    'file' : open("SimulatedValues.csv", "rb")
 }
 
 r = requests.post(
