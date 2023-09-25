@@ -27,7 +27,6 @@ def share_file_with_user(service, file_id, user_email, role='reader'):
         sendNotificationEmail=False
     ).execute()
 
-
 def authenticate_gdrive():
     creds = service_account.Credentials.from_service_account_file(credentials_file, scopes=['https://www.googleapis.com/auth/drive'])
     service = build('drive', 'v3', credentials=creds)
@@ -35,16 +34,17 @@ def authenticate_gdrive():
 
 def upload_csv_to_gdrive(service, file_path, folder_id):
 
-    #debugging
-    #import pdb; pdb.set_trace()
-    file_name = Path(file_path).stem
+    file_stem = Path(file_path).stem
     file_ext = Path(file_path).suffix
     now = datetime.now()
     date_time = now.strftime("%Y-%m-%d-%H-%M-%S-")
+
+    file_name = date_time + file_stem + file_ext
     
     #write the files as date first so they can be sorted
     file_metadata = {
-        'name': date_time + file_name + file_ext,
+        'name': file_name,
+        'parents': ['1rto_EldxVT2BNSPDQIGyAJuYqoru6G4l']
         }
 
     media = MediaFileUpload(file_path, mimetype='text/csv')
@@ -56,11 +56,11 @@ def upload_csv_to_gdrive(service, file_path, folder_id):
         supportsAllDrives=True
     ).execute()
     
-    #print(f'Uploaded CSV file: {file_name} (File ID: {media["id"]})')
+    print(f'Uploaded CSV file: {file_name} (File ID: {media["id"]})')
 
     #share with the logged in user/team phantom drive.
-    user_email = 'klitvin101@gmail.com'  # Replace with your personal Google account email
-    share_file_with_user(service, media["id"], user_email)
+    # user_email = 'klitvin101@gmail.com'  # Replace with your personal Google account email
+    # share_file_with_user(service, media["id"], user_email)
 
     
 
