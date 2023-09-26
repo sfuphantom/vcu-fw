@@ -38,13 +38,18 @@ def upload_csv_to_gdrive(service, file_path, folder_id):
     file_ext = Path(file_path).suffix
     now = datetime.now()
     date_time = now.strftime("%Y-%m-%d-%H-%M-%S-")
-
-    file_name = date_time + file_stem + file_ext
     
     #write the files as date first so they can be sorted
+    file_name = date_time + file_stem + file_ext
+    
+
+    #parents is the folder Id for the following team drive directory: 
+    """
+    Drive/Phantom Engineering/Controls/2023/Test Logs-Simulation/VCU
+    """
     file_metadata = {
         'name': file_name,
-        'parents': ['1rto_EldxVT2BNSPDQIGyAJuYqoru6G4l']
+        'parents': ['1Ov78ECHD-shFPP5gsG9A1I7Q_OoVcg7-']
         }
 
     media = MediaFileUpload(file_path, mimetype='text/csv')
