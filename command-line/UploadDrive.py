@@ -12,7 +12,7 @@ from pathlib import Path
 credentials_file = 'team-phantom-drive-writting-2d92b03341f0.json'
 
 # Define the folder ID of the Google Drive folder where you want to upload the text file
-folder_id = 'Myfolder'
+folder_id = '1Ov78ECHD-shFPP5gsG9A1I7Q_OoVcg7-'
 
 
 def share_file_with_user(service, file_id, user_email, role='reader'):
@@ -49,7 +49,7 @@ def upload_csv_to_gdrive(service, file_path, folder_id):
     """
     file_metadata = {
         'name': file_name,
-        'parents': ['1Ov78ECHD-shFPP5gsG9A1I7Q_OoVcg7-']
+        'parents': [folder_id]
         }
 
     media = MediaFileUpload(file_path, mimetype='text/csv')
@@ -60,6 +60,22 @@ def upload_csv_to_gdrive(service, file_path, folder_id):
         media_body=media,
         supportsAllDrives=True
     ).execute()
+
+     # Set the file as read-only (Viewer)
+    service.permissions().create(
+        fileId=media['id'],
+        body={'role': 'reader', 'type': 'anyone'}
+    ).execute()
+
+        # Send a request to the Drive API to retrieve the sharing information for the folder
+    response = service.files().get(fileId=folder_id, fields='permissions').execute()
+
+    # Extract and print the email addresses of users and groups with access
+    permissions = response.get('permissions', [])
+    for permission in permissions:
+        email_address = permission.get('emailAddress')
+        if email_address:
+            print(f"Email: {email_address}")
     
     print(f'Uploaded CSV file: {file_name} (File ID: {media["id"]})')
 
