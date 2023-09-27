@@ -98,6 +98,25 @@ def upload_csv_to_gdrive(service, file_path, folder_id):
 
 
     print(f'Uploaded CSV file: {csv_file_name} (File ID: {media["id"]})')
+
+
+        # Create a media object for the image file
+    image_media = MediaFileUpload('multiple_datasets_plot.png', mimetype='image/png')
+
+    # File metadata
+    file_metadata = {
+        'name': 'Simulation Visualized.png',  # Change the file name if needed
+        'parents': [new_folder_id]
+    }
+
+    # Upload the image file to Google Drive
+    file = service.files().create(
+        body=file_metadata,
+        media_body=image_media,
+        fields='id'
+    ).execute()
+
+    print(f'Uploaded image with ID: {file["id"]}')
     # Send a request to the Drive API to retrieve the sharing information for the folder
     # response = service.files().get(fileId=folder_id, fields='permissions').execute()
 
