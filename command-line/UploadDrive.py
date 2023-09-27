@@ -32,6 +32,37 @@ def authenticate_gdrive():
     service = build('drive', 'v3', credentials=creds)
     return service
 
+def create_parent_folder(service, folder_name: str, parent_folder_id: str):
+
+    """
+    Create folder to store CSV file and matplot lib file
+    """
+    
+    
+    #parent folder is the folder Id for the following team drive directory: 
+    """
+    Drive/Phantom Engineering/Controls/2023/Test Logs-Simulation/VCU
+    """
+
+    # Create the new folder
+    folder_metadata = {
+        'name': folder_name,
+        'parents': [parent_folder_id],
+        'mimeType': 'application/vnd.google-apps.folder'  # Indicates that it's a folder
+    }
+
+    new_folder = service.files().create(
+        body=folder_metadata,
+        fields='id'
+    ).execute()
+
+    new_folder_id: str = new_folder.get('id')
+    print(f'Created Folder: {folder_name} (File ID: {folder_id})')
+
+    # Retrieve the ID of the newly created folder
+    return new_folder_id
+
+
 def upload_csv_to_gdrive(service, file_path, folder_id):
 
     file_stem = Path(file_path).stem
@@ -40,16 +71,14 @@ def upload_csv_to_gdrive(service, file_path, folder_id):
     date_time = now.strftime("%Y-%m-%d-%H-%M-%S-")
     
     #write the files as date first so they can be sorted
-    file_name = date_time + file_stem + file_ext
-    
+    folder_name = date_time + "Sim"
+    csv_file_name = file_stem + file_ext
 
-    #parents is the folder Id for the following team drive directory: 
-    """
-    Drive/Phantom Engineering/Controls/2023/Test Logs-Simulation/VCU
-    """
+    new_folder_id = create_parent_folder(service, folder_name, folder_id)
+
     file_metadata = {
-        'name': file_name,
-        'parents': [folder_id]
+        'name': csv_file_name,
+        'parents': [new_folder_id]
         }
 
     media = MediaFileUpload(file_path, mimetype='text/csv')
@@ -67,17 +96,28 @@ def upload_csv_to_gdrive(service, file_path, folder_id):
         body={'role': 'reader', 'type': 'anyone'}
     ).execute()
 
-        # Send a request to the Drive API to retrieve the sharing information for the folder
-    response = service.files().get(fileId=folder_id, fields='permissions').execute()
 
-    # Extract and print the email addresses of users and groups with access
-    permissions = response.get('permissions', [])
-    for permission in permissions:
-        email_address = permission.get('emailAddress')
-        if email_address:
-            print(f"Email: {email_address}")
+    print(f'Uploaded CSV file: {csv_file_name} (File ID: {media["id"]})')
+    # Send a request to the Drive API to retrieve the sharing information for the folder
+    # response = service.files().get(fileId=folder_id, fields='permissions').execute()
+
+    # # Extract and print the email addresses of users and groups with access
+    # permissions = response.get('permissions', [])
+    # for permission in permissions:
+    #     email_address = permission.get('emailAddress')
+    #     if email_address:
+    #         print(f"Email: {email_address}")
     
-    print(f'Uploaded CSV file: {file_name} (File ID: {media["id"]})')
+
+    # Authorize the user and get an access token
+    # authorization_url, _ = credentials.authorization_url('https://accounts.google.com/o/oauth2/auth')
+    # print("Please visit this URL to authorize access:", authorization_url)
+    # authorization_code = input("Enter the authorization code: ")
+
+    # credentials.fetch_token(
+    #     'https://accounts.google.com/o/oauth2/token',
+    #     authorization_response=authorization_code
+    # )
 
     #share with the logged in user/team phantom drive.
     # user_email = 'klitvin101@gmail.com'  # Replace with your personal Google account email
