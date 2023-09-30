@@ -2,15 +2,17 @@ import matplotlib.pyplot as plt
 import os
 
 
+def generate_VCU_plot(plotted_points: dict):
 
-def create_plot(APPS1_points : list, APPS2_points:list, BSE_points: list, time_points : list):
+    marker_list = ['o', 'x', '^']
+    label_list = [key for key in plotted_points.keys()]
+    Y_points = [value for value in plotted_points.values()]
+    X_points = [i for i in range(1,len(Y_points[0])+1)]
 
-    # Create a plot with lines and markers for each dataset
-    plt.plot(time_points,APPS1_points, marker='o', label='APPS1')
-    plt.plot(time_points,APPS2_points, marker='x', label='APPS2')
-    plt.plot(time_points,BSE_points, marker='^', label='BSE')
+    for i in range(len(plotted_points)):
+        plt.plot(X_points, Y_points[i], marker = marker_list[i], label = label_list[i])
 
-    # Add labels and a title
+     # Add labels and a title
     plt.xlabel('Value order')
     plt.ylabel('Voltage (V)')
     plt.title('Simulation Data')

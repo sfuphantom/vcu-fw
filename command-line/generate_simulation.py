@@ -154,7 +154,15 @@ def checkArguments(args):
         errorfound = True
 
     if errorfound:
+        print("Call the script with arguments -h for more information about correct calling")
         exit()
+
+
+def format_values(VCU_values: dict):
+    # Format the value with 3 decimal places
+    for key, value in VCU_values.items():
+        formatted_value = f"{value:.3f}" 
+        VCU_values[key] = formatted_value
 
 if __name__ == "__main__":
     my_parser = argparse.ArgumentParser(description='Arbitrary Wave Form Generator')
@@ -173,19 +181,17 @@ if __name__ == "__main__":
     args = my_parser.parse_args()
     checkArguments(args)
 
-    APPS1Vals = []
-    APPS2Vals = []
-    BSEVals = []
+    # Placeholder for values [APPS1, APPS2, BSE]
+    # Will be changed based on the arguments and the current percentage pressed
+    VCU_Values = {"APPS1": 0, "APPS2": 0, "BSE": 0}
+    VCU_plot_values = {key: [] for key in VCU_Values}
 
     # Pass newline='' as an argument to avoid spaces between Excel rows
     with open('SimulatedValues.csv', 'w', newline='') as f:
         
-        #Write the header
-        csv.writer(f).writerow(["APPS1", "APPS2", "BSE"])
 
-        # Placeholder for values [APPS1, APPS2, BSE]
-        # Will be changed based on the arguments and the current percentage pressed
-        Values = {"APPS1": 0, "APPS2": 0, "BSE": 0}
+        #Write the header
+        csv.writer(f).writerow([key for key in VCU_Values.keys()])
 
         for cycle in range(args.Cycles):
             # Total number of values to represent the chosen wave
@@ -194,18 +200,17 @@ if __name__ == "__main__":
                 curpercentage = increment / args.Precision
 
                 # Sets values [APPS1, APPS2, BSE]
-                generateWaveform("APPS1", curpercentage, Values, args.APPSWaveForm)
-                generateWaveform("APPS2", curpercentage, Values, args.APPSWaveForm)
-                generateWaveform("BSE", curpercentage, Values, args.BSEWaveForm) if args.BSEWaveForm != "I" else matchInverse(args.APPSWaveForm,curpercentage,Values)
+                generateWaveform("APPS1", curpercentage, VCU_Values, args.APPSWaveForm)
+                generateWaveform("APPS2", curpercentage, VCU_Values, args.APPSWaveForm)
+                generateWaveform("BSE", curpercentage, VCU_Values, args.BSEWaveForm) if args.BSEWaveForm != "I" else matchInverse(args.APPSWaveForm,curpercentage,VCU_Values)
 
+                format_values(VCU_values=VCU_Values)
                 # Writes the set of values to the CSV file
-                csv.writer(f).writerow([Values["APPS1"], Values["APPS2"], Values["BSE"]])
-                APPS1Vals.append(Values["APPS1"])
-                APPS2Vals.append(Values["APPS2"])
-                BSEVals.append(Values["BSE"])
+                csv.writer(f).writerow([value for value in VCU_Values.values()])
+                
+                for key in VCU_Values.keys():
+                    VCU_plot_values[key].append(float(VCU_Values[key]))
 
                              
-    timeVals = [i for i in range(1,len(APPS1Vals)+1)]
-    PointPlotting.create_plot(APPS1_points=APPS1Vals,APPS2_points=APPS2Vals, BSE_points=BSEVals, time_points=timeVals)
-    #Defined in ThrottleValue Simulator 
+    PointPlotting.generate_VCU_plot(VCU_plot_values)
     #Throttle_Value_Simulator.sendValsFromFile('SimulatedValues.csv') #uncomment this line to send values to VCU
