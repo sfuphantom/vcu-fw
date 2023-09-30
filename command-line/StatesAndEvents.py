@@ -41,7 +41,7 @@ class VCUStates(Enum):
 @dataclass
 class EventData:
     EVENT: VCUEvents
-    TIME: int
+    TIME: float
 
     def __hash__(self):
         return hash((self.EVENT,self.TIME))
@@ -49,7 +49,7 @@ class EventData:
 @dataclass
 class StateData:
     STATE: VCUStates
-    TIME: Union[int, None]
+    TIME: Union[float, None]
 
 class ResponseVCU:
     """
@@ -69,11 +69,39 @@ class ResponseVCU:
         self._raw_response: str = raw_response
         self._events: set[EventData] = set() 
         self._state : StateData = None # TODO: Currently does not check intermediate states.
-        
+        self.parse_str()
         # Unclear if we want to keep track of multiple VCU state changes 
         # >>> self._state: set[StateData]  = set()  
     
-    def add_event(self, event_name: VCUEvents, event_time: int):
+    def parse_str(self):
+        """
+        Parse the raw string from the vcu response, and parse into events and states
+        Generally, the form of the string follows the form :
+
+        [Trigger:{:.2f}] NEW TRIGGER : Enum\n
+        Ex:
+        >>> "[State:5.61] NEW STATE: 2\n
+        >>>  [Event:5.71] NEW EVENT: 11\n
+        >>>  [Event:100032.23] NEW EVENT: 1\n"
+        """
+        
+        for line in self._raw_response.split('\n'):
+
+            #ignore empty string due to split formatting
+            if line == "": continue
+
+            #parse the time; always 2 decimal string float
+            split_line = line.split(":")
+            relative_time_ms = round(float(split_line[1][0:split_line[1].find(".")+3]),2)
+
+            #the last element of the split will contain the vcu trigger
+            enumeration_trigger = int(line.split(':')[2])
+            if 'NEW EVENT' in line:
+                self.add_event(VCUEvents(enumeration_trigger), relative_time_ms) 
+            if 'NEW STATE' in line:
+                self.set_state(VCUStates(enumeration_trigger), relative_time_ms)
+
+    def add_event(self, event_name: VCUEvents, event_time: float):
         """
         Add an event to set of events
 
@@ -93,7 +121,7 @@ class ResponseVCU:
         self._events.add(event_data)
 
 
-    def set_state(self, state: VCUStates, state_time_trigger: int = None):
+    def set_state(self, state: VCUStates, state_time_trigger: float = None):
         """
         Specifify the state of the VCU and the time of state change (if changed)
 
