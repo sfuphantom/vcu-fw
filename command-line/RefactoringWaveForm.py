@@ -3,10 +3,12 @@
 import random;
 import argparse 
 import math
-import Throttle_Value_Simulator
+#import Throttle_Value_Simulator
 import time
 
 import csv
+
+import PointPlotting
 
 
 
@@ -248,7 +250,9 @@ if __name__ == "__main__":
 
     
 
-    
+    APPS1Vals = []
+    APPS2Vals = []
+    BSEVals = []
 
     #pass newline ='' as argument to avoid spaces between excel rows    
     with open('SimulatedValues.csv', 'w', newline = '') as f:
@@ -268,6 +272,7 @@ if __name__ == "__main__":
         #Will be changed based on the arguments and the current percentage pressed
 
         Values = [0,0,0]
+
 
         for cycle in range(numcycles):
 
@@ -338,10 +343,13 @@ if __name__ == "__main__":
                         pass
                            
                 #Writes the set of values to the CSV file           
-                csv.writer(f).writerow(Values)           
+                csv.writer(f).writerow(Values)    
+                APPS1Vals.append(Values[0]) 
+                APPS2Vals.append(Values[1])   
+                BSEVals.append(Values[2])
                 
-
-            
-
+                
+    timeVals = [i for i in range(1,len(APPS1Vals)+1)]
+    PointPlotting.create_plot(APPS1_points=APPS1Vals,APPS2_points=APPS2Vals, BSE_points=BSEVals, time_points=timeVals)
     #Defined in ThrottleValue Simulator 
-    Throttle_Value_Simulator.sendValsFromFile('SimulatedValues.csv') #uncomment this line to send values to VCU
+    #Throttle_Value_Simulator.sendValsFromFile('SimulatedValues.csv') #uncomment this line to send values to VCU
