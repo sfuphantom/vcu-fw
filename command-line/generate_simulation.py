@@ -8,7 +8,7 @@ import time
 import PointPlotting
 
 
-
+CSV_FILE_NAME = "SimulatedValues.csv"
 #---------------------------------------------------------------------------------#
 #THESE VARIABLES CAN BE CHANGED DEPENDING ON PEDAL/VCU SPECIFICATIONS
 #Most up to date specifications found here :
@@ -187,7 +187,7 @@ if __name__ == "__main__":
     VCU_plot_values = {key: [] for key in VCU_Values}
 
     # Pass newline='' as an argument to avoid spaces between Excel rows
-    with open('SimulatedValues.csv', 'w', newline='') as f:
+    with open(CSV_FILE_NAME, 'w', newline='') as f:
         
 
         #Write the header

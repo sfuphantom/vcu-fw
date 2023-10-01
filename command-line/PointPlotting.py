@@ -1,8 +1,15 @@
 import matplotlib.pyplot as plt
 import os
+import typing
 
+PLOT_IMAGE_NAME = "PlottedSimValues.png"
 
-def generate_VCU_plot(plotted_points: dict):
+def generate_VCU_plot(plotted_points: dict[str, list[float]], showplot = True):
+    """
+    Generate the plot png from the VCU simulation values
+
+    :param plotted_points: dictionnary with key as pedal types and values as array of sim voltages
+    """
 
     marker_list = ['o', 'x', '^']
     label_list = [key for key in plotted_points.keys()]
@@ -21,10 +28,10 @@ def generate_VCU_plot(plotted_points: dict):
     plt.legend()
 
     # Save the graph as a PNG file
-    plt.savefig('multiple_datasets_plot.png')
+    plt.savefig(PLOT_IMAGE_NAME)
 
     # Show the graph
-    plt.show()
+    if showplot: plt.show()
 
     # Delete the file after it's created to avoid memory
 
