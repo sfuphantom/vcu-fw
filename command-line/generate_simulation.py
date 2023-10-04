@@ -164,6 +164,20 @@ def format_values(VCU_values: dict):
         formatted_value = f"{value:.3f}" 
         VCU_values[key] = formatted_value
 
+def has_data_in_csv(file_path):
+    try:
+        with open(file_path, 'r', newline='') as csv_file:
+            csv_reader = csv.reader(csv_file)
+            # Check if the file has any rows
+            for row in csv_reader:
+                if row:
+                    return True  # Data found, return True
+            return False  # No data found, return False
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
+        return False  # Error occurred, return False
+
 if __name__ == "__main__":
     my_parser = argparse.ArgumentParser(description='Arbitrary Wave Form Generator')
 
@@ -186,12 +200,15 @@ if __name__ == "__main__":
     VCU_Values = {"APPS1": 0, "APPS2": 0, "BSE": 0}
     VCU_plot_values = {key: [] for key in VCU_Values}
 
-    # Pass newline='' as an argument to avoid spaces between Excel rows
-    with open(CSV_FILE_NAME, 'w', newline='') as f:
-        
 
-        #Write the header
-        csv.writer(f).writerow([key for key in VCU_Values.keys()])
+    #if the file is empty
+    if not has_data_in_csv(CSV_FILE_NAME):
+        with open(CSV_FILE_NAME, 'w', newline='') as file:
+            #Write the header
+            csv.writer(file).writerow([key for key in VCU_Values.keys()])
+
+    # Pass newline='' as an argument to avoid spaces between Excel rows
+    with open(CSV_FILE_NAME, 'a', newline='') as f:
 
         for cycle in range(args.Cycles):
             # Total number of values to represent the chosen wave
@@ -214,3 +231,125 @@ if __name__ == "__main__":
                              
     PointPlotting.generate_VCU_plot(VCU_plot_values)
     #Throttle_Value_Simulator.sendValsFromFile('SimulatedValues.csv') #uncomment this line to send values to VCU
+
+    
+
+
+
+import typing
+from abc import ABC, abstractmethod
+class VCU_Pedals(enumerate):
+    APPS1 = 1,
+    APPS2 = 2,
+    BSE = 3
+
+class VCU_Pedal:
+
+    max_voltages: dict[VCU_Pedals, int] = {
+        VCU_Pedals.APPS1: APPS1maxVoltageReading,
+        VCU_Pedals.APPS2: APPS2maxVoltageReading,
+        VCU_Pedals.BSE: BSEmaxVoltageReading,
+    }
+
+    min_voltages : dict[VCU_Pedals, int] = {
+        VCU_Pedals.APPS1: APPS1minVoltageReading,
+        VCU_Pedals.APPS2: APPS2minVoltageReading,
+        VCU_Pedals.BSE: BSEminVoltageReading,
+    }
+
+    def __init__(self, pedal_type: VCU_Pedals):
+        """
+        Create an to encapsulate the pedal type, min voltage, and max voltage
+        """
+        self._pedal_type: VCU_Pedals = pedal_type
+        self._min: int = self.min_voltages[pedal_type]
+        self._max: int  = self.max_voltages[pedal_type]
+
+class AnalogWave(ABC):
+    """
+    Abstract class to lay foundation for waveforms
+    """
+    
+    @abstractmethod
+    def standard_mapping(percent_pressed: float) -> float:
+        pass
+    
+    @abstractmethod
+    def inverse_mapping(percent_pressed: float) -> float:
+        pass
+    
+    @classmethod
+    def map_percentage_to_voltage(cls, pedal_spec: VCU_Pedal, percentage: int) -> float:
+        return percentage * (pedal_spec._max - pedal_spec._min) + pedal_spec._min
+    
+    @classmethod
+    def set_values(cls, pedal_spec: VCU_Pedal, percent_pressed: int, vcu_values: dict[VCU_Pedals, int]):
+        scaled_percentage = cls.map_percentage_to_voltage(pedal_spec, percent_pressed)
+        vcu_values[pedal_spec._pedal_type] = scaled_percentage
+
+        
+
+class SinusodialWave(AnalogWave):
+
+    @classmethod
+    def standard_mapping(percent_pressed: float) -> float:
+        return math.sin(percent_pressed * math.pi)
+
+
+    @classmethod
+    def inverse_mapping(percent_pressed: float) -> float:
+        return -math.sin(percent_pressed * math.pi) + 1
+
+class Simulation:
+
+    wave_forms  = {
+        "S" : SinusodialWave
+    }
+
+    CSV_FILE_NAME = "SimulatedValues.csv"
+
+    def __init__(self):
+        self.plotted_points: dict[VCU_Pedals, list[float]] = {}
+        self.sim_lenght : int = 0
+
+
+    def get_command(self):
+        """
+        Wait for the user to 
+        """
+        while True:
+            args = input()
+            self._parse_args()
+
+
+    
+    def _parse_args(args: str):
+        """
+        Depending on the the input, either exit or append new values to the CSV
+        """
+        exit_keys = ["e", "q", "quit", "exit", "exit()"]
+
+    def add_simulation(self, WaveForm: AnalogWave, inverse = False):
+        """
+        Do the necessary mapping here
+        """
+        for key in VCU_Values.keys():
+            VCU_plot_values[key].append(float(VCU_Values[key]))
+        
+    
+    def display_plot(self):
+        """
+        Display the plot after each additional wave created
+        to show that the user has created
+        """
+        PointPlotting.generate_VCU_plot(VCU_plot_values)
+
+    
+
+
+
+    
+    
+        
+        
+
