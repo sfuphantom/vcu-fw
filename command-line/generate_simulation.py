@@ -269,6 +269,17 @@ class AnalogWave(ABC):
     """
     Abstract class to lay foundation for waveforms
     """
+    _registered_waves: dict[str, object] = {}
+
+    @classmethod
+    def register(cls, identifier=None):
+        def decorator(subclass):
+            nonlocal identifier
+            if identifier is None:
+                identifier = subclass.__name__
+            cls._registered_waves[identifier] = subclass
+            return subclass
+        return decorator
     
     @abstractmethod
     def standard_mapping(percent_pressed: float) -> float:
@@ -286,10 +297,14 @@ class AnalogWave(ABC):
     def set_values(cls, pedal_spec: VCU_Pedal, percent_pressed: int, vcu_values: dict[VCU_Pedals, int]):
         scaled_percentage = cls.map_percentage_to_voltage(pedal_spec, percent_pressed)
         vcu_values[pedal_spec._pedal_type] = scaled_percentage
+    
 
         
-
+@AnalogWave.register("S")
 class SinusodialWave(AnalogWave):
+    """
+    Sinusodial Wave used to simulate a car when turning a corner
+    """
 
     @classmethod
     def standard_mapping(percent_pressed: float) -> float:
@@ -300,11 +315,23 @@ class SinusodialWave(AnalogWave):
     def inverse_mapping(percent_pressed: float) -> float:
         return -math.sin(percent_pressed * math.pi) + 1
 
+@AnalogWave.register("T")    
+class TriangularWave(AnalogWave):
+    """
+    Linear mapping
+    """
+
+    @classmethod
+    def standard_mapping(percent_pressed: float) -> float:
+        return percent_pressed
+    
+    def inverse_mapping(percent_pressed: float) -> float:
+        return 1-percent_pressed
+    
+
 class Simulation:
 
-    wave_forms  = {
-        "S" : SinusodialWave
-    }
+    wave_forms = AnalogWave._registered_waves
 
     CSV_FILE_NAME = "SimulatedValues.csv"
 
@@ -328,6 +355,9 @@ class Simulation:
         Depending on the the input, either exit or append new values to the CSV
         """
         exit_keys = ["e", "q", "quit", "exit", "exit()"]
+        print(AnalogWave._registered_waves)
+        for key,val in AnalogWave._registered_waves.items():
+            print(key, val.__doc__)
 
     def add_simulation(self, WaveForm: AnalogWave, inverse = False):
         """
@@ -343,6 +373,7 @@ class Simulation:
         to show that the user has created
         """
         PointPlotting.generate_VCU_plot(VCU_plot_values)
+
 
     
 
