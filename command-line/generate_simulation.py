@@ -238,6 +238,7 @@ if __name__ == "__main__":
 
 import typing
 from abc import ABC, abstractmethod
+import re
 class VCU_Pedals(enumerate):
     APPS1 = 1,
     APPS2 = 2,
@@ -277,14 +278,18 @@ class AnalogWave(ABC):
             nonlocal identifier
             if identifier is None:
                 identifier = subclass.__name__
+            if identifier in cls._registered_waves:
+                raise KeyError(f"Identifier {identifier} already registered with {subclass}")
             cls._registered_waves[identifier] = subclass
             return subclass
         return decorator
     
+    @classmethod
     @abstractmethod
     def standard_mapping(percent_pressed: float) -> float:
         pass
     
+    @classmethod
     @abstractmethod
     def inverse_mapping(percent_pressed: float) -> float:
         pass
@@ -300,8 +305,8 @@ class AnalogWave(ABC):
     
 
         
-@AnalogWave.register("S")
-class SinusodialWave(AnalogWave):
+@AnalogWave.register("SH")
+class HalfSinusodialWave(AnalogWave):
     """
     Sinusodial Wave used to simulate a car when turning a corner
     """
@@ -315,6 +320,22 @@ class SinusodialWave(AnalogWave):
     def inverse_mapping(percent_pressed: float) -> float:
         return -math.sin(percent_pressed * math.pi) + 1
 
+@AnalogWave.register("SF")
+class FullSinusodialWave(AnalogWave):
+    """
+    Full Sinusodiaul Wave
+    """
+
+    @classmethod
+    def standard_mapping(percent_pressed: float) -> float:
+        return (-(math.cos(percent_pressed *2 * math.pi)) + 1)/2
+
+
+    @classmethod
+    def inverse_mapping(percent_pressed: float) -> float:
+        return -math.sin(percent_pressed * math.pi) + 1 
+
+
 @AnalogWave.register("T")    
 class TriangularWave(AnalogWave):
     """
@@ -325,10 +346,66 @@ class TriangularWave(AnalogWave):
     def standard_mapping(percent_pressed: float) -> float:
         return percent_pressed
     
+    @classmethod
     def inverse_mapping(percent_pressed: float) -> float:
         return 1-percent_pressed
     
+@AnalogWave.register("R")    
+class RandomWave(AnalogWave):
+    """
+    Random wav
+    """
 
+    @classmethod
+    def standard_mapping(percent_pressed: float) -> float:
+        return random.uniform(0, percent_pressed)
+    
+    @classmethod
+    def inverse_mapping(percent_pressed: float) -> float:
+        return random.uniform(0, 1- percent_pressed)
+    
+@AnalogWave.register("M")    
+class MaxWave(AnalogWave):
+    """
+    Maps to the maximum of pedals voltage, used for stress testing
+    """
+
+    @classmethod
+    def standard_mapping(percent_pressed: float) -> float:
+        return 1
+    
+    @classmethod
+    def inverse_mapping(percent_pressed: float) -> float:
+        return 0
+    
+@AnalogWave.register("O")    
+class MinWave(AnalogWave):
+    """
+    Maps to the minimum of a pedal's voltage, used for excluding a pedal's role in the simulation
+    """
+
+    @classmethod
+    def standard_mapping(percent_pressed: float) -> float:
+        return 0
+    
+    @classmethod
+    def inverse_mapping(percent_pressed: float) -> float:
+        return 1
+
+@AnalogWave.register("P") 
+class SpikeWave(AnalogWave):
+    """
+    Used to measure circuit fauls for spikes in pedal voltage readings
+    """
+
+    @classmethod
+    def standard_mapping(percent_pressed: float) -> float:
+        return 1 if percent_pressed == 0 else 0
+    
+    @classmethod
+    def inverse_mapping(percent_pressed: float) -> float:
+        return 1 if percent_pressed != 0 else 0
+    
 class Simulation:
 
     wave_forms = AnalogWave._registered_waves
@@ -338,26 +415,67 @@ class Simulation:
     def __init__(self):
         self.plotted_points: dict[VCU_Pedals, list[float]] = {}
         self.sim_lenght : int = 0
+        self.get_command()
 
 
     def get_command(self):
         """
         Wait for the user to 
         """
-        while True:
-            args = input()
-            self._parse_args()
+        try :
+            while True:
+                args = input(">>>")
+                self._parse_args(args)
+
+        #CTRL + C for keyboard interrupt
+        #note this only raise after the input function
+        #gets a value due to python's nature
+        except (KeyboardInterrupt):
+            exit()
+
 
 
     
-    def _parse_args(args: str):
+    def _parse_args(self, args: str):
         """
         Depending on the the input, either exit or append new values to the CSV
         """
-        exit_keys = ["e", "q", "quit", "exit", "exit()"]
-        print(AnalogWave._registered_waves)
-        for key,val in AnalogWave._registered_waves.items():
-            print(key, val.__doc__)
+        exit_keys = [":q", "quit", "exit", "exit()"]
+        help_keys = ["-h", "--help"]
+        match (len(args.split())):
+            case 1:
+                if [ex for ex in exit_keys if ex in args]:
+                    return False
+                if [h for h in help_keys if args == h]:
+                    print("usage: Cycles Precision APPS_Wave BSE_WAVE")
+                    print("Cycles > 0")
+                    print("Precision > 3")
+                    helpwave = ""
+                    for key,value in self.wave_forms.items():
+                        helpwave += key + ":"
+                        helpwave += value.__doc__.strip('\n')
+                        helpwave += "\n"
+                    helpwave += "I : Inverse of the other pedal argument"
+                    print("Avail WaveForms:\n", helpwave)
+                if args == "execute":
+                    #Begin writting to VCU
+                    pass
+            case _:
+                return
+                    
+
+        
+        # Regex pattern:
+        pattern = r'^(\d+|0|[1-9]\d*) (\d+|0|[3-9]\d*) ([a-zA-Z_]+) ([a-zA-Z_]+)$'
+
+
+        match = re.match(pattern, args)
+        if match:
+            cycles, precision, apps_wave, bse_wave = match.groups()
+            if apps_wave in self.wave_forms and bse_wave in self.wave_forms:
+                print(f"Matched: arg1={cycles}, arg2={precision}, arg3={apps_wave}, arg4={bse_wave}")
+        else:
+            print(f"Not matched: {args}")
 
     def add_simulation(self, WaveForm: AnalogWave, inverse = False):
         """
@@ -374,6 +492,7 @@ class Simulation:
         """
         PointPlotting.generate_VCU_plot(VCU_plot_values)
 
+Simulation()
 
     
 
