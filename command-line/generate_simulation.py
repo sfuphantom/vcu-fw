@@ -239,7 +239,8 @@ if __name__ == "__main__":
 from typing import Union
 from abc import ABC, abstractmethod
 import re
-class VCU_Pedals(enumerate):
+from enum import Enum
+class VCU_Pedals(Enum):
     APPS1 = 1,
     APPS2 = 2,
     BSE = 3
@@ -410,13 +411,13 @@ class Simulation:
 
     wave_forms = AnalogWave._registered_waves
 
-    class Arguments(enumerate):
-        Cycles = 1,
-        Precision = 2,
-        APPS_WAVEFORM = 3,
-        BSE_WAVEFORM = 4
+    class Arguments(Enum):
+        Cycles = "Cycles"
+        Precision = "Precision",
+        APPS_WAVEFORM = "APPS",
+        BSE_WAVEFORM = "BSE"
 
-    class States(enumerate):
+    class States(Enum):
         ARGS = 1,
         EXIT = 2
         ERROR = 3
@@ -424,8 +425,10 @@ class Simulation:
     CSV_FILE_NAME = "SimulatedValues.csv"
 
     def __init__(self):
-        self.plotted_points: dict[VCU_Pedals, list[float]] = {}
+        self.plotted_points: dict[VCU_Pedals, list[float]] = {key: [] for key in VCU_Pedals}
         self.sim_lenght : int = 0
+    
+    def begin(self):
         self.get_command()
 
     def get_command(self):
@@ -446,7 +449,7 @@ class Simulation:
                     #TODO: Clear VCU plots
                     pass
 
-    
+        
     def _parse_args(self, args: str):
         """
         Handle the users input from the prompt for the new commands
@@ -458,7 +461,7 @@ class Simulation:
         match (len(args.split())):
             case 1:
                 if args in exit_keys:
-                    return False
+                    return exit()
                 if args in help_keys:
                     self._generate_help_message()
                     return False
@@ -473,7 +476,8 @@ class Simulation:
                 if match:
                     #Generate dictionnary 
                     arg_tuple = match.groups()
-                    enum_keys_list = [member.name for member in self.Arguments]
+                    import pdb; pdb.set_trace()
+                    enum_keys_list = [member for member in list(self.Arguments)]
                     args_dict = {key: value for key, value in zip(enum_keys_list, arg_tuple)}
                     #Verify dictionnary
                     if self._verify_args(args=args_dict):
@@ -494,12 +498,20 @@ class Simulation:
         if args[self.Arguments.APPS_WAVEFORM] not in self.wave_forms:
             print("Invalid BSE WaveForm")
             Pass = False
+
+        if args[self.Arguments.APPS_WAVEFORM] == "I" and args[self.Arguments.BSE_WAVEFORM] == "I":
+            print("Both APPS and BSE cannot be mapped as inverses")
+            Pass = False
         
-        if int(args[self.Arguments.Cycles]) < 1: 
+        #cast to an int
+        args[self.Arguments.Cycles] = int(args[self.Arguments.Cycles])
+        if args[self.Arguments.Cycles] < 1: 
             print("Cycles must be atleast 1")
             Pass = False
 
-        if int(args[self.Arguments.Precision]) < 1:
+        #cast to an int
+        args[self.Arguments.Precision] = int(args[self.Arguments.Precision])
+        if args[self.Arguments.Precision] < 1:
             print("Precision must be atleast 3")
             Pass = False
 
@@ -533,6 +545,8 @@ class Simulation:
                 # NOTE: Percentage always represented as a number [0, 1] not [0, 100]
                 curpercentage = increment / args.Precision
 
+
+
    
         for key in VCU_Values.keys():
             VCU_plot_values[key].append(float(VCU_Values[key]))
@@ -545,7 +559,7 @@ class Simulation:
         """
         PointPlotting.generate_VCU_plot(VCU_plot_values)
 
-Simulation()
+Simulation().begin()
 
     
 
