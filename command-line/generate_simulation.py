@@ -236,7 +236,7 @@ if __name__ == "__main__":
 
 
 
-import typing
+from typing import Union
 from abc import ABC, abstractmethod
 import re
 class VCU_Pedals(enumerate):
@@ -410,6 +410,17 @@ class Simulation:
 
     wave_forms = AnalogWave._registered_waves
 
+    class Arguments(enumerate):
+        Cycles = 1,
+        Precision = 2,
+        APPS_WAVEFORM = 3,
+        BSE_WAVEFORM = 4
+
+    class States(enumerate):
+        ARGS = 1,
+        EXIT = 2
+        ERROR = 3
+    
     CSV_FILE_NAME = "SimulatedValues.csv"
 
     def __init__(self):
@@ -417,70 +428,112 @@ class Simulation:
         self.sim_lenght : int = 0
         self.get_command()
 
-
     def get_command(self):
         """
         Wait for the user to 
         """
-        try :
-            while True:
-                args = input(">>>")
-                self._parse_args(args)
+        while True:
+            args = input(">>>")
+            ret: Union[bool, dict, None] = self._parse_args(args)
 
-        #CTRL + C for keyboard interrupt
-        #note this only raise after the input function
-        #gets a value due to python's nature
-        except (KeyboardInterrupt):
-            exit()
-
-
+            if type(ret) == dict:
+                self.add_simulation(ret)
+            if type(ret) == bool:
+                if not ret:
+                    exit()
+                if ret:
+                    #succesfully wrote values
+                    #TODO: Clear VCU plots
+                    pass
 
     
     def _parse_args(self, args: str):
         """
-        Depending on the the input, either exit or append new values to the CSV
+        Handle the users input from the prompt for the new commands
         """
         exit_keys = [":q", "quit", "exit", "exit()"]
-        help_keys = ["-h", "--help"]
+        help_keys = ["-h", "--help", "help"]
+        execute_keys = ["-e", "execute", "--execute"]
+
         match (len(args.split())):
             case 1:
-                if [ex for ex in exit_keys if ex in args]:
+                if args in exit_keys:
                     return False
-                if [h for h in help_keys if args == h]:
-                    print("usage: Cycles Precision APPS_Wave BSE_WAVE")
-                    print("Cycles > 0")
-                    print("Precision > 3")
-                    helpwave = ""
-                    for key,value in self.wave_forms.items():
-                        helpwave += key + ":"
-                        helpwave += value.__doc__.strip('\n')
-                        helpwave += "\n"
-                    helpwave += "I : Inverse of the other pedal argument"
-                    print("Avail WaveForms:\n", helpwave)
-                if args == "execute":
+                if args in help_keys:
+                    self._generate_help_message()
+                    return False
+                if args in execute_keys:
                     #Begin writting to VCU
-                    pass
-            case _:
-                return
+                    return True
                     
+            case 4:
+                # Regex pattern for matching arguments:
+                pattern = r'^(\d+|0|[1-9]\d*) (\d+|0|[3-9]\d*) ([a-zA-Z_]+) ([a-zA-Z_]+)$'
+                match = re.match(pattern, args)
+                if match:
+                    #Generate dictionnary 
+                    arg_tuple = match.groups()
+                    enum_keys_list = [member.name for member in self.Arguments]
+                    args_dict = {key: value for key, value in zip(enum_keys_list, arg_tuple)}
+                    #Verify dictionnary
+                    if self._verify_args(args=args_dict):
+                       print(f"Arguments accepted")
+                       return args_dict
 
+                else:
+                    print(f"Not matched: {args}")
+            case _:
+                    print("Invalid input")
+
+    def _verify_args(self, args: dict[Arguments,str]):
+
+        Pass = True
+        if args[self.Arguments.APPS_WAVEFORM] not in self.wave_forms:
+            print("Invalaid APPS WaveForm")
+            Pass = False
+        if args[self.Arguments.APPS_WAVEFORM] not in self.wave_forms:
+            print("Invalid BSE WaveForm")
+            Pass = False
         
-        # Regex pattern:
-        pattern = r'^(\d+|0|[1-9]\d*) (\d+|0|[3-9]\d*) ([a-zA-Z_]+) ([a-zA-Z_]+)$'
+        if int(args[self.Arguments.Cycles]) < 1: 
+            print("Cycles must be atleast 1")
+            Pass = False
 
+        if int(args[self.Arguments.Precision]) < 1:
+            print("Precision must be atleast 3")
+            Pass = False
 
-        match = re.match(pattern, args)
-        if match:
-            cycles, precision, apps_wave, bse_wave = match.groups()
-            if apps_wave in self.wave_forms and bse_wave in self.wave_forms:
-                print(f"Matched: arg1={cycles}, arg2={precision}, arg3={apps_wave}, arg4={bse_wave}")
-        else:
-            print(f"Not matched: {args}")
-
-    def add_simulation(self, WaveForm: AnalogWave, inverse = False):
+        return Pass
+    
+    def _generate_help_message(self):
+        help_str = ""
+        help_str += ("usage: Cycles Precision APPS_Wave BSE_WAVE\n")
+        help_str += ("Cycles > 0\n")
+        help_str += ("Precision > 3\n") 
+        help_str += ("Avail WaveForms:\n")          
+        for key,value in self.wave_forms.items():
+                help_str += key + ":"
+                help_str += value.__doc__.strip('\n') #strip both sides
+                help_str += "\n"
+        help_str += "I : Inverse of the other pedal argument"
+                
+    def add_simulation(self, args: dict[Arguments, str]):
         """
         Do the necessary mapping here
         """
+        DEFAULT_CYCLES = 1
+        DEFAULT_PRECISION = 3
+        
+        #default to one cycle if key does cycle argument not given
+        for cycle in range(1,args.get(self.Arguments.Cycles, DEFAULT_CYCLES)+1):
+            print(f"beggining cycle: {cycle}")
+
+            #default to wave precision of 3 if precision argument does not exist                
+            for increment in range(args.Pre + 1):
+                # NOTE: Percentage always represented as a number [0, 1] not [0, 100]
+                curpercentage = increment / args.Precision
+
+   
         for key in VCU_Values.keys():
             VCU_plot_values[key].append(float(VCU_Values[key]))
         
