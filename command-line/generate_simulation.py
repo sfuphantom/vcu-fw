@@ -178,7 +178,7 @@ def has_data_in_csv(file_path):
         print(f"An error occurred: {e}")
         return False  # Error occurred, return False
 
-if __name__ == "__main__":
+if __name__ != "__main__":
     my_parser = argparse.ArgumentParser(description='Arbitrary Wave Form Generator')
 
     # Create arguments when calling the script
@@ -229,11 +229,11 @@ if __name__ == "__main__":
                     VCU_plot_values[key].append(float(VCU_Values[key]))
 
                              
-    PointPlotting.generate_VCU_plot(VCU_plot_values)
+    #PointPlotting.generate_VCU_plot(VCU_plot_values)
     #Throttle_Value_Simulator.sendValsFromFile('SimulatedValues.csv') #uncomment this line to send values to VCU
 
     
-from wave_forms import AnalogWave, VCU_Pedals
+from wave_forms import AnalogWave, VCU_Pedals, Union, VCU_Pedal
 from enum import Enum
 import re
 class Simulation:
@@ -272,7 +272,7 @@ class Simulation:
                 self.add_simulation(ret)
             if type(ret) == bool:
                 if not ret:
-                    exit()
+                    print(self._generate_help_message())
                 if ret:
                     #succesfully wrote values
                     #TODO: Clear VCU plots
@@ -303,11 +303,11 @@ class Simulation:
                 pattern = r'^(\d+|0|[1-9]\d*) (\d+|0|[3-9]\d*) ([a-zA-Z_]+) ([a-zA-Z_]+)$'
                 match = re.match(pattern, args)
                 if match:
-                    #Generate dictionnary 
+                    #Generate argument as dictionnary 
                     arg_tuple = match.groups()
-                    import pdb; pdb.set_trace()
                     enum_keys_list = [member for member in list(self.Arguments)]
                     args_dict = {key: value for key, value in zip(enum_keys_list, arg_tuple)}
+
                     #Verify dictionnary
                     if self._verify_args(args=args_dict):
                        print(f"Arguments accepted")
@@ -346,7 +346,7 @@ class Simulation:
 
         return Pass
     
-    def _generate_help_message(self):
+    def _generate_help_message(self) -> str:
         help_str = ""
         help_str += ("usage: Cycles Precision APPS_Wave BSE_WAVE\n")
         help_str += ("Cycles > 0\n")
@@ -357,6 +357,7 @@ class Simulation:
                 help_str += value.__doc__.strip('\n') #strip both sides
                 help_str += "\n"
         help_str += "I : Inverse of the other pedal argument"
+        return help_str
                 
     def add_simulation(self, args: dict[Arguments, str]):
         """
@@ -364,21 +365,49 @@ class Simulation:
         """
         DEFAULT_CYCLES = 1
         DEFAULT_PRECISION = 3
+
+        apps_wave: str = args[self.Arguments.APPS_WAVEFORM]
+        bse_wave: str = args[self.Arguments.BSE_WAVEFORM]
+
+        vcu_values: dict[VCU_Pedals, float] = {key: 0 for key in VCU_Pedals}
         
         #default to one cycle if key does cycle argument not given
         for cycle in range(1,args.get(self.Arguments.Cycles, DEFAULT_CYCLES)+1):
             print(f"beggining cycle: {cycle}")
 
+            precision = args.get(self.Arguments.Precision, DEFAULT_PRECISION)
             #default to wave precision of 3 if precision argument does not exist                
-            for increment in range(args.Pre + 1):
+            for increment in range(precision):
                 # NOTE: Percentage always represented as a number [0, 1] not [0, 100]
-                curpercentage = increment / args.Precision
+                current_percentage = increment / precision
+
+                #Handle APPS
+                sim_wave : AnalogWave = self.wave_forms[apps_wave]
+                mapped_percent = sim_wave.standard_mapping(current_percentage)
+
+                if apps_wave == "I":
+                    sim_wave : AnalogWave = self.wave_forms[bse_wave]
+                    mapped_percent = sim_wave.inverse_mapping(current_percentage)
+
+                sim_wave.set_values(VCU_Pedal(VCU_Pedals.APPS1), mapped_percent, vcu_values)
+                sim_wave.set_values(VCU_Pedal(VCU_Pedals.APPS2), mapped_percent, vcu_values)
 
 
+                #HANDLE BSE
+                sim_wave : AnalogWave = self.wave_forms[bse_wave]
+                mapped_percent = sim_wave.standard_mapping(current_percentage)
+                if bse_wave == "I":
+                    sim_wave : AnalogWave = self.wave_forms[apps_wave]
+                    mapped_percent = sim_wave.inverse_mapping(current_percentage)
+                
+                sim_wave.set_values(VCU_Pedal(VCU_Pedals.BSE), mapped_percent, vcu_values)
 
-   
-        for key in VCU_Values.keys():
-            VCU_plot_values[key].append(float(VCU_Values[key]))
+                    
+                #write values to plot
+                for key in vcu_values.keys():
+                    self.plotted_points[key].append(float(vcu_values[key]))
+
+        self.display_plot()
         
     
     def display_plot(self):
@@ -386,7 +415,7 @@ class Simulation:
         Display the plot after each additional wave created
         to show that the user has created
         """
-        PointPlotting.generate_VCU_plot(VCU_plot_values)
+        PointPlotting.generate_VCU_plot(self.plotted_points)
 
 Simulation().begin()
 
