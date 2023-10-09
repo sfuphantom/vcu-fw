@@ -61,12 +61,12 @@ class AnalogWave(ABC):
     
     @classmethod
     @abstractmethod
-    def standard_mapping(percent_pressed: float) -> float:
+    def standard_mapping(cls, percent_pressed: float) -> float:
         pass
     
     @classmethod
     @abstractmethod
-    def inverse_mapping(percent_pressed: float) -> float:
+    def inverse_mapping(cls, percent_pressed: float) -> float:
         pass
     
     @classmethod
@@ -87,12 +87,12 @@ class HalfSinusodialWave(AnalogWave):
     """
 
     @classmethod
-    def standard_mapping(percent_pressed: float) -> float:
+    def standard_mapping(cls, percent_pressed: float) -> float:
         return math.sin(percent_pressed * math.pi)
 
 
     @classmethod
-    def inverse_mapping(percent_pressed: float) -> float:
+    def inverse_mapping(cls, percent_pressed: float) -> float:
         return -math.sin(percent_pressed * math.pi) + 1
 
 @AnalogWave.register("SF")
@@ -102,12 +102,12 @@ class FullSinusodialWave(AnalogWave):
     """
 
     @classmethod
-    def standard_mapping(percent_pressed: float) -> float:
+    def standard_mapping(cls, percent_pressed: float) -> float:
         return (-(math.cos(percent_pressed *2 * math.pi)) + 1)/2
 
 
     @classmethod
-    def inverse_mapping(percent_pressed: float) -> float:
+    def inverse_mapping(cls, percent_pressed: float) -> float:
         return -math.sin(percent_pressed * math.pi) + 1 
 
 
@@ -118,11 +118,11 @@ class TriangularWave(AnalogWave):
     """
 
     @classmethod
-    def standard_mapping(percent_pressed: float) -> float:
+    def standard_mapping(cls, percent_pressed: float) -> float:
         return percent_pressed
     
     @classmethod
-    def inverse_mapping(percent_pressed: float) -> float:
+    def inverse_mapping(cls ,percent_pressed: float) -> float:
         return 1-percent_pressed
     
 @AnalogWave.register("R")    
@@ -132,11 +132,11 @@ class RandomWave(AnalogWave):
     """
 
     @classmethod
-    def standard_mapping(percent_pressed: float) -> float:
+    def standard_mapping(cls, percent_pressed: float) -> float:
         return random.uniform(0, percent_pressed)
     
     @classmethod
-    def inverse_mapping(percent_pressed: float) -> float:
+    def inverse_mapping(cls, percent_pressed: float) -> float:
         return random.uniform(0, 1- percent_pressed)
     
 @AnalogWave.register("M")    
@@ -146,11 +146,11 @@ class MaxWave(AnalogWave):
     """
 
     @classmethod
-    def standard_mapping(percent_pressed: float) -> float:
+    def standard_mapping(cls, percent_pressed: float) -> float:
         return 1
     
     @classmethod
-    def inverse_mapping(percent_pressed: float) -> float:
+    def inverse_mapping(cls, percent_pressed: float) -> float:
         return 0
     
 @AnalogWave.register("O")    
@@ -160,11 +160,11 @@ class MinWave(AnalogWave):
     """
 
     @classmethod
-    def standard_mapping(percent_pressed: float) -> float:
+    def standard_mapping(cls, percent_pressed: float) -> float:
         return 0
     
     @classmethod
-    def inverse_mapping(percent_pressed: float) -> float:
+    def inverse_mapping(cls, percent_pressed: float) -> float:
         return 1
 
 @AnalogWave.register("P") 
@@ -174,9 +174,21 @@ class SpikeWave(AnalogWave):
     """
 
     @classmethod
-    def standard_mapping(percent_pressed: float) -> float:
+    def standard_mapping(cls, percent_pressed: float) -> float:
         return 1 if percent_pressed == 0 else 0
     
     @classmethod
-    def inverse_mapping(percent_pressed: float) -> float:
+    def inverse_mapping(cls, percent_pressed: float) -> float:
         return 1 if percent_pressed != 0 else 0
+    
+@AnalogWave.register("I") 
+class InverseWave(AnalogWave):
+    "Reserved for the inverse"
+
+    @classmethod
+    def standard_mapping(cls, percent_pressed: float) -> float:
+        return super().standard_mapping(percent_pressed)
+    
+    @classmethod
+    def inverse_mapping(cls, percent_pressed: float) -> float:
+        return super().inverse_mapping(percent_pressed)
