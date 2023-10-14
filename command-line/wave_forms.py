@@ -183,8 +183,9 @@ class SpikeWave(AnalogWave):
     
 @AnalogWave.register("I") 
 class InverseWave(AnalogWave):
-    "Reserved for the inverse"
+    """Inverse mapping of the opposite pedal"""
 
+    #reserved to avoid registering accidentally and removing the inverse functionality
     @classmethod
     def standard_mapping(cls, percent_pressed: float) -> float:
         return super().standard_mapping(percent_pressed)
