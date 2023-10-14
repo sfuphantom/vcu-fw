@@ -11,7 +11,7 @@ def generate_VCU_plot(plotted_points: dict[str, list[float]], showplot = True):
     :param plotted_points: dictionnary with key as pedal types and values as array of sim voltages
     """
 
-    marker_list = ['o', 'x', '^']
+    marker_list = ['o', 'o', 'o']
     label_list = [key for key in plotted_points.keys()]
     Y_points = [value for value in plotted_points.values()]
     X_points = [i for i in range(1,len(Y_points[0])+1)]
@@ -21,7 +21,7 @@ def generate_VCU_plot(plotted_points: dict[str, list[float]], showplot = True):
 
      # Add labels and a title
     plt.xlabel('Value order')
-    plt.ylabel('Voltage (V)')
+    plt.ylabel('Voltage (mV)')
     plt.title('Simulation Data')
 
     # Add a legend
