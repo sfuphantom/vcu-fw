@@ -178,7 +178,7 @@ def has_data_in_csv(file_path):
         print(f"An error occurred: {e}")
         return False  # Error occurred, return False
 
-if __name__ != "__main__":
+if __name__ == "__main__":
     my_parser = argparse.ArgumentParser(description='Arbitrary Wave Form Generator')
 
     # Create arguments when calling the script
@@ -258,7 +258,7 @@ class Simulation:
         self.sim_lenght : int = 0
     
     def begin(self):
-        self.get_command()
+        return self.get_command()
 
     def get_command(self):
         """
@@ -276,7 +276,7 @@ class Simulation:
                 if ret:
                     #succesfully wrote values
                     #TODO: Clear VCU plots
-                    pass
+                    return True
 
         
     def _parse_args(self, args: str):
@@ -312,6 +312,8 @@ class Simulation:
                     if self._verify_args(args=args_dict):
                        print(f"Arguments accepted")
                        return args_dict
+                    else:
+                       return False
 
                 else:
                     print(f"Not matched: {args}")
@@ -348,15 +350,11 @@ class Simulation:
     
     def _generate_help_message(self) -> str:
         help_str = ""
-        help_str += ("usage: Cycles Precision APPS_Wave BSE_WAVE\n")
-        help_str += ("Cycles > 0\n")
-        help_str += ("Precision > 3\n") 
-        help_str += ("Avail WaveForms:\n")          
+        help_str += ("usage: Cycles Precision APPS_Wave BSE_WAVE\n")        
         for key,value in self.wave_forms.items():
                 help_str += key + ":"
                 help_str += value.__doc__.strip('\n') #strip both sides
                 help_str += "\n"
-        help_str += "I : Inverse of the other pedal argument"
         return help_str
                 
     def add_simulation(self, args: dict[Arguments, str]):
@@ -417,7 +415,6 @@ class Simulation:
         """
         PointPlotting.generate_VCU_plot(self.plotted_points)
 
-Simulation().begin()
 
     
 
