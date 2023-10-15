@@ -4,6 +4,10 @@ from typing import List, Union
 
 from dataclasses import dataclass
 
+import logging
+
+
+
 
 class VCUEvents (Enum):
     """
@@ -64,6 +68,14 @@ class ResponseVCU:
     Stores the state of the VCU and the time of change (if changed)
     """
 
+    logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    filename='VCU_response.log',
+    )
+
+    logger = logging.getLogger("VCU_reponse")
+
     def __init__(self, raw_response: str):
         
         self._raw_response: str = raw_response
@@ -89,17 +101,24 @@ class ResponseVCU:
 
             #ignore empty string due to split formatting
             if line == "": continue
-
+        
             #parse the time; always 2 decimal string float
             split_line = line.split(":")
-            relative_time_ms = round(float(split_line[1][0:split_line[1].find(".")+3]),2)
 
-            #the last element of the split will contain the vcu trigger
-            enumeration_trigger = int(line.split(':')[2])
-            if 'NEW EVENT' in line:
-                self.add_event(VCUEvents(enumeration_trigger), relative_time_ms) 
-            if 'NEW STATE' in line:
-                self.set_state(VCUStates(enumeration_trigger), relative_time_ms)
+            try:
+                relative_time_ms = round(float(split_line[1][0:split_line[1].find(".")+3]),2)
+
+                #the last element of the split will contain the vcu trigger
+                enumeration_trigger = int(line.split(':')[2])
+                if 'NEW EVENT' in line:
+                    self.add_event(VCUEvents(enumeration_trigger), relative_time_ms) 
+                elif 'NEW STATE' in line:
+                    self.set_state(VCUStates(enumeration_trigger), relative_time_ms)
+                else:
+                    logging.log(logging.DEBUG , f"Unknown response : {line}")
+            except Exception as e:
+                print(f"Caught exception for {line}")
+                logging.log(logging.DEBUG , f"Error from parsing : {line} - {e}")
 
     def add_event(self, event_name: VCUEvents, event_time: float):
         """
