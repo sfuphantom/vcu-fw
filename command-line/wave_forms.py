@@ -103,12 +103,12 @@ class FullSinusodialWave(AnalogWave):
 
     @classmethod
     def standard_mapping(cls, percent_pressed: float) -> float:
-        return (-(math.cos(percent_pressed *2 * math.pi)) + 1)/2
+        return (-(math.cos(percent_pressed * 2 * math.pi)) + 1)/2
 
 
     @classmethod
     def inverse_mapping(cls, percent_pressed: float) -> float:
-        return -math.sin(percent_pressed * math.pi) + 1 
+        return (math.cos(percent_pressed * 2 * math.pi) + 1)/2
 
 
 @AnalogWave.register("T")    
@@ -183,7 +183,9 @@ class SpikeWave(AnalogWave):
     
 @AnalogWave.register("I") 
 class InverseWave(AnalogWave):
-    """Inverse mapping of the opposite pedal"""
+    """
+    Inverse mapping of the opposite pedal
+    """
 
     #reserved to avoid registering accidentally and removing the inverse functionality
     @classmethod
