@@ -189,7 +189,9 @@ class Simulation:
         Display the plot after each additional wave created
         to show that the user has created
         """
+        print ("\nClose Plot to Continue")
         DataGeneration.generate_VCU_plot(self.plotted_points)
+
 
 
     
