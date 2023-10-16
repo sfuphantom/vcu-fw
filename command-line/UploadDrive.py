@@ -11,8 +11,7 @@ from googleapiclient.http import MediaFileUpload
 from datetime import datetime
 from pathlib import Path
 
-from generate_simulation import CSV_FILE_NAME as CSV_FILE_NAME
-from PointPlotting import PLOT_IMAGE_NAME as PLOT_IMAGE_NAME
+from data_generation import CSV_FILE_NAME, PLOT_IMAGE_NAME
 
 
 

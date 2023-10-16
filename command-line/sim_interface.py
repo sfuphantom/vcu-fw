@@ -1,10 +1,10 @@
-from generate_simulation import Simulation, VCU_Pedal, VCU_Pedals, CSV_FILE_NAME
+from generate_simulation import Simulation, VCU_Pedal, VCU_Pedals
 from UploadDrive import VcuGDriveInterface
 from vcu_simulation import VCUSimulation, ResponseVCU
 from StatesAndEvents import ResponseVCU, EventData, StateData
+from data_generation import DataGeneration
 
-#pip install pandas
-import pandas as pd
+
 
 class VCUSimInterface:
     def __init__(self) -> None:
@@ -15,6 +15,7 @@ class VCUSimInterface:
         self.simulation : Simulation = Simulation()
         self.vcu_gdrive_interface : VcuGDriveInterface = VcuGDriveInterface()
         # self.vcu_writer = VCUSimulation("COM3")
+        self.data_generator = DataGeneration
 
         self.configure_device()
 
@@ -42,7 +43,7 @@ class VCUSimInterface:
         if (simulation_res):
 
             write_res = self.write_data()
-            self.write_to_csv(write_res)
+            self.data_generator.write_to_csv(write_res)
 
             self.vcu_gdrive_interface.upload_data()
             exit()
@@ -78,18 +79,6 @@ class VCUSimInterface:
 
         return merged_data
 
-
-    
-    def write_to_csv(self, data: dict):
-        df = pd.DataFrame(data)
-
-        # Define the CSV file name
-        csv_file = CSV_FILE_NAME
-
-        # Write the DataFrame to a CSV file
-        df.to_csv(csv_file, index=False)
-
-        print(f"Data has been written to {csv_file}")
 
     def verify_sim_model(self):
         """

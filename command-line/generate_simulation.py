@@ -5,10 +5,8 @@ import argparse
 import math
 import csv
 import time
-import PointPlotting
+import data_generation
 
-
-CSV_FILE_NAME = "SimulatedValues.csv"
 #---------------------------------------------------------------------------------#
 #THESE VARIABLES CAN BE CHANGED DEPENDING ON PEDAL/VCU SPECIFICATIONS
 #Most up to date specifications found here :
@@ -229,7 +227,7 @@ if __name__ == "__main__":
                     VCU_plot_values[key].append(float(VCU_Values[key]))
 
                              
-    #PointPlotting.generate_VCU_plot(VCU_plot_values)
+    #data_generation.generate_VCU_plot(VCU_plot_values)
     #Throttle_Value_Simulator.sendValsFromFile('SimulatedValues.csv') #uncomment this line to send values to VCU
 
     
@@ -413,7 +411,7 @@ class Simulation:
         Display the plot after each additional wave created
         to show that the user has created
         """
-        PointPlotting.generate_VCU_plot(self.plotted_points)
+        data_generation.PlotGeneration.generate_VCU_plot(self.plotted_points)
 
 
     
