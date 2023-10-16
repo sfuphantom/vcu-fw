@@ -4,6 +4,9 @@ import serial
 
 from StatesAndEvents import ResponseVCU
 
+#VCU pedal specifics can be found at the following documentation:
+# https://docs.google.com/document/d/1PsZSJR6la_u_oXmN2lo8tfRcU6E8GrMdpH35ESl7d4U/
+
 BSE_MIN = 1500
 BSE_MAX = 4500
 

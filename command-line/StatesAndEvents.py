@@ -74,7 +74,7 @@ class ResponseVCU:
     filename='VCU_response.log',
     )
 
-    logger = logging.getLogger("VCU_reponse")
+    logger = logging.getLogger("data_log")
 
     def __init__(self, raw_response: str):
         
