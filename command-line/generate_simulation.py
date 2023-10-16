@@ -316,7 +316,7 @@ class Simulation:
                 else:
                     print(f"Not matched: {args}")
             case _:
-                    print("Invalid input")
+                    print("Invalid commands")
 
     def _verify_args(self, args: dict[Arguments,str]):
 
@@ -354,6 +354,12 @@ class Simulation:
                 help_str += value.__doc__.strip('\n') #strip both sides
                 help_str += "\n"
         return help_str
+    
+    def format_values(self, data: dict, format_type : type = int):
+        #Format data to a specifc format type written as a string
+        for key, value in data.items():
+            formatted_value = f"{format_type(value)}" 
+            data[key] = formatted_value
                 
     def add_simulation(self, args: dict[Arguments, str]):
         """
@@ -371,7 +377,7 @@ class Simulation:
         for cycle in range(1,args.get(self.Arguments.Cycles, DEFAULT_CYCLES)+1):
             print(f"beggining cycle: {cycle}")
 
-            precision = args.get(self.Arguments.Precision, DEFAULT_PRECISION)
+            precision = args.get(self.Arguments.Precision, DEFAULT_PRECISION) + 1
             #default to wave precision of 3 if precision argument does not exist                
             for increment in range(precision):
                 # NOTE: Percentage always represented as a number [0, 1] not [0, 100]
@@ -385,9 +391,9 @@ class Simulation:
                     sim_wave : AnalogWave = self.wave_forms[bse_wave]
                     mapped_percent = sim_wave.inverse_mapping(current_percentage)
 
+
                 sim_wave.set_values(VCU_Pedal(VCU_Pedals.APPS1), mapped_percent, vcu_values)
                 sim_wave.set_values(VCU_Pedal(VCU_Pedals.APPS2), mapped_percent, vcu_values)
-
 
                 #HANDLE BSE
                 sim_wave : AnalogWave = self.wave_forms[bse_wave]
@@ -395,8 +401,11 @@ class Simulation:
                 if bse_wave == "I":
                     sim_wave : AnalogWave = self.wave_forms[apps_wave]
                     mapped_percent = sim_wave.inverse_mapping(current_percentage)
-                
+
+
                 sim_wave.set_values(VCU_Pedal(VCU_Pedals.BSE), mapped_percent, vcu_values)
+
+                self.format_values(vcu_values)
 
                     
                 #write values to plot
