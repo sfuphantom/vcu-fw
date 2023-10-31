@@ -8,13 +8,17 @@ PLOT_IMAGE_NAME = "PlottedSimValues.png"
 CSV_FILE_NAME = "SimulatedValues.csv"
 
 class PlotGeneration():
+    """
+    This class provides methods for generating plots using Matplotlib.
+    """
 
     @classmethod
-    def generate_VCU_plot(cls, plotted_points: dict[str, list[float]], showplot = True):
+    def generate_VCU_plot(cls, plotted_points: dict[object, list[int]], showplot = True):
         """
-        Generate the plot png from the VCU simulation values
+        Generate a plot PNG from VCU simulation values.
 
-        :param plotted_points: dictionnary with key as pedal types and values as array of sim voltages
+        :param plotted_points: A dictionary with pedal types as keys and lists of simulated voltages as values.
+        :param showplot: A boolean indicating whether to display the plot (True) or save it without displaying (False).
         """
 
         cls.add_data_points(plotted_points)
@@ -26,14 +30,22 @@ class PlotGeneration():
 
         # Save the graph as a PNG file
 
-        cls.save_image(CSV_FILE_NAME)
+        cls.save_image(PLOT_IMAGE_NAME)
 
         # Show the graph
         if showplot: plt.show()
 
     
     @classmethod
-    def add_data_points(cls, plotted_points) -> tuple:
+    def add_data_points(cls, plotted_points : dict[object, list[int]]) -> tuple:
+        """
+        Add data points to the current plot.
+
+        :param plotted_points: A dictionary with pedal types as keys and lists of simulated voltages as values.
+
+        :return: A tuple containing marker styles, labels, Y points, and X points.
+        :rtype: tuple
+        """
 
         marker_list = ['o' for key in plotted_points.keys()]
         label_list = [key for key in plotted_points.keys()]
@@ -44,20 +56,52 @@ class PlotGeneration():
             plt.plot(X_points, Y_points[i], marker = marker_list[i], label = label_list[i])
     
     @classmethod
-    def add_lablels(cls, x_axis, y_axis, title):
+    def add_lablels(cls, x_axis : str, y_axis : str, title: str):
+        """
+        Add labels and a title to the current plot.
+
+        :param x_axis: Label for the X-axis.
+        :param y_axis: Label for the Y-axis.
+        :param title: Title of the plot.
+        """
         plt.xlabel(x_axis)
         plt.ylabel(y_axis)
         plt.title(title)
 
     @classmethod
-    def save_image(cls, file_path : str):
-        plt.savefig(PLOT_IMAGE_NAME)
+    def save_image(cls, file_path : str = None):
+        """
+        Save an image path locally
+
+        :param: file_path: relative path for the file to save
+        """
+        if file_path is None:
+            file_path = PLOT_IMAGE_NAME
+        plt.savefig(file_path)
 
 
 class CsvGeneration():
+    """
+    This class provides methods for generating CSV data using pandas.
+    """
+    @classmethod
+    def write_row(cls, row : list[int], file_path: str):
+        """
+        Write the row to an excel file, useful for saving data piecewise
+        in the case of expecting a data fault or program crash
+
+        :param row: row of data to write to 
+        :param file_path: relative path of file
+        """
+        pass
 
     @classmethod
-    def write_to_csv(cls, data: dict):
+    def write_to_csv(cls, data: dict[object, list[int]]):
+        """
+        Write data to a CSV file.
+
+        :param data: A dictionary containing data to be written to the CSV file.
+        """
         df = pd.DataFrame(data)
 
         # Define the CSV file name
@@ -70,7 +114,10 @@ class CsvGeneration():
 
 
 class DataGeneration(CsvGeneration, PlotGeneration):
-
+    """
+    This class inherits functionality from both CsvGeneration and PlotGeneration and provides combined
+    capabilities for generating plots and writing data to CSV files.
+    """
     def __init__(self) -> None:
         super().__init__()
 
