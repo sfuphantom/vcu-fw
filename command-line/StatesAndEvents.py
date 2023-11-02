@@ -69,7 +69,7 @@ class ResponseVCU:
     """
 
     logging.basicConfig(
-    level=logging.DEBUG,
+    level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
     filename='VCU_response.log',
     )
@@ -118,7 +118,7 @@ class ResponseVCU:
                     logging.log(logging.DEBUG , f"Unknown response : {line}")
             except Exception as e:
                 print(f"Caught exception for {line}")
-                logging.log(logging.DEBUG , f"Error from parsing : {line} - {e}")
+                logging.log(logging.INFO, f"Error from parsing : {line} - {e}")
 
     def add_event(self, event_name: VCUEvents, event_time: float):
         """
