@@ -20,10 +20,10 @@ class Simulation:
 
     wave_forms = AnalogWave._registered_waves
 
-    def __init__(self, writer):
+    def __init__(self, manual_control_writer : VCUSimulation):
         self.plotted_points: dict[VCU_Pedals, list[float]] = {key: [] for key in VCU_Pedals}
         self.sim_length: int = 0
-        self.manual_control_writer : VCUSimulation = writer
+        self.manual_control_writer : VCUSimulation = manual_control_writer
 
     def begin(self):
         """

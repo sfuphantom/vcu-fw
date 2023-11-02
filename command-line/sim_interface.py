@@ -11,10 +11,10 @@ class VCUSimInterface:
         """
         Initialize all components for simulation communication
         """
-
-        self.simulation : Simulation = Simulation()
+        self.vcu_writer = VCUSimulation("COM3")
+        #pass in vcu_writer as reference so we can thread lock when using multithreaded
+        self.simulation : Simulation = Simulation(self.vcu_writer)
         self.vcu_gdrive_interface : VcuGDriveInterface = VcuGDriveInterface()
-        # self.vcu_writer = VCUSimulation("COM3")
         self.data_generator = DataGeneration
 
         self.configure_device()
