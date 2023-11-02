@@ -4,6 +4,15 @@ from data_generation import DataGeneration
 from enum import Enum
 import matplotlib.pyplot as plt
 import pandas as pd
+from vcu_simulation import VCUSimulation
+from vcu_simulation import (
+	APPS1_MIN,
+	APPS1_MAX,
+	APPS2_MIN,
+	APPS2_MAX,
+	BSE_MIN,
+	BSE_MAX
+)
 
 class Simulation:
 
@@ -11,9 +20,10 @@ class Simulation:
 
     wave_forms = AnalogWave._registered_waves
 
-    def __init__(self):
+    def __init__(self, writer):
         self.plotted_points: dict[VCU_Pedals, list[float]] = {key: [] for key in VCU_Pedals}
         self.sim_length: int = 0
+        self.manual_control_writer : VCUSimulation = writer
 
     def begin(self):
         """
@@ -28,12 +38,17 @@ class Simulation:
         while True:
             args = input(">>>")
             ret = self._parse_args(args)
-
+            #Simulation Args
             if isinstance(ret, dict):
                 self.add_simulation(ret)
+            #Manual Control Args
+            if isinstance(ret, tuple):
+                self.manual_control_writer.write(*ret)
+            #Exit Or Help, or Invalid args
             if isinstance(ret, bool):
                 if not ret:
-                    print(self._generate_help_message())
+                    #print(self._generate_help_message())
+                    pass
                 if ret:
                     # Successfully wrote values
                     # TODO: Clear VCU plots
@@ -46,7 +61,6 @@ class Simulation:
         exit_keys = [":q", "quit", "exit", "exit()"]
         help_keys = ["-h", "--help", "help"]
         execute_keys = ["-e", "execute", "--execute"]
-        manual_control = ["MC", "mc", "manual"]
 
         num_args = len(args.split())
 
@@ -59,20 +73,26 @@ class Simulation:
             if args in execute_keys:
                 # Begin writing to VCU
                 return True
-            if args in manual_control:
-                return 1
 
         if num_args == 4:
-            if self._validate_arguments(args):
+            if self._validate_sim_arguments(args):
                 return self._parse_arguments(args)
             else:
-                print(f"Invalid arguments: {args}")
+                print(f"Invalid Sim Arguments: {args}")
                 return False
+   
+        if num_args == 7:
+            if self.validate_manual_control_arguments(args):
+                return self.parse_manual_mode_arguments(args)
+            else:
+                print(f"Invalid Manual Control Arguments: {args}")
+                return False
+        
+        print(f"Uknown args - {args}")
+        
+        
 
-
-        print("Invalid command")
-
-    def _validate_arguments(self, args: str) -> bool:
+    def _validate_sim_arguments(self, args: str) -> bool:
         """
         Verify the arguments for the simulation
         """
@@ -88,7 +108,7 @@ class Simulation:
                 print(f"Uknown Wave {arg_tuple[3]}")
                 return False
             if arg_tuple[2] == "I" and arg_tuple[3] == "I":
-                print(f"Both Waveforms can't be inverses")
+                print(f"Both Waveforms can not be inverses")
                 return False
             #wave is found
             return True
@@ -104,7 +124,32 @@ class Simulation:
             'BSE_WAVEFORM': arg_tuple[3]
         }
     
+    def validate_manual_control_arguments(self, args: str) -> bool:
+        """
+        Verify the arguments for manual control mode
+        """
+        pattern = r'^MC (\d{1,}) (\d{1,}) (\d{1,}) (True|False) (True|False) (True|False)$'
+        if bool(re.match(pattern, args)):
+            arg_tuple = args.split()
+            if int(arg_tuple[1]) not in range(APPS1_MIN, APPS1_MAX):
+                print(f"Invalid Range APPS1 - {arg_tuple[1]}")
+                return False
+            if int(arg_tuple[2]) not in range(APPS2_MIN, APPS2_MAX):
+                print(f"Invalid Range APPS2 - {arg_tuple[2]}")
+                return False
+            if int(arg_tuple[3]) not in range(BSE_MIN, BSE_MAX):
+                print(f"Invalid Range BSE - {arg_tuple[1]}")
+                return False
+            return True
+        return False
 
+    def parse_manual_mode_arguments(self, args: str) -> tuple:
+        arg_tuple = args.split()
+        int_args = [int(val) for val in arg_tuple[1:4]]
+        #check for true or false in args, without them needing to type the full True or False
+        bool_args = [val == 'True' for val in arg_tuple[4:7]]
+        return tuple(int_args + bool_args)
+    
     def _generate_help_message(self) -> str:
         help_str = "usage: Cycles Precision APPS_Wave BSE_WAVE\n"
         help_str += "\n".join([f"{key}: {value.__doc__.strip()}" for key, value in AnalogWave._registered_waves.items()])
