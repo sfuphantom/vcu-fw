@@ -22,7 +22,7 @@ class Simulation:
 
     def __init__(self, manual_control_writer : VCUSimulation):
         self.plotted_points: dict[VCU_Pedals, list[float]] = {key: [] for key in VCU_Pedals}
-        self.sim_length: int = 0
+        self.sim_duration: int = 0
         self.manual_control_writer : VCUSimulation = manual_control_writer
 
     def begin(self):
@@ -189,7 +189,9 @@ class Simulation:
                 for key in vcu_values.keys():
                     self.plotted_points[key].append(float(vcu_values[key]))
 
-        self._generate_plot(show = True)
+                self.sim_duration += self.manual_control_writer.LATENCY
+
+        self._generate_plot(self.sim_duration, show = True)
     
     def _format_values(self, data: dict, format_type : type = int):
         #Format data to a specifc format type written as a string
@@ -197,13 +199,13 @@ class Simulation:
             formatted_value = f"{format_type(value)}" 
             data[key] = formatted_value
 
-    def _generate_plot(self, show : bool = False):
+    def _generate_plot(self, duration : int, show : bool = False):
         """
         Display the plot after each additional wave created
         to show that the user has created
         """
         print ("\nClose Plot to Continue")
-        DataGeneration.generate_VCU_plot(self.plotted_points, showplot=show) 
+        DataGeneration.generate_VCU_plot(self.plotted_points, duration, showplot=show) 
     
     def _get_percentage(self, wave : str, inverse_wave : str, percent: float) -> float:
         #handle when the wave being called is an inverse

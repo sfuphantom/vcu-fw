@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import os
 import typing
 import pandas as pd
+from vcu_simulation import VCUSimulation
 
 
 PLOT_IMAGE_NAME = "PlottedSimValues.png"
@@ -13,7 +14,7 @@ class PlotGeneration():
     """
 
     @classmethod
-    def generate_VCU_plot(cls, plotted_points: dict[object, list[int]], showplot = True):
+    def generate_VCU_plot(cls, plotted_points: dict[object, list[int]], duration: int,  showplot = True):
         """
         Generate a plot PNG from VCU simulation values.
 
@@ -26,7 +27,7 @@ class PlotGeneration():
         # Add labels and a title
 
         # Add a legend
-        cls.add_lablels("Value Order", 'Voltage (mV)', 'Simulation Data' )
+        cls.add_lablels("Time (ms)", 'Voltage (mV)', f'Simulation Data - {duration} (ms)' )
 
         # Save the graph as a PNG file
 
@@ -50,7 +51,7 @@ class PlotGeneration():
         marker_list = ['o' for key in plotted_points.keys()]
         label_list = [key for key in plotted_points.keys()]
         Y_points = [value for value in plotted_points.values()]
-        X_points = [i for i in range(1,len(Y_points[0])+1)]
+        X_points = [i*(VCUSimulation.LATENCY) for i in range(1,len(Y_points[0])+1)]
 
         for i in range(len(plotted_points)):
             plt.plot(X_points, Y_points[i], marker = marker_list[i], label = label_list[i])

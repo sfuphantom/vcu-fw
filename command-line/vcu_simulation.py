@@ -18,6 +18,8 @@ APPS2_MAX = 1500
 
 class VCUSimulation:
 
+	LATENCY : int = 33
+
 	BAUDRATE: int = 460800
 
 	_port: str
@@ -105,7 +107,7 @@ class VCUSimulation:
 
 		with self.get_port() as vcu:
 			vcu.write(message)
-			time.sleep(33/1000) # best latency we can get. anything less is not guranteed to receive 
+			time.sleep(self.LATENCY/1000) # best latency we can get. anything less is not guranteed to receive 
 
 			time.sleep(delay_s/1000) # add additional user delay. this point is when the low priority tasks are done executing
 
