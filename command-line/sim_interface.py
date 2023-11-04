@@ -110,7 +110,7 @@ class VCUSimInterface:
         sim_len = len(sim_model[VCU_Pedals.APPS1])
 
 
-        res_data = {StateData.__name__ : [], EventData.__name__: []}
+        res_data = {StateData.__name__ : [], EventData.__name__: [], "Raw Response": []}
 
         #retrieve data from response
         for sim_num in range(sim_len):
@@ -121,8 +121,9 @@ class VCUSimInterface:
 
             response_vcu: ResponseVCU = ResponseVCU(self.vcu_writer.write(int(apps1), int(apps2), int(bse)))
 
-            res_data[EventData.__name__].append(response_vcu.events)
-            res_data[StateData.__name__].append(response_vcu.state)
+            res_data[EventData.__name__].append(response_vcu.events_str)
+            res_data[StateData.__name__].append(response_vcu.state_str)
+            res_data["Raw Reponse"] = str(response_vcu)
 
         #concatonate the two dictionnaries to be written into 
         return {**sim_model, **res_data}

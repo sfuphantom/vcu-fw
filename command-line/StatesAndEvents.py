@@ -172,13 +172,46 @@ class ResponseVCU:
     
     def __str__(self) -> str:
         return self._raw_response
+    
+    def _parse_event_data(self, event_set: set[EventData]) -> str: 
+        """
+        Parse the event set into a string used for data storage readable
+        by team members 
+        """
+        parsed_data = []
+        for event in event_set:
+            event_name = event.EVENT.name
+            time_ms = int(event.TIME)
+            formatted_event = f"{event_name}: {time_ms}ms"
+            parsed_data.append(formatted_event)
+        return "\n".join(parsed_data)
+    
+    def _format_state_data(self, state_data: StateData) -> str:
+        if state_data is None:
+            #Can change to unchanged or implement a cached value if we
+            #choose to display the current VCU state rather than reporting
+            #state transitions
+            return ""
+        state_name = state_data.STATE.name
+        time_ms = int(state_data.TIME) if state_data.TIME is not None else "Unchanged"
+        formatted_state = f"{state_name} - {time_ms}ms"
+        return formatted_state
         
     @property
     def events(self) -> List[EventData]:
         return self._events
+    
+    @property
+    def events_str(self) -> str:
+        return self._parse_event_data(self.events)
+
     @property
     def state(self) -> StateData:
         return self._state
+    
+    @property
+    def state_str(self) -> str:
+        return self._format_state_data(self.state)
 
 class EventError(Exception):
     """
