@@ -68,7 +68,7 @@ class Simulation:
             if args in exit_keys:
                 return exit()
             if args in help_keys:
-                self._generate_help_message()
+                print(self._generate_help_message())
                 return False
             if args in execute_keys:
                 # Begin writing to VCU
@@ -151,8 +151,11 @@ class Simulation:
         return tuple(int_args + bool_args)
     
     def _generate_help_message(self) -> str:
-        help_str = "usage: Cycles Precision APPS_Wave BSE_WAVE\n"
+        help_str = "Sim Model Usage: Cycles Precision APPS_Wave BSE_WAVE\n\n"
+        help_str += "------------REGISTERED WAVES------------\n"
         help_str += "\n".join([f"{key}: {value.__doc__.strip()}" for key, value in AnalogWave._registered_waves.items()])
+        help_str += "\n---------------------------------------"
+        help_str +="\n\nManual Control Usage : MC APPS1 APPS2 BSE TSAL RTD SETRESET\n"
         return help_str
 
     def add_simulation(self, args: dict):
