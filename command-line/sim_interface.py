@@ -3,6 +3,7 @@ from UploadDrive import VcuGDriveInterface
 from vcu_simulation import VCUSimulation, ResponseVCU
 from StatesAndEvents import ResponseVCU, EventData, StateData
 from data_generation import DataGeneration
+import time
 import os
 from typing import Union
 
@@ -105,12 +106,16 @@ class VCUSimInterface:
         Write the generated simulation to the VCU firmware. Retrieve the responses for the events and state changes. 
         """
         
-        sim_model : dict[VCU_Pedals, list[float]] = self.simulation.plotted_points  
+        sim_model : dict[VCU_Pedals, list[float]] = self.simulation.plotted_points.copy()
         #all the lenghts of the sim model are the same  
         sim_len = len(sim_model[VCU_Pedals.APPS1])
 
+        
+        res_data = { StateData.__name__ : [], EventData.__name__: [], "Raw Response": []}
 
-        res_data = {StateData.__name__ : [], EventData.__name__: [], "Raw Response": []}
+        time_data = {"Time (ms)" : []}
+
+        start_time = time.time()
 
         #retrieve data from response
         for sim_num in range(sim_len):
@@ -119,14 +124,21 @@ class VCUSimInterface:
             apps2: float = sim_model[VCU_Pedals.APPS2][sim_num]
             bse: float = sim_model[VCU_Pedals.BSE][sim_num]
 
+            end_time = time.time()
             response_vcu: ResponseVCU = ResponseVCU(self.vcu_writer.write(int(apps1), int(apps2), int(bse)))
 
             res_data[EventData.__name__].append(response_vcu.events_str)
             res_data[StateData.__name__].append(response_vcu.state_str)
             res_data["Raw Reponse"] = str(response_vcu)
 
-        #concatonate the two dictionnaries to be written into 
-        return {**sim_model, **res_data}
+            # Calculate the relative time passed in milliseconds
+            ellapsed_time = round(((end_time - start_time) * 1000),2)
+            time_data["Time (ms)"].append(ellapsed_time)
+
+        #format the column names 
+        sim_model = {str(pedal.name) + " (mV)" : value for pedal, value in sim_model.items()}
+        #concatonate dictionnaries in the order which will be written into the csv file
+        return {**time_data,**sim_model, **res_data}
 
 
 #call this file in python using python3 sim_interface.py 
