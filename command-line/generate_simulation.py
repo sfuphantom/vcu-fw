@@ -4,6 +4,7 @@ from data_generation import DataGeneration
 from enum import Enum
 import matplotlib.pyplot as plt
 import pandas as pd
+from StatesAndEvents import ResponseVCU
 from vcu_simulation import VCUSimulation
 from vcu_simulation import (
 	APPS1_MIN,
@@ -43,7 +44,7 @@ class Simulation:
                 self.add_simulation(ret)
             #Manual Control Args
             if isinstance(ret, tuple):
-                self.manual_control_writer.write(*ret)
+                self.execute_manual_control(*ret)
             #Exit Or Help, or Invalid args
             if isinstance(ret, bool):
                 if not ret:
@@ -157,6 +158,13 @@ class Simulation:
         help_str += "\n---------------------------------------"
         help_str +="\n\nManual Control Usage : MC APPS1 APPS2 BSE TSAL RTD SETRESET\n"
         return help_str
+
+    def execute_manual_control(self, *args):
+        """
+        Transmit the manual control arguments to the VCU and print the raw reponse
+        """
+        response = ResponseVCU(self.manual_control_writer.write(*args))
+        print(str(response))
 
     def add_simulation(self, args: dict):
 
