@@ -132,14 +132,14 @@ class Simulation:
         pattern = r'^MC (\d{1,}) (\d{1,}) (\d{1,}) (True|False) (True|False) (True|False)$'
         if bool(re.match(pattern, args)):
             arg_tuple = args.split()
-            if int(arg_tuple[1]) not in range(APPS1_MIN, APPS1_MAX):
+            if int(arg_tuple[1]) not in range(APPS1_MIN, APPS1_MAX+1):
                 print(f"Invalid Range APPS1 - {arg_tuple[1]}")
                 return False
-            if int(arg_tuple[2]) not in range(APPS2_MIN, APPS2_MAX):
+            if int(arg_tuple[2]) not in range(APPS2_MIN, APPS2_MAX+1):
                 print(f"Invalid Range APPS2 - {arg_tuple[2]}")
                 return False
-            if int(arg_tuple[3]) not in range(BSE_MIN, BSE_MAX):
-                print(f"Invalid Range BSE - {arg_tuple[1]}")
+            if int(arg_tuple[3]) not in range(BSE_MIN, BSE_MAX+1):
+                print(f"Invalid Range BSE - {arg_tuple[3]}")
                 return False
             return True
         return False
