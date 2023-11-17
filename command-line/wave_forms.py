@@ -1,3 +1,6 @@
+#Author : Kevin Litvin
+#Date : November 2023
+#Description : Model analog waves using mathematical equations for hardware testing
 
 from typing import Union
 from abc import ABC, abstractmethod

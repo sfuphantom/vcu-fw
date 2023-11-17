@@ -1,3 +1,7 @@
+#Author : Kevin Litvin
+#Date : November 2023
+#Description : Authentication and communication with the Team Phantom Google Drive for cloud data storage and result logging
+
 import os
 
 #pip install --upgrade google-api-python-client google-auth-httplib2 google-auth-oauthlib

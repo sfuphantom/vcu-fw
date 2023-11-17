@@ -1,3 +1,7 @@
+#Author : Kevin Litvin
+#Date : November 2023
+#Description : Defines the interface for generating simulation models from command line inputs
+
 import re
 from wave_forms import AnalogWave, VCU_Pedals, Union, VCU_Pedal
 from data_generation import DataGeneration

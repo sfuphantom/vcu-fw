@@ -1,3 +1,7 @@
+#Author : Kevin Litvin
+#Date : November 2023
+#Description : Encapsulates VCU serial communication, Drive communication, sim model generation, and data formatting
+
 from generate_simulation import Simulation, VCU_Pedal, VCU_Pedals
 from UploadDrive import VcuGDriveInterface
 from vcu_simulation import VCUSimulation, ResponseVCU

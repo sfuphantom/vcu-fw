@@ -1,3 +1,7 @@
+#Author : Kevin Litvin
+#Date : November 2023
+#Description : Defines the data structure to organize the VCU's firmware response to simuations
+
 from enum import Enum
 
 from typing import List, Union
