@@ -7,6 +7,10 @@ import time
 import os
 from typing import Union
 
+import json
+
+
+
 
 
 class VCUSimInterface:
@@ -38,7 +42,7 @@ class VCUSimInterface:
 
             data_generator (DataGeneration): An reference to the DataGeneration class for data formatting.
         """
-        self.vcu_writer = VCUSimulation("COM3")
+        self.vcu_writer = VCUSimulation
         self.configure_device(device=self.vcu_writer)
 
         # Pass in VCUSimulation object as a reference for thread-lock compatibility.
@@ -67,24 +71,35 @@ class VCUSimInterface:
         Configure the device from a json file. Currently unimplemented
         but could be useful for setting baudrate, or the OS ports
         """
-        json_config: dict = self._parse_json(None)
+        json_config: dict = self._parse_json()
         self.set_metadata(device, **json_config)
 
-    def _parse_json(self, path_to_json: str) -> dict:
+    def _parse_json(self) -> Union[dict, None]:
         """
         Parse the JSON containing the VCU specs
         """
-        if path_to_json == None:
-            #TODO: implemented .json deserializing if we test VCU's with different hardware specifications
+       
+        json_file_path = 'configs/device_config.json'
+
+        # Check if the directory exists
+        json_directory = os.path.dirname(json_file_path)
+
+        if not os.path.exists(json_directory):
             return dict()
-        pass
+        else:
+            # Load the JSON file
+            with open(json_file_path, 'r') as json_file:
+                data = json.load(json_file)
+
+                #return config data within
+                return data.get('VCU', {})
+        
 
     def set_metadata(self, device, **config):
         """
         Configure the simulation peripherals based on the config
         """
-        #Unimplemented for now
-        pass
+        self.vcu_writer = device(**config)
 
     def begin(self):
         """
@@ -125,11 +140,13 @@ class VCUSimInterface:
             bse: float = sim_model[VCU_Pedals.BSE][sim_num]
 
             end_time = time.time()
-            response_vcu: ResponseVCU = ResponseVCU(self.vcu_writer.write(int(apps1), int(apps2), int(bse)))
 
-            res_data[EventData.__name__].append(response_vcu.events_str)
-            res_data[StateData.__name__].append(response_vcu.state_str)
-            res_data["Raw Reponse"] = str(response_vcu)
+            
+            # response_vcu: ResponseVCU = ResponseVCU(self.vcu_writer.write(int(apps1), int(apps2), int(bse)))
+
+            # res_data[EventData.__name__].append(response_vcu.events_str)
+            # res_data[StateData.__name__].append(response_vcu.state_str)
+            # res_data["Raw Reponse"] = str(response_vcu)
 
             # Calculate the relative time passed in milliseconds
             ellapsed_time = round(((end_time - start_time) * 1000),2)
