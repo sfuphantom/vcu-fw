@@ -9,8 +9,8 @@ from enum import Enum
 import matplotlib.pyplot as plt
 import pandas as pd
 from StatesAndEvents import ResponseVCU
-from vcu_simulation import VCUSimulation
-from vcu_simulation import (
+from vcu_communication import VCU_Communication
+from vcu_communication import (
 	APPS1_MIN,
 	APPS1_MAX,
 	APPS2_MIN,
@@ -25,18 +25,18 @@ class Simulation:
 
     wave_forms = AnalogWave._registered_waves
 
-    def __init__(self, manual_control_writer : VCUSimulation):
+    def __init__(self, manual_control_writer : VCU_Communication):
         self.plotted_points: dict[VCU_Pedals, list[float]] = {key: [] for key in VCU_Pedals}
         self.sim_duration: int = 0
-        self.manual_control_writer : VCUSimulation = manual_control_writer
+        self.manual_control_writer : VCU_Communication = manual_control_writer
 
-    def begin(self):
+    def begin(self) -> bool:
         """
         Initial point to begin simulation
         """
         return self.get_command()
 
-    def get_command(self):
+    def get_command(self) -> bool:
         """
         Wait for user input
         """
@@ -59,7 +59,7 @@ class Simulation:
                     # TODO: Clear VCU plots
                     return True
 
-    def _parse_args(self, args: str):
+    def _parse_args(self, args: str) -> Union[dict, tuple, bool]:
         """
         Handle user input from the prompt for new commands.
         """
@@ -81,7 +81,7 @@ class Simulation:
 
         if num_args == 4:
             if self._validate_sim_arguments(args):
-                return self._parse_arguments(args)
+                return self._build_arguments(args)
             else:
                 print(f"Invalid Sim Arguments: {args}")
                 return False
@@ -120,7 +120,7 @@ class Simulation:
         #does not match pattern +int +int str str 
         return False
 
-    def _parse_arguments(self, args: str) -> dict:
+    def _build_arguments(self, args: str) -> dict:
         arg_tuple = args.split()
         return {
             'Cycles': int(arg_tuple[0]),

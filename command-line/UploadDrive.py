@@ -209,7 +209,7 @@ class VcuGDriveInterface:
         gdrive_service = Authenticator.authenticate_gdrive(credentials=credentials)
         self.upload_gdrive : GoogleDriveUpload = GoogleDriveUpload(gdrive_service, self.VCU_SIM_LOG_FOLDER_ID)
 
-    def upload_data(self, csv_file_name: str = CSV_FILE_NAME, plotted_data:str = PLOT_IMAGE_NAME) -> bool:
+    def upload_data(self, csv_file_name: str = CSV_FILE_NAME, png_file_name:str = PLOT_IMAGE_NAME) -> bool:
         """
         Generates a new folder conatainer for the simulated data results. Folder is generated 
         based on the current time of the upload request.
@@ -234,7 +234,7 @@ class VcuGDriveInterface:
                                 csv_file_name, parentID)
             #upload the png
             self.upload_gdrive.upload_png_to_gdrive(
-                                plotted_data, parentID)
+                                png_file_name, parentID)
         except Exception as e:
             print(f"Exception Caught: {e}")
             return False

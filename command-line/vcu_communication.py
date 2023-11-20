@@ -16,7 +16,7 @@ APPS1_MAX = 4500
 APPS2_MIN = 500
 APPS2_MAX = 1500
 
-class VCUSimulation:
+class VCU_Communication:
 
 	LATENCY : int = 33
 
@@ -62,7 +62,7 @@ class VCUSimulation:
 	def __init__(self, port: str, logger=lambda x: None) -> None:
 		self._port = port
 
-		self.get_port = lambda: serial.Serial(self._port, baudrate=VCUSimulation.BAUDRATE)
+		self.get_port = lambda: serial.Serial(self._port, baudrate=VCU_Communication.BAUDRATE)
 
 		# test the port
 		with self.get_port():

@@ -1,12 +1,12 @@
 #Author : Kevin Litvin
-#Date November 2023
+#Date : November 2023
 #Description : Data storage and generation for CSV data logs and PNG  simulation plots
 
 import matplotlib.pyplot as plt
 import os
 import typing
 import pandas as pd
-from vcu_simulation import VCUSimulation
+from vcu_communication import VCU_Communication
 
 
 PLOT_IMAGE_NAME = "PlottedSimValues.png"
@@ -57,7 +57,7 @@ class PlotGeneration():
         marker_list = ['o' for key in plotted_points.keys()]
         label_list = [key for key in plotted_points.keys()]
         Y_points = [value for value in plotted_points.values()]
-        X_points = [i*(VCUSimulation.LATENCY) for i in range(1,len(Y_points[0])+1)]
+        X_points = [i*(VCU_Communication.LATENCY) for i in range(1,len(Y_points[0])+1)]
 
         for i in range(len(plotted_points)):
             plt.plot(X_points, Y_points[i], marker = marker_list[i], label = label_list[i])

@@ -85,11 +85,11 @@ class ResponseVCU:
         self._raw_response: str = raw_response
         self._events: set[EventData] = set() 
         self._state : StateData = None # TODO: Currently does not check intermediate states.
-        self.parse_str()
+        self.parse_raw_data()
         # Unclear if we want to keep track of multiple VCU state changes 
         # >>> self._state: set[StateData]  = set()  
     
-    def parse_str(self):
+    def parse_raw_data(self):
         """
         Parse the raw string from the vcu response, and parse into events and states
         Generally, the form of the string follows the form :

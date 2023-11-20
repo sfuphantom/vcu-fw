@@ -8,7 +8,7 @@ from enum import Enum
 import math
 import random
 
-from vcu_simulation import (
+from vcu_communication import (
 	APPS1_MIN,
 	APPS1_MAX,
 	APPS2_MIN,
@@ -183,8 +183,9 @@ class TriangularWave(AnalogWave):
     @classmethod
     def inverse_mapping(cls ,percent_pressed: float) -> float:
         return 1-percent_pressed
+    
 @AnalogWave.register("R")    
-class RandomWave(AnalogWave):
+class DiscontinousWave(AnalogWave):
     """
     Random wave which takes a uniform number between the current percent pressed and 0
     """

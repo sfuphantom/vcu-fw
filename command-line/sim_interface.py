@@ -4,7 +4,7 @@
 
 from generate_simulation import Simulation, VCU_Pedal, VCU_Pedals
 from UploadDrive import VcuGDriveInterface
-from vcu_simulation import VCUSimulation, ResponseVCU
+from vcu_communication import VCU_Communication, ResponseVCU
 from StatesAndEvents import ResponseVCU, EventData, StateData
 from data_generation import DataGeneration
 import time
@@ -38,7 +38,7 @@ class VCUSimInterface:
         Initialize all components for simulation communication
 
          Attributes:
-            vcu_writer (VCUSimulation): An instance of the VCUSimulation class for VCU serial communication.
+            vcu_writer (VCU_Communication): An instance of the VCU_Communication class for VCU serial communication.
 
             simulation (Simulation): An instance of the Simulation class for simulation generation
 
@@ -46,31 +46,16 @@ class VCUSimInterface:
 
             data_generator (DataGeneration): An reference to the DataGeneration class for data formatting.
         """
-        self.vcu_writer = VCUSimulation
-        self.configure_device(device=self.vcu_writer)
+        self.vcu_writer = VCU_Communication
+        #self.configure_device(device=self.vcu_writer)
 
-        # Pass in VCUSimulation object as a reference for thread-lock compatibility.
+        # Pass in VCU_Communication object as a reference for thread-lock compatibility.
         # Useful if we decide to test manual control while running a sim model
         self.simulation: Simulation = Simulation(self.vcu_writer)
         self.vcu_gdrive_interface: VcuGDriveInterface = VcuGDriveInterface()
         self.data_generator = DataGeneration
 
-    def __init__(self) -> None:
-        """
-        Initialize all components for simulation communication including
-        Drive Communication, VCU serial writing, Simulation Generation, and Data Formatting
-        """
-        self.vcu_writer = VCUSimulation
-        self.configure_device(device = self.vcu_writer)
-
-        #Pass in VCUSimulaiton object as reference for thread-lock compatibility.
-        #Useful if we decide to test manual control while running a sim model
-        self.simulation : Simulation = Simulation(self.vcu_writer)
-        self.vcu_gdrive_interface : VcuGDriveInterface = VcuGDriveInterface()
-        self.data_generator = DataGeneration
-
-
-    def configure_device(self, device : VCUSimulation):
+    def configure_device(self, device : VCU_Communication):
         """
         Configure the device from a json file. Currently unimplemented
         but could be useful for setting baudrate, or the OS ports
