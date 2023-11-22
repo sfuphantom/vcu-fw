@@ -47,7 +47,7 @@ class VCUSimInterface:
             data_generator (DataGeneration): An reference to the DataGeneration class for data formatting.
         """
         self.vcu_writer = VCU_Communication
-        #self.configure_device(device=self.vcu_writer)
+        self.configure_device(device=self.vcu_writer)
 
         # Pass in VCU_Communication object as a reference for thread-lock compatibility.
         # Useful if we decide to test manual control while running a sim model
@@ -130,12 +130,11 @@ class VCUSimInterface:
 
             end_time = time.time()
 
-            
-            # response_vcu: ResponseVCU = ResponseVCU(self.vcu_writer.write(int(apps1), int(apps2), int(bse)))
+            response_vcu: ResponseVCU = ResponseVCU(self.vcu_writer.write(int(apps1), int(apps2), int(bse)))
 
-            # res_data[EventData.__name__].append(response_vcu.events_str)
-            # res_data[StateData.__name__].append(response_vcu.state_str)
-            # res_data["Raw Reponse"] = str(response_vcu)
+            res_data[EventData.__name__].append(response_vcu.events_str)
+            res_data[StateData.__name__].append(response_vcu.state_str)
+            res_data["Raw Reponse"] = str(response_vcu)
 
             # Calculate the relative time passed in milliseconds
             ellapsed_time = round(((end_time - start_time) * 1000),2)
