@@ -25,39 +25,9 @@ class Simulation:
 
     wave_forms = AnalogWave._registered_waves
 
-    def __init__(self, manual_control_writer : VCU_Communication):
+    def __init__(self):
         self.plotted_points: dict[VCU_Pedals, list[float]] = {key: [] for key in VCU_Pedals}
         self.sim_duration: int = 0
-        self.manual_control_writer : VCU_Communication = manual_control_writer
-
-    def begin(self) -> bool:
-        """
-        Initial point to begin simulation
-        """
-        return self.get_command()
-
-    def get_command(self) -> bool:
-        """
-        Wait for user input
-        """
-        while True:
-            args = input(">>>")
-            ret = self._parse_args(args)
-            #Simulation Args
-            if isinstance(ret, dict):
-                self.add_simulation(ret)
-            #Manual Control Args
-            if isinstance(ret, tuple):
-                self.execute_manual_control(*ret)
-            #Exit Or Help, or Invalid args
-            if isinstance(ret, bool):
-                if not ret:
-                    #print(self._generate_help_message())
-                    pass
-                if ret:
-                    # Successfully wrote values
-                    # TODO: Clear VCU plots
-                    return True
 
     def _parse_args(self, args: str) -> Union[dict, tuple, bool]:
         """
@@ -163,13 +133,6 @@ class Simulation:
         help_str +="\n\nManual Control Usage : MC APPS1 APPS2 BSE TSAL RTD SETRESET\n"
         return help_str
 
-    def execute_manual_control(self, *args):
-        """
-        Transmit the manual control arguments to the VCU and print the raw reponse
-        """
-        response = ResponseVCU(self.manual_control_writer.write(*args))
-        print(str(response))
-
     def add_simulation(self, args: dict):
 
         DEFAULT_CYCLES = 1
@@ -204,7 +167,7 @@ class Simulation:
                 for key in vcu_values.keys():
                     self.plotted_points[key].append(float(vcu_values[key]))
 
-                self.sim_duration += self.manual_control_writer.LATENCY
+                self.sim_duration += VCU_Communication.LATENCY
 
         self._generate_plot(self.sim_duration, show = True)
     

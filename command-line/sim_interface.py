@@ -47,11 +47,9 @@ class VCUSimInterface:
             data_generator (DataGeneration): An reference to the DataGeneration class for data formatting.
         """
         self.vcu_writer = VCU_Communication
-        self.configure_device(device=self.vcu_writer)
+        #self.configure_device(device=self.vcu_writer)
 
-        # Pass in VCU_Communication object as a reference for thread-lock compatibility.
-        # Useful if we decide to test manual control while running a sim model
-        self.simulation: Simulation = Simulation(self.vcu_writer)
+        self.simulation: Simulation = Simulation()
         self.vcu_gdrive_interface: VcuGDriveInterface = VcuGDriveInterface()
         self.data_generator = DataGeneration
 
@@ -95,7 +93,7 @@ class VCUSimInterface:
         Initialization point of the simulation interface. Executes the simulation, retrieves the results
         and finally uploads the data to the Google Drive.
         """
-        simulation_res : bool = self.simulation.begin()
+        simulation_res : bool = self.get_command()
         if (simulation_res):
             write_res = self._write_data()
             self.data_generator.write_to_csv(write_res)
@@ -104,6 +102,36 @@ class VCUSimInterface:
         else:
             #Handle 
             raise Exception("Problem with building simulation")
+        
+    def get_command(self) -> bool:
+        """
+        Retrieve user input
+        """
+
+        while True:
+            args = input(">>>")
+            ret = self.simulation._parse_args(args)
+            #Simulation Args
+            if isinstance(ret, dict):
+                self.simulation.add_simulation(ret)
+            #Manual Control Args
+            if isinstance(ret, tuple):
+                self.execute_manual_control(*ret)
+            #Exit Or Help, or Invalid args
+            if isinstance(ret, bool):
+                if not ret:
+                    pass
+                if ret:
+                    # Successfully wrote values
+                    # TODO: Clear VCU plots
+                    return True
+                
+    def execute_manual_control(self, *args):
+        """
+        Transmit the manual control arguments to the VCU and print the raw reponse
+        """
+        response = ResponseVCU(self.vcu_writer.write(*args))
+        print(str(response))
 
     def _write_data(self) -> dict[str, Union[str, float]]:
         """
