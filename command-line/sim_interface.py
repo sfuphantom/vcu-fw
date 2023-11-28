@@ -97,7 +97,7 @@ class VCUSimInterface:
         """
         simulation_res : bool = self.simulation.begin()
         if (simulation_res):
-            write_res : dict[Union[VCU_Pedal, str], Union[list[int], list[EventData], list[StateData]]] = self._write_data()
+            write_res = self._write_data()
             self.data_generator.write_to_csv(write_res)
             self.vcu_gdrive_interface.upload_data()
             exit()
@@ -105,7 +105,7 @@ class VCUSimInterface:
             #Handle 
             raise Exception("Problem with building simulation")
 
-    def _write_data(self) -> dict[Union[VCU_Pedal, str], Union[list[int], list[EventData], list[StateData]]]:
+    def _write_data(self) -> dict[str, Union[str, float]]:
         """
         Write the generated simulation to the VCU firmware. Retrieve the responses for the events and state changes. 
         """
@@ -148,8 +148,8 @@ class VCUSimInterface:
 
 #call this file in python using python3 sim_interface.py 
 if __name__ == "__main__":
-    interface: VCUSimInterface = VCUSimInterface().begin()
-
+    interface : VCUSimInterface = VCUSimInterface()
+    interface.begin()
 
 
 
