@@ -77,6 +77,7 @@ class VCUSimInterface:
             #Simulation Args
             if isinstance(ret, dict):
                 self.simulation.add_simulation(ret)
+                self._generate_plot(self.simulation.plotted_points, self.simulation.sim_duration)
             #Manual Control Args
             if isinstance(ret, tuple):
                 self.execute_manual_control(*ret)
@@ -96,9 +97,17 @@ class VCUSimInterface:
         response = ResponseVCU(self.vcu_writer.write(*args))
         print(str(response))
 
-    def _write_data(self) -> dict[str, Union[str, float]]:
+    def _generate_plot(self, plotted_points: dict, duration : int):
         """
-        Write the generated simulation to the VCU firmware. Retrieve the responses for the events and state changes. 
+        Display the plot for the current simulation model including the simulation duration
+        """
+        print("\nClose Plot to Continue")
+        self.data_generator.generate_VCU_plot(plotted_points, duration, showplot=True) 
+
+    def _write_data(self) -> dict[str, list[Union[str, float]]]:
+        """
+        Write the generated simulation to the VCU firmware. 
+        Retrieve the responses for the events and state changes. 
         """
         
         sim_model : dict[VCU_Pedals, list[float]] = self.simulation.plotted_points.copy()

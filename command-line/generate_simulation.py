@@ -168,8 +168,6 @@ class Simulation:
                     self.plotted_points[key].append(float(vcu_values[key]))
 
                 self.sim_duration += VCU_Communication.LATENCY
-
-        self._generate_plot(self.sim_duration, show = True)
     
     def _format_values(self, data: dict, format_type : type = int):
         #Format data to a specifc format type written as a string
@@ -177,13 +175,6 @@ class Simulation:
             formatted_value = f"{format_type(value)}" 
             data[key] = formatted_value
 
-    def _generate_plot(self, duration : int, show : bool = False):
-        """
-        Display the plot after each additional wave created
-        to show that the user has created
-        """
-        print ("\nClose Plot to Continue")
-        DataGeneration.generate_VCU_plot(self.plotted_points, duration, showplot=show) 
     
     def _get_percentage(self, wave : str, inverse_wave : str, percent: float) -> float:
         #handle when the wave being called is an inverse
