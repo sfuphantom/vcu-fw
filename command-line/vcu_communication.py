@@ -1,6 +1,7 @@
 import time
 from operator import attrgetter
-import serial
+import serial, os
+import json
 
 from StatesAndEvents import ResponseVCU
 
@@ -59,10 +60,13 @@ class VCU_Communication:
 
 		return get_current_value()
 	
-	def __init__(self, port: str, logger=lambda x: None) -> None:
+	def __init__(self, port: str = None, logger=lambda x: None) -> None:
 		self._port = port
+		#check the config file if no port specified
+		if port == None:
+			self._parse_config()
 
-		self.get_port = lambda: serial.Serial(self._port, baudrate=VCU_Communication.BAUDRATE)
+		self.get_port = lambda: serial.Serial(self._port, baudrate=self.BAUDRATE)
 
 		# test the port
 		with self.get_port():
@@ -71,6 +75,29 @@ class VCU_Communication:
 		self._logger = logger
 
 		self._logger("Initializing logger...")
+
+	def _parse_config(self):
+		"""
+        Parse the JSON containing the VCU specs
+        """
+		json_file_path = 'configs/device_config.json'
+
+			# Check if the directory exists
+		json_directory = os.path.dirname(json_file_path)
+
+		if not os.path.exists(json_directory):
+				raise Exception("Config not found")
+	
+		# Load the JSON file
+		with open(json_file_path, 'r') as json_file:
+			data = json.load(json_file)
+
+			#return config data within
+				
+			config : dict = data.get('VCU', {})
+			if not config:
+				raise Exception(f"Specify port configuration in {json_file_path}")
+			self._port = config["port"]
 
 	def __encode(self, a1: int, a2: int, bse: int, tsal_flip: bool, rtds_flip: bool, set_reset_flip: bool) -> bytes:
 

@@ -46,47 +46,10 @@ class VCUSimInterface:
 
             data_generator (DataGeneration): An reference to the DataGeneration class for data formatting.
         """
-        self.vcu_writer = VCU_Communication
-        #self.configure_device(device=self.vcu_writer)
-
+        self.vcu_writer = VCU_Communication(None)
         self.simulation: Simulation = Simulation()
         self.vcu_gdrive_interface: VcuGDriveInterface = VcuGDriveInterface()
         self.data_generator = DataGeneration
-
-    def configure_device(self, device : VCU_Communication):
-        """
-        Configure the device from a json file. Currently unimplemented
-        but could be useful for setting baudrate, or the OS ports
-        """
-        json_config: dict = self._parse_json()
-        self.set_metadata(device, **json_config)
-
-    def _parse_json(self) -> Union[dict, None]:
-        """
-        Parse the JSON containing the VCU specs
-        """
-       
-        json_file_path = 'configs/device_config.json'
-
-        # Check if the directory exists
-        json_directory = os.path.dirname(json_file_path)
-
-        if not os.path.exists(json_directory):
-            return dict()
-        else:
-            # Load the JSON file
-            with open(json_file_path, 'r') as json_file:
-                data = json.load(json_file)
-
-                #return config data within
-                return data.get('VCU', {})
-        
-
-    def set_metadata(self, device, **config):
-        """
-        Configure the simulation peripherals based on the config
-        """
-        self.vcu_writer = device(**config)
 
     def begin(self):
         """
