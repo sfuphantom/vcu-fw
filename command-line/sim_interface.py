@@ -134,7 +134,7 @@ class VCUSimInterface:
 
             res_data[EventData.__name__].append(response_vcu.events_str)
             res_data[StateData.__name__].append(response_vcu.state_str)
-            res_data["Raw Reponse"] = str(response_vcu)
+            res_data["Raw Response"].append(str(response_vcu))
 
             # Calculate the relative time passed in milliseconds
             ellapsed_time = round(((end_time - start_time) * 1000),2)
