@@ -129,7 +129,13 @@ void GetRuntimeStatistics(void* x)
 	// vTaskGetRunTimeStats(ptrTaskList);
 
 	char ptrTaskList[TASK_LIST_SIZE];
+
+	// HOTFIX: VCU and Launchpad have two differenct freeRTOS configs
+	// Launchpad doesn't have this function but doesn't use it anyways
+	// TODO: This will be consolidated when moving halcogen to hercules-common-lib4
+	#ifndef LAUNCHPAD
 	vTaskList(ptrTaskList);
+    #endif
 
 	UARTprintln("\n");
 	UARTSend(PC_UART, ptrTaskList);

@@ -8,9 +8,8 @@ from typing import List, Union
 
 from dataclasses import dataclass
 
+
 import logging
-
-
 
 
 class VCUEvents (Enum):
@@ -71,7 +70,6 @@ class ResponseVCU:
     Stores the set of events and their time of trigger
     Stores the state of the VCU and the time of change (if changed)
     """
-
     logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -124,7 +122,8 @@ class ResponseVCU:
                 print(f"Caught exception for {line}")
                 logging.log(logging.INFO, f"Error from parsing : {line} - {e}")
 
-    def add_event(self, event_name: VCUEvents, event_time: float):
+    
+    def add_event(self, event_name: VCUEvents, event_time: int):
         """
         Add an event to set of events
 
@@ -143,8 +142,8 @@ class ResponseVCU:
     
         self._events.add(event_data)
 
-
     def set_state(self, state: VCUStates, state_time_trigger: float = None):
+
         """
         Specifify the state of the VCU and the time of state change (if changed)
 
@@ -175,8 +174,8 @@ class ResponseVCU:
         return event_list
     
     def __str__(self) -> str:
-        return self._raw_response
-    
+        return self._raw_response  
+      
     def _parse_event_data(self, event_set: set[EventData]) -> str: 
         """
         Parse the event set into a string used for data storage readable
@@ -200,11 +199,12 @@ class ResponseVCU:
         time_ms = int(state_data.TIME) if state_data.TIME is not None else "Unchanged"
         formatted_state = f"{state_name} - {time_ms}ms"
         return formatted_state
+
         
     @property
     def events(self) -> List[EventData]:
         return self._events
-    
+        
     @property
     def events_str(self) -> str:
         return self._parse_event_data(self.events)
