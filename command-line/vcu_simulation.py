@@ -1,12 +1,6 @@
 import time
 from operator import attrgetter
-import serial, os
-import json
-
-from StatesAndEvents import ResponseVCU
-
-#VCU pedal specifics can be found at the following documentation:
-# https://docs.google.com/document/d/1PsZSJR6la_u_oXmN2lo8tfRcU6E8GrMdpH35ESl7d4U/
+import serial
 
 from StatesAndEvents import ResponseVCU
 
@@ -19,9 +13,7 @@ APPS1_MAX = 4500
 APPS2_MIN = 500
 APPS2_MAX = 1500
 
-class VCU_Communication:
-
-	LATENCY : int = 33
+class VCUSimulation:
 
 	BAUDRATE: int = 460800
 
@@ -62,13 +54,10 @@ class VCU_Communication:
 
 		return get_current_value()
 	
-	def __init__(self, port: str = None, logger=lambda x: None) -> None:
+	def __init__(self, port: str, logger=lambda x: None) -> None:
 		self._port = port
-		#check the config file if no port specified
-		if port == None:
-			self._parse_config()
 
-		self.get_port = lambda: serial.Serial(self._port, baudrate=self.BAUDRATE)
+		self.get_port = lambda: serial.Serial(self._port, baudrate=VCUSimulation.BAUDRATE)
 
 		# test the port
 		with self.get_port():
@@ -77,29 +66,6 @@ class VCU_Communication:
 		self._logger = logger
 
 		self._logger("Initializing logger...")
-
-	def _parse_config(self):
-		"""
-        Parse the JSON containing the VCU specs
-        """
-		json_file_path = 'configs/device_config.json'
-
-			# Check if the directory exists
-		json_directory = os.path.dirname(json_file_path)
-
-		if not os.path.exists(json_directory):
-				raise Exception("Config not found")
-	
-		# Load the JSON file
-		with open(json_file_path, 'r') as json_file:
-			data = json.load(json_file)
-
-			#return config data within
-				
-			config : dict = data.get('VCU', {})
-			if not config:
-				raise Exception(f"Specify port configuration in {json_file_path}")
-			self._port = config["port"]
 
 	def __encode(self, a1: int, a2: int, bse: int, tsal_flip: bool, rtds_flip: bool, set_reset_flip: bool) -> bytes:
 
@@ -136,7 +102,7 @@ class VCU_Communication:
 
 		with self.get_port() as vcu:
 			vcu.write(message)
-			time.sleep(self.LATENCY/1000) # best latency we can get. anything less is not guranteed to receive 
+			time.sleep(33/1000) # best latency we can get. anything less is not guranteed to receive 
 
 			time.sleep(delay_s/1000) # add additional user delay. this point is when the low priority tasks are done executing
 

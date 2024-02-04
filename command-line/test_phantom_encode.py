@@ -1,6 +1,6 @@
 import sys
-from vcu_communication import VCU_Communication
-from vcu_communication import (
+from vcu_simulation import VCUSimulation
+from vcu_simulation import (
 	APPS1_MIN,
 	APPS1_MAX,
 	APPS2_MIN,
@@ -12,7 +12,7 @@ from vcu_communication import (
 
 def test_throttle_output(step=20): 
 
-	vcu = VCU_Communication(sys.argv[1], logger=print)
+	vcu = VCUSimulation(sys.argv[1], logger=print)
 
 	apps1 = range(APPS1_MIN, APPS1_MAX, step)
 	apps2 = range(APPS2_MIN, APPS2_MAX, step)
@@ -38,7 +38,7 @@ def test_interrupt_output():
 
 	ret = ''
 
-	vcu = VCU_Communication(sys.argv[1], logger=print)
+	vcu = VCUSimulation(sys.argv[1], logger=print)
 
 	response = vcu.write(rtds_flip=True, tsal_flip=True, delay_s=0.5)
 	assert "EVENT_TRACTIVE_ON" in response and "Ready to drive!" in response, response

@@ -1,9 +1,0 @@
-{
-    "VCU": {
-      "port": "COM3"
-    },
-    "BMS": {
-      "port": "ttyl/usb0"
-    }
-  }
-  
