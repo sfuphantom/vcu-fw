@@ -314,7 +314,7 @@
 						</toolChain>
 					</folderInfo>
 					<sourceEntries>
-						<entry excluding="halcogen_vcu/source/sys_link.cmd|Phantom/hardware/launchpad_hw|halcogen_vcu/source/sys_main.c|sys_linker_freeRTOS.cmd|halcogen_launchpad" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
+						<entry excluding="Phantom/hercules-phantom-lib|halcogen_vcu/source/sys_link.cmd|Phantom/hardware/launchpad_hw|halcogen_vcu/source/sys_main.c|sys_linker_freeRTOS.cmd|halcogen_launchpad" flags="VALUE_WORKSPACE_PATH|RESOLVED" kind="sourcePath" name=""/>
 					</sourceEntries>
 				</configuration>
 			</storageModule>
