@@ -63,6 +63,8 @@ void NotifyStateMachineFromTimer(TimerHandle_t timer)
 /* Event callback */
 static void UpdateStateMachine(void* data)
 {
+
+	return;
 	#ifdef VCU_SIM_MODE
 	LogColor(YEL, "VCU is in Simulation Mode. Events do not affect the state machine.");
 	return;

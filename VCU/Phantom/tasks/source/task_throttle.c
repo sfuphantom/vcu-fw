@@ -92,18 +92,18 @@ TaskHandle_t ThrottleInit(void)
 
 void SuspendThrottle(TaskHandle_t self)
 {
-    #ifndef VCU_SIM_MODE
-    if (self == taskHandle)
-    {
-        MCP48FV_Set_Value(0); // send throttle value to DAC driver
-        LogColor(RED, "Turning off throttle");
+    // #ifndef VCU_SIM_MODE
+    // if (self == taskHandle)
+    // {
+    //     MCP48FV_Set_Value(0); // send throttle value to DAC driver
+    //     LogColor(RED, "Turning off throttle");
 
-		LogColor(RED, "Suspending throttle task.");
-        vTaskSuspend(self);
-    }
-    #else
-    LogColor(GRN, "Cannot suspend throttle in VCU Sim Mode.");
-    #endif
+	// 	LogColor(RED, "Suspending throttle task.");
+    //     vTaskSuspend(self);
+    // }
+    // #else
+    // LogColor(GRN, "Cannot suspend throttle in VCU Sim Mode.");
+    // #endif
 }
 
 
@@ -125,10 +125,10 @@ static void vThrottleTask(void* arg)
             continue; 
         }
 
-        float apps1PedalPercent = CalculatePedalPercent(pedalReadings.fp1, PADDED_APPS1_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
+        float apps1PedalPercent = CalculatePedalPercent(pedalReadings.fp1, PADDED_APPS1_MIN_VALUE, PADDED_APPS1_MAX_VALUE);
         float apps2PedalPercent = CalculatePedalPercent(pedalReadings.fp2, PADDED_APPS2_MIN_VALUE, PADDED_APPS2_MAX_VALUE);
 
-        CheckFaultConditions(&pedalReadings, apps1PedalPercent, apps2PedalPercent);
+        // CheckFaultConditions(&pedalReadings, apps1PedalPercent, apps2PedalPercent);
 
         /* Set throttle voltage value */ 
         float apps_percent_avg = (apps1PedalPercent + apps2PedalPercent) / 2;
@@ -136,6 +136,12 @@ static void vThrottleTask(void* arg)
 
         MCP48FV_Set_Value(throttle); 
 
+        // output to the screen for 
+        char buffer[32];
+
+        // sprintf(buffer, "%d\n\r", pedalReadings.fp1);
+        sprintf(buffer, "%d %d %d\n\r", pedalReadings.fp1, pedalReadings.fp2, throttle);
+		UARTSend(PC_UART, buffer);
     }
 }
 

@@ -103,7 +103,7 @@ static pedal_reading_t ReadPedals()
 
 	#ifndef VCU_SIM_MODE 
 	// delay must occur here because sim mode has no delay (frequency determined by incoming serial data)
-	vTaskDelay(pdMS_TO_TICKS(20)); 
+	vTaskDelay(pdMS_TO_TICKS(100)); 
 
 	// Get pedal readings from ADC
 	adcData_t FP_data[3];
