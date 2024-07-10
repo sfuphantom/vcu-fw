@@ -25,6 +25,16 @@ static State SevereFault(eCarEvents event);
 
 static SystemTasks_t system_tasks;
 
+void VCU_FLT_Set()
+{
+	//Toggles VCU_FLT pin defined in hardware file.
+
+	gioSetBit(SHUTDOWN_CIRCUIT_PORT,BSPD_FAULT_PIN,1);//Check pin since no VCU_FLT pin is defined.
+	
+	LogColor(RED, "Setting VCU_FLT signal.");
+
+	return;
+}
 
 /* Public API */
 
@@ -138,6 +148,8 @@ static State VariousStates(State state, eCarEvents event)
 	if (faults && state != SEVERE_FAULT)
 	{
 		SuspendThrottle(system_tasks.Throttle);
+
+		VCU_FLT_Set();
 		
 		LogColor(RED, "Moving to SevereFault state");
 
