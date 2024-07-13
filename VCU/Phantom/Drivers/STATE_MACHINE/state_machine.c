@@ -14,6 +14,7 @@
 #include "task_event_handler.h"
 #include "task_throttle.h"
 #include "task_logger.h"
+#include "board_hardware.h"
 
 static void UpdateStateMachine(void* data);
 static State VariousStates(State state, eCarEvents event);
@@ -25,13 +26,11 @@ static State SevereFault(eCarEvents event);
 
 static SystemTasks_t system_tasks;
 
-void VCU_FLT_Set()
+void VCU_FLT_Set(int value)
 {
 	//Toggles VCU_FLT pin defined in hardware file.
 
-	gioSetBit(SHUTDOWN_CIRCUIT_PORT,BSPD_FAULT_PIN,1);//Check pin since no VCU_FLT pin is defined.
-	
-	LogColor(RED, "Setting VCU_FLT signal.");
+	gioSetBit(SHUTDOWN_CIRCUIT_PORT,BSPD_FAULT_PIN,value);//Check pin since no VCU_FLT pin is defined in the hardware file. We assumed no latch is available thus fault must stay until car reset.
 
 	return;
 }
@@ -149,7 +148,9 @@ static State VariousStates(State state, eCarEvents event)
 	{
 		SuspendThrottle(system_tasks.Throttle);
 
-		VCU_FLT_Set();
+		VCU_FLT_Set(1);//Sets VCU_FLT to 1
+
+	    LogColor(RED, "Setting VCU_FLT signal.");
 		
 		LogColor(RED, "Moving to SevereFault state");
 
@@ -202,6 +203,11 @@ static State SevereFault(eCarEvents event)
 	if (event == EVENT_RESET_CAR)
 	{
 		LogColor(CYN, "Moving from SevereFault to TractiveOff");
+
+		VCU_FLT_Set(0); //Clearing VCU FLT --> Assuming the reset car event triggers.
+
+		LogColor(CYN, "Clearing VCU_FLT signal");
+
 		return TRACTIVE_OFF;
 	}
 

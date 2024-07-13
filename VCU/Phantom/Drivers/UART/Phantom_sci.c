@@ -31,6 +31,7 @@ enum eCommands{
 	RESET_CAR='r',
 	START_ENGINE='s',
 	TURN_TRACTIVE_ON='o',
+	SEVERE_FAULT_TEST='f',
 };
 
 static volatile uint8_t messageCounter = 0;
@@ -227,6 +228,12 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 			NotifyStateMachineFromISR(EVENT_RESET_CAR);
 
 			break;
+		}
+		case SEVERE_FAULT_TEST:
+		{
+		    NotifyStateMachineFromISR(EVENT_UNRESPONSIVE_APPS);
+
+		    break;
 		}
 		default:
 		{
