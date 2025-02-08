@@ -11,6 +11,7 @@
 #include "gio.h"
 #include "adc.h"
 #include "het.h"
+#include "can.h"
 
 #include "RGB_LED.h"            // RGB LED wrapper written by Joshua Guo
 #include "RTD_Buzzer.h"         // Ready to Drive buzzer wrapper written by Gabriel Soares
@@ -67,6 +68,14 @@ void phantomDriversInit()
 
 void phantomTasksInit()
 {
+    // Parameters for xTaskCreate:
+    // - pxTaskCode  = Function the task will execute (Task_CANMonitor).
+    // - pcName      = Name of the task ("CANMonitor").
+    // - useStackDepth = Stack size (512 bytes).
+    // - pvParameters = No parameters passed to Task_CANMonitor() (NULL).
+    // - uxPriority  = Task priority is 2 (higher value = higher priority).
+    // - pxCreatedTask = Task handle (NULL means handle is not used).
+    xTaskCreate(Task_CANMonitor, "CANMonitor", 512, NULL, 2, NULL);
     SystemTasks_t t = {
         .EventHandler=EventHandlerInit(),
         .Logger=LoggerInit(),
@@ -82,6 +91,25 @@ void phantomTasksInit()
     StateMachineInit(t);
 }
 
+//Retrieve CAN data
+void Task_CANMonitor(void *pvParameters)
+{
+    uint8_t canData[8];
+    canBASE_t *canNode = &canREG1; // Replace with actual CAN node
+    uint32_t messageBox = 1;       // Replace with actual mailbox number
+
+    while (1) {
+        uint32_t status = canGetData(canNode, messageBox, canData);
+        if (status == CAN_SUCCESS) {
+            if (canData[7] == 0x01) {  
+                NotifyStateMachine(EVENT_COOLANT_FAULT);
+            }
+        }
+
+        vTaskDelay(pdMS_TO_TICKS(100)); // Check CAN messages every 100ms
+    }
+}
+
 volatile unsigned long ulHighFrequencyTimerTicks;
 
 // TODO: Never actually triggered
@@ -92,7 +120,6 @@ void rtiNotification(uint32 notification)
     // was called but VCU only has one active hardware timer atm
 }
 /* USER CODE END */
-
 
 
 void main(void)
