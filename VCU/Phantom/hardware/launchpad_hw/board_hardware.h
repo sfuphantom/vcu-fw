@@ -15,6 +15,7 @@
 /*********   READY TO DRIVE GPIO   ****************/
 #define READY_TO_DRIVE_PORT   gioPORTA
 #define READY_TO_DRIVE_PIN    2
+#define RTD_SWITCH_MASK    (1 << READY_TO_DRIVE_PIN)
 
 /*********   SHUTDOWN CIRCUIT GPIO   ****************/
 #define SHUTDOWN_CIRCUIT_PORT gioPORTA
