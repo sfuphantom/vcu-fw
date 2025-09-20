@@ -60,6 +60,8 @@
 #include "sys_dma.h"
 
 /* USER CODE BEGIN (0) */
+#include "board_hardware.h"
+#include "vcu_common.h"
 /* USER CODE END */
 #pragma WEAK(esmGroup1Notification)
 void esmGroup1Notification(uint32 channel)
@@ -126,6 +128,14 @@ void gioNotification(gioPORT_t *port, uint32 bit)
 {
 /*  enter user code between the USER CODE BEGIN and USER CODE END. */
 /* USER CODE BEGIN (19) */
+//Log("Notification!");
+if (port == SET_RESET_PORT && bit == SET_RESET_PIN) {
+        //Log("Set_Reset_Triggered");
+        bool currState = gioGetBit(SET_RESET_PORT, SET_RESET_PIN);
+        if (currState) {
+            NotifyStateMachineFromISR(EVENT_RESET_CAR);
+        }
+    }
 /* USER CODE END */
 }
 
