@@ -56,6 +56,10 @@
 #define BRAKE_LIGHT_PIN       12
 #define BRAKE_LIGHT BRAKE_LIGHT_PORT, BRAKE_LIGHT_PIN
 
+/********* SET/RESET BUTTON (GPIO INTERRUPT) ****************/
+#define SET_RESET_BUTTON_PORT gioPORTB
+#define SET_RESET_BUTTON_PIN  0
+
 /*********   UART PORTS   ****************/
 #define PC_UART               sciREG
 #define BMS_UART              scilinREG
