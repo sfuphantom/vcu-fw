@@ -83,7 +83,7 @@ static void UpdateStateMachine(void* data)
 	eCarEvents event = *(uint16_t*) data;
 
 	char buffer[32];
-	sprintf(buffer, "NEW EVENT: %d", event);
+	sprintf(buffer, "E%d", event);
 	Log(buffer);
 
 	/* Events that have an effect on multiple states */
@@ -126,7 +126,7 @@ static void UpdateStateMachine(void* data)
 	// update state
 	state = new_state;
 
-	sprintf(buffer, "NEW STATE: %d", state);
+	sprintf(buffer, "S%d", state);
 	Log(buffer);
 }
 
@@ -135,31 +135,42 @@ static void UpdateStateMachine(void* data)
 
 static State VariousStates(State state, eCarEvents event)
 {
-	bool faults = any(6, 
-		event == EVENT_APPS1_RANGE_FAULT,
-		event == EVENT_APPS2_RANGE_FAULT, 
-		event == EVENT_BRAKE_PLAUSIBILITY_FAULT,
-		event == EVENT_BSE_RANGE_FAULT,
-		event == EVENT_FP_DIFF_FAULT,
-		event == EVENT_UNRESPONSIVE_APPS
-	);
+    // SEVERE_FAULT is latched here (ignore all transitions while in SEVERE_FAULT).
+    // Clearing/exit is handled by the dedicated reset/clear handler
+    if (state != SEVERE_FAULT)
+    {
+        bool faults = any(6,
+            event == EVENT_APPS1_RANGE_FAULT,
+            event == EVENT_APPS2_RANGE_FAULT,
+            event == EVENT_BRAKE_PLAUSIBILITY_FAULT,
+            event == EVENT_BSE_RANGE_FAULT,
+            event == EVENT_FP_DIFF_FAULT,
+            event == EVENT_UNRESPONSIVE_APPS
+        );
 
-	if (faults && state != SEVERE_FAULT)
-	{
-		SuspendThrottle(system_tasks.Throttle);
+        if (faults)
+        {
+            SuspendThrottle(system_tasks.Throttle);
 
-		VCU_FLT_Set(1);//Sets VCU_FLT to 1
+            VCU_FLT_Set(1); // Sets VCU_FLT to 1
+            LogColor(RED, "Setting VCU_FLT signal.");
 
-	    LogColor(RED, "Setting VCU_FLT signal.");
-		
-		LogColor(RED, "Moving to SevereFault state");
+            LogColor(RED, "Moving to SevereFault state");
 
-		FlushLogger(20); // highly likely a lot of events happened. No rush since we've already done everything. Let's log
+            FlushLogger(20); // highly likely a lot of events happened. No rush since we've already done everything. Let's log
+            return SEVERE_FAULT;
+        }
 
-		return SEVERE_FAULT;
-	}
+        if (event == EVENT_TRACTIVE_OFF)
+        {
+            SuspendThrottle(system_tasks.Throttle);
 
-	return state;
+            LogColor(YEL, "Moving to TractiveOff state");
+            return TRACTIVE_OFF;
+        }
+    }
+
+    return state;
 }
 
 static State TractiveOff(eCarEvents event)

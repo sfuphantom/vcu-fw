@@ -27,11 +27,12 @@ enum eCommands{
 	ECHO_BSE='4',
 	STAT_RUN='5',  // vTaskGetRunTimeStats
 	STAT_START='6',  // xTaskGetTickCount
-	TASK_LIST='7', // vTaskList
+	TASK_LIST='7',// vTaskList
 	RESET_CAR='r',
 	START_ENGINE='s',
-	TURN_TRACTIVE_ON='o',
-	SEVERE_FAULT_TEST='f',
+	SEVERE_FAULT_TEST='t',
+	TURN_TRACTIVE_ON='n',
+	TURN_TRACTIVE_OFF='f'
 };
 
 static volatile uint8_t messageCounter = 0;
@@ -231,13 +232,19 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 		}
 		case SEVERE_FAULT_TEST:
 		{
-		    NotifyStateMachineFromISR(EVENT_UNRESPONSIVE_APPS);
+		  NotifyStateMachineFromISR(EVENT_UNRESPONSIVE_APPS);
 
-		    break;
+		  break;
+    }
+		case TURN_TRACTIVE_OFF:
+		{
+			NotifyStateMachineFromISR(EVENT_TRACTIVE_OFF);
+
+			break;
 		}
 		default:
 		{
-			LogFromISR(UWHT, "Unknown: ");
+			LogFromISR(UWHT, "");
 
 			break;
 		}
