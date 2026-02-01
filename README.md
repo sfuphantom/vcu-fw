@@ -1,6 +1,17 @@
 # VCU-FW
 Vehicle Control Unit - Firmware for the TMS570LS1227 written upon the freeRTOS v9 platform
 
+## Clone Repository and Initialize Submodules
+
+```
+git clone https://github.com/sfuphantom/vcu-fw.git
+cd vcu-fw
+git submodule update --init --recursive
+```
+### Note
+
+It's important to note that the last line enables the current repository to reference the `hercules-phantom-lib` repository, which contains functionality for loggers, timers, and FreeRTOS event handlers. You can find this repository at: [https://github.com/sfuphantom/hercules-phantom-lib.git](https://github.com/sfuphantom/hercules-phantom-lib.git)
+
 ## Releases 
 
 Releases are read-only branches that express major milestones in development. They have been through some form of testing and are known to be stable. If you are not developing for the VCU, please use one of these branches.
