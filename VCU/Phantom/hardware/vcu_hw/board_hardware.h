@@ -15,7 +15,7 @@
 
 /*********   READY TO DRIVE GPIO   ****************/
 #define READY_TO_DRIVE_PORT   gioPORTA
-#define READY_TO_DRIVE_PIN    2
+#define READY_TO_DRIVE_PIN    2 // note that it is the same for rev2 board
 
 /*********   SHUTDOWN CIRCUIT GPIO   ****************/
 #define SHUTDOWN_CIRCUIT_PORT gioPORTA
@@ -63,6 +63,9 @@
 /*********   SPI PORTS   ****************/
 #define DAC_SPI_PORT          mibspiREG1
 
+
+#define SET_RESET_PORT          gioPORTA
+#define SET_RESET_PIN           2
 
 /*********************************************************************************
  *                          DEBUG PRINTING DEFINES
