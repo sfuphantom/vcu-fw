@@ -30,6 +30,7 @@ enum eCommands{
 	TASK_LIST='7',// vTaskList
 	RESET_CAR='r',
 	START_ENGINE='s',
+	SEVERE_FAULT_TEST='t',
 	TURN_TRACTIVE_ON='n',
 	TURN_TRACTIVE_OFF='f'
 };
@@ -229,6 +230,12 @@ void sciReceiveCallback(sciBASE_t *sci, uint32 flags, uint8 data)
 
 			break;
 		}
+		case SEVERE_FAULT_TEST:
+		{
+		  NotifyStateMachineFromISR(EVENT_UNRESPONSIVE_APPS);
+
+		  break;
+    }
 		case TURN_TRACTIVE_OFF:
 		{
 			NotifyStateMachineFromISR(EVENT_TRACTIVE_OFF);

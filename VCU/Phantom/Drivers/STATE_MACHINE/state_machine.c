@@ -14,6 +14,7 @@
 #include "task_event_handler.h"
 #include "task_throttle.h"
 #include "task_logger.h"
+#include "board_hardware.h"
 
 static void UpdateStateMachine(void* data);
 static State VariousStates(State state, eCarEvents event);
@@ -25,6 +26,14 @@ static State SevereFault(eCarEvents event);
 
 static SystemTasks_t system_tasks;
 
+void VCU_FLT_Set(int value)
+{
+	//Toggles VCU_FLT pin defined in hardware file.
+
+	gioSetBit(SHUTDOWN_CIRCUIT_PORT,BSPD_FAULT_PIN,value);//Check pin since no VCU_FLT pin is defined in the hardware file. We assumed no latch is available thus fault must stay until car reset.
+
+	return;
+}
 
 /* Public API */
 
@@ -126,40 +135,42 @@ static void UpdateStateMachine(void* data)
 
 static State VariousStates(State state, eCarEvents event)
 {
-    // severe faults should only exit from a reset event
-	if (state != SEVERE_FAULT){
-
-	    bool faults = any(6,
-	            event == EVENT_APPS1_RANGE_FAULT,
-	            event == EVENT_APPS2_RANGE_FAULT,
-	            event == EVENT_BRAKE_PLAUSIBILITY_FAULT,
-	            event == EVENT_BSE_RANGE_FAULT,
-	            event == EVENT_FP_DIFF_FAULT,
-	            event == EVENT_UNRESPONSIVE_APPS
+    // SEVERE_FAULT is latched here (ignore all transitions while in SEVERE_FAULT).
+    // Clearing/exit is handled by the dedicated reset/clear handler
+    if (state != SEVERE_FAULT)
+    {
+        bool faults = any(6,
+            event == EVENT_APPS1_RANGE_FAULT,
+            event == EVENT_APPS2_RANGE_FAULT,
+            event == EVENT_BRAKE_PLAUSIBILITY_FAULT,
+            event == EVENT_BSE_RANGE_FAULT,
+            event == EVENT_FP_DIFF_FAULT,
+            event == EVENT_UNRESPONSIVE_APPS
         );
 
-		if (faults)
-		{
-			SuspendThrottle(system_tasks.Throttle);
-			
-			LogColor(RED, "Moving to SevereFault state");
+        if (faults)
+        {
+            SuspendThrottle(system_tasks.Throttle);
 
-			FlushLogger(20); // highly likely a lot of events happened. No rush since we've already done everything. Let's log
+            VCU_FLT_Set(1); // Sets VCU_FLT to 1
+            LogColor(RED, "Setting VCU_FLT signal.");
 
-			return SEVERE_FAULT;
-		}
+            LogColor(RED, "Moving to SevereFault state");
 
-        if(event == EVENT_TRACTIVE_OFF)
+            FlushLogger(20); // highly likely a lot of events happened. No rush since we've already done everything. Let's log
+            return SEVERE_FAULT;
+        }
+
+        if (event == EVENT_TRACTIVE_OFF)
         {
             SuspendThrottle(system_tasks.Throttle);
 
             LogColor(YEL, "Moving to TractiveOff state");
-
             return TRACTIVE_OFF;
         }
-	}
+    }
 
-	return state;
+    return state;
 }
 
 static State TractiveOff(eCarEvents event)
@@ -203,6 +214,11 @@ static State SevereFault(eCarEvents event)
 	if (event == EVENT_RESET_CAR)
 	{
 		LogColor(CYN, "Moving from SevereFault to TractiveOff");
+
+		VCU_FLT_Set(0); //Clearing VCU FLT --> Assuming the reset car event triggers.
+
+		LogColor(CYN, "Clearing VCU_FLT signal");
+
 		return TRACTIVE_OFF;
 	}
 
