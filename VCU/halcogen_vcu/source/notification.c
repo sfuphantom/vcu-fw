@@ -126,6 +126,34 @@ void gioNotification(gioPORT_t *port, uint32 bit)
 {
 /*  enter user code between the USER CODE BEGIN and USER CODE END. */
 /* USER CODE BEGIN (19) */
+#include "board_hardware.h"
+#include "state_machine.h"
+#include "task_logger.h"
+#include "os_task.h"
+
+    // Debounce state (static to persist between calls)
+    static uint32_t lastPressTime = 0;
+    #define DEBOUNCE_MS 200
+
+    // Handle SET/RESET button interrupt
+    if (port == SET_RESET_BUTTON_PORT && bit == SET_RESET_BUTTON_PIN)
+    {
+        uint32_t currentTime = xTaskGetTickCountFromISR();
+        
+        // Debounce check
+        if ((currentTime - lastPressTime) > pdMS_TO_TICKS(DEBOUNCE_MS))
+        {
+            lastPressTime = currentTime;
+            uint32_t buttonState = gioGetBit(port, bit);
+            
+            if (buttonState == 0) // Might have to double check
+            {
+                LogFromISR(CYN, "SET/RESET button pressed");
+                NotifyStateMachineFromISR(EVENT_RESET_CAR);
+            }
+        }
+    }
+    // Add rest after testing this
 /* USER CODE END */
 }
 
