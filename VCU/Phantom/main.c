@@ -25,6 +25,9 @@
 
 #include "execution_timer.h"
 
+#include "can.h"
+#include "can_handler.h"
+
 
 #include "task_throttle.h"
 #include "task_pedal_readings.h"
@@ -100,6 +103,8 @@ void main(void)
 /* USER CODE BEGIN (3) */
 
     halcogenInit();
+
+    CAN_Handler_Init();
 
     phantomDriversInit();
 

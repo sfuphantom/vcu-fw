@@ -240,14 +240,18 @@
       <HDRSPI>
         <NAME>spi.h</NAME>
       </HDRSPI>
-      <SRCSPI/>
+      <SRCSPI>
+        <NAME>spi.c</NAME>
+      </SRCSPI>
       <HDRCAN_R>
         <NAME>reg_can.h</NAME>
       </HDRCAN_R>
       <HDRCAN>
         <NAME>can.h</NAME>
       </HDRCAN>
-      <SRCCAN/>
+      <SRCCAN>
+        <NAME>can.c</NAME>
+      </SRCCAN>
       <HDRADC_R>
         <NAME>reg_adc.h</NAME>
       </HDRADC_R>
@@ -335,14 +339,18 @@
       <HDRDCC>
         <NAME>dcc.h</NAME>
       </HDRDCC>
-      <SRCDCC/>
+      <SRCDCC>
+        <NAME>dcc.c</NAME>
+      </SRCDCC>
       <HDRCRC_R>
         <NAME>reg_crc.h</NAME>
       </HDRCRC_R>
       <HDRCRC>
         <NAME>crc.h</NAME>
       </HDRCRC>
-      <SRCCRC/>
+      <SRCCRC>
+        <NAME>crc.c</NAME>
+      </SRCCRC>
       <HDRETPWM_R>
         <NAME>reg_etpwm.h</NAME>
       </HDRETPWM_R>
@@ -537,7 +545,7 @@
         <PATH>include\spi.h</PATH>
       </HDRSPI>
       <SRCSPI>
-        <PATH/>
+        <PATH>source\spi.c</PATH>
       </SRCSPI>
     </FILENAMES>
   </SPI>
@@ -550,7 +558,7 @@
         <PATH>include\can.h</PATH>
       </HDRCAN>
       <SRCCAN>
-        <PATH/>
+        <PATH>source\can.c</PATH>
       </SRCCAN>
     </FILENAMES>
   </CAN>
@@ -658,7 +666,7 @@
         <PATH>include\dcc.h</PATH>
       </HDRDCC>
       <SRCDCC>
-        <PATH/>
+        <PATH>source\dcc.c</PATH>
       </SRCDCC>
     </FILENAMES>
   </DCC>
@@ -671,7 +679,7 @@
         <PATH>include\crc.h</PATH>
       </HDRCRC>
       <SRCCRC>
-        <PATH/>
+        <PATH>source\crc.c</PATH>
       </SRCCRC>
     </FILENAMES>
   </CRC>

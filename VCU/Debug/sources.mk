@@ -115,13 +115,12 @@ Phantom/Drivers/DAC_SPI \
 Phantom/Drivers/EEPROM \
 Phantom/Drivers/RGB_LED \
 Phantom/Drivers/RTD_Buzzer \
-Phantom/Drivers/RTOS \
+Phantom/Drivers/STATE_MACHINE \
 Phantom/Drivers/UART \
 Phantom/data_structures \
+Phantom/hercules-phantom-lib/rtos-common \
 Phantom \
 Phantom/tasks/source \
-Phantom/test_eeprom \
-Simulation_Mode_VCU_REV2 \
 halcogen_launchpad/source \
 halcogen_vcu/source \
 

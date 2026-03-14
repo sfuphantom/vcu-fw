@@ -20,6 +20,9 @@ C_SRCS += \
 ../halcogen_vcu/source/Device_TMS570LS12.c \
 ../halcogen_vcu/source/Fapi_UserDefinedFunctions.c \
 ../halcogen_vcu/source/adc.c \
+../halcogen_vcu/source/can.c \
+../halcogen_vcu/source/crc.c \
+../halcogen_vcu/source/dcc.c \
 ../halcogen_vcu/source/errata_SSWF021_45.c \
 ../halcogen_vcu/source/esm.c \
 ../halcogen_vcu/source/gio.c \
@@ -39,6 +42,7 @@ C_SRCS += \
 ../halcogen_vcu/source/pinmux.c \
 ../halcogen_vcu/source/rti.c \
 ../halcogen_vcu/source/sci.c \
+../halcogen_vcu/source/spi.c \
 ../halcogen_vcu/source/sys_dma.c \
 ../halcogen_vcu/source/sys_pcr.c \
 ../halcogen_vcu/source/sys_phantom.c \
@@ -66,6 +70,9 @@ C_DEPS += \
 ./halcogen_vcu/source/Device_TMS570LS12.d \
 ./halcogen_vcu/source/Fapi_UserDefinedFunctions.d \
 ./halcogen_vcu/source/adc.d \
+./halcogen_vcu/source/can.d \
+./halcogen_vcu/source/crc.d \
+./halcogen_vcu/source/dcc.d \
 ./halcogen_vcu/source/errata_SSWF021_45.d \
 ./halcogen_vcu/source/esm.d \
 ./halcogen_vcu/source/gio.d \
@@ -85,6 +92,7 @@ C_DEPS += \
 ./halcogen_vcu/source/pinmux.d \
 ./halcogen_vcu/source/rti.d \
 ./halcogen_vcu/source/sci.d \
+./halcogen_vcu/source/spi.d \
 ./halcogen_vcu/source/sys_dma.d \
 ./halcogen_vcu/source/sys_pcr.d \
 ./halcogen_vcu/source/sys_phantom.d \
@@ -112,7 +120,10 @@ OBJS += \
 ./halcogen_vcu/source/Device_TMS570LS12.obj \
 ./halcogen_vcu/source/Fapi_UserDefinedFunctions.obj \
 ./halcogen_vcu/source/adc.obj \
+./halcogen_vcu/source/can.obj \
+./halcogen_vcu/source/crc.obj \
 ./halcogen_vcu/source/dabort.obj \
+./halcogen_vcu/source/dcc.obj \
 ./halcogen_vcu/source/errata_SSWF021_45.obj \
 ./halcogen_vcu/source/esm.obj \
 ./halcogen_vcu/source/gio.obj \
@@ -133,6 +144,7 @@ OBJS += \
 ./halcogen_vcu/source/pinmux.obj \
 ./halcogen_vcu/source/rti.obj \
 ./halcogen_vcu/source/sci.obj \
+./halcogen_vcu/source/spi.obj \
 ./halcogen_vcu/source/sys_core.obj \
 ./halcogen_vcu/source/sys_dma.obj \
 ./halcogen_vcu/source/sys_intvecs.obj \
@@ -172,7 +184,10 @@ OBJS__QUOTED += \
 "halcogen_vcu\source\Device_TMS570LS12.obj" \
 "halcogen_vcu\source\Fapi_UserDefinedFunctions.obj" \
 "halcogen_vcu\source\adc.obj" \
+"halcogen_vcu\source\can.obj" \
+"halcogen_vcu\source\crc.obj" \
 "halcogen_vcu\source\dabort.obj" \
+"halcogen_vcu\source\dcc.obj" \
 "halcogen_vcu\source\errata_SSWF021_45.obj" \
 "halcogen_vcu\source\esm.obj" \
 "halcogen_vcu\source\gio.obj" \
@@ -193,6 +208,7 @@ OBJS__QUOTED += \
 "halcogen_vcu\source\pinmux.obj" \
 "halcogen_vcu\source\rti.obj" \
 "halcogen_vcu\source\sci.obj" \
+"halcogen_vcu\source\spi.obj" \
 "halcogen_vcu\source\sys_core.obj" \
 "halcogen_vcu\source\sys_dma.obj" \
 "halcogen_vcu\source\sys_intvecs.obj" \
@@ -224,6 +240,9 @@ C_DEPS__QUOTED += \
 "halcogen_vcu\source\Device_TMS570LS12.d" \
 "halcogen_vcu\source\Fapi_UserDefinedFunctions.d" \
 "halcogen_vcu\source\adc.d" \
+"halcogen_vcu\source\can.d" \
+"halcogen_vcu\source\crc.d" \
+"halcogen_vcu\source\dcc.d" \
 "halcogen_vcu\source\errata_SSWF021_45.d" \
 "halcogen_vcu\source\esm.d" \
 "halcogen_vcu\source\gio.d" \
@@ -243,6 +262,7 @@ C_DEPS__QUOTED += \
 "halcogen_vcu\source\pinmux.d" \
 "halcogen_vcu\source\rti.d" \
 "halcogen_vcu\source\sci.d" \
+"halcogen_vcu\source\spi.d" \
 "halcogen_vcu\source\sys_dma.d" \
 "halcogen_vcu\source\sys_pcr.d" \
 "halcogen_vcu\source\sys_phantom.d" \
@@ -278,6 +298,9 @@ C_SRCS__QUOTED += \
 "../halcogen_vcu/source/Device_TMS570LS12.c" \
 "../halcogen_vcu/source/Fapi_UserDefinedFunctions.c" \
 "../halcogen_vcu/source/adc.c" \
+"../halcogen_vcu/source/can.c" \
+"../halcogen_vcu/source/crc.c" \
+"../halcogen_vcu/source/dcc.c" \
 "../halcogen_vcu/source/errata_SSWF021_45.c" \
 "../halcogen_vcu/source/esm.c" \
 "../halcogen_vcu/source/gio.c" \
@@ -297,6 +320,7 @@ C_SRCS__QUOTED += \
 "../halcogen_vcu/source/pinmux.c" \
 "../halcogen_vcu/source/rti.c" \
 "../halcogen_vcu/source/sci.c" \
+"../halcogen_vcu/source/spi.c" \
 "../halcogen_vcu/source/sys_dma.c" \
 "../halcogen_vcu/source/sys_pcr.c" \
 "../halcogen_vcu/source/sys_phantom.c" \

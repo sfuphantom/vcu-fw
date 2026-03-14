@@ -40,7 +40,7 @@
 #define LOGGER_STACK_SIZE               700
 #define EVENT_HANDLER_STACK_SIZE        128
 // #define EEPROM_TASK_STACK_SIZE          750
-// #define WATCHDOG_TASK_STACK_SIZE        750    // same as idle task
+// #define WATCHDOG_TASK_STACK_SIZE        750   // same as idle task
 
 
 #endif /* TASKS_PRIORITIES_H_ */

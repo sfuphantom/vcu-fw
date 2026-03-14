@@ -227,9 +227,6 @@
       <SRCASMPORT>
         <NAME>os_portasm.asm</NAME>
       </SRCASMPORT>
-      <SRCTASK>
-        <NAME>os_tasks.c</NAME>
-      </SRCTASK>
       <SRCQUEUE>
         <NAME>os_queue.c</NAME>
       </SRCQUEUE>
@@ -499,9 +496,6 @@
       <SRCASMPORT>
         <PATH>source\os_portasm.asm</PATH>
       </SRCASMPORT>
-      <SRCTASK>
-        <PATH>source\os_tasks.c</PATH>
-      </SRCTASK>
       <SRCQUEUE>
         <PATH>source\os_queue.c</PATH>
       </SRCQUEUE>
