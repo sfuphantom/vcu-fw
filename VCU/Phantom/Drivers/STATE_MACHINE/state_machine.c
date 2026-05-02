@@ -15,6 +15,8 @@
 #include "task_throttle.h"
 #include "task_logger.h"
 
+#include "board_hardware.h"
+
 static void UpdateStateMachine(void* data);
 static State VariousStates(State state, eCarEvents event);
 static State TractiveOff(eCarEvents event);
@@ -128,14 +130,23 @@ static State VariousStates(State state, eCarEvents event)
     // severe faults should only exit from a reset event
 	if (state != SEVERE_FAULT){
 
-	    bool faults = any(6,
+	    bool faults = any(7,
 	            event == EVENT_APPS1_RANGE_FAULT,
 	            event == EVENT_APPS2_RANGE_FAULT,
 	            event == EVENT_BRAKE_PLAUSIBILITY_FAULT,
 	            event == EVENT_BSE_RANGE_FAULT,
 	            event == EVENT_FP_DIFF_FAULT,
-	            event == EVENT_UNRESPONSIVE_APPS
+	            event == EVENT_UNRESPONSIVE_APPS,
+				event == EVENT_COOLANT_FAULT
         );
+
+		bool BSPD_COOLING_FAULT_COMBINED = (event == EVENT_COOLANT_FAULT) || (event == EVENT_BRAKE_PLAUSIBILITY_FAULT);
+		gioSetBit(SHUTDOWN_CIRCUIT_PORT, BSPD_FAULT_PIN, BSPD_COOLING_FAULT_COMBINED);
+
+		if((event == EVENT_COOLANT_FAULT) || (event == EVENT_BRAKE_PLAUSIBILITY_FAULT))
+		{
+		LogColor(RED, "Moving to SevereFault state and sent a signal to LVSB");
+		}
 
 		if (faults)
 		{

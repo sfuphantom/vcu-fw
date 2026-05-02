@@ -44,6 +44,7 @@ void halcogenInit()
     gioInit();                  // Initialize GPIO halcogen driver
     adcInit();                  // Initialize ADC halcogen driver
     hetInit();                  // Initialize HET (PWM) halcogen driver
+    canInit();
     // eepromBlocking_Init();      // Initialization EEPROM Memory - added by jjkhan
 
 #ifdef PMU_CYCLE
@@ -72,15 +73,14 @@ void phantomTasksInit()
 {
     SystemTasks_t t = {
         .EventHandler=EventHandlerInit(),
-        .Logger=LoggerInit(),
         .Throttle=ThrottleInit(),
         .PedalReadings=PedalReadingsInit()
     };
 
-    if (!all(4, t.EventHandler, t.Logger, t.Throttle, t.PedalReadings))
-    {
-        while(1) UARTprintln("Some tasks not initialized: %d, %d, %d, %d", t.EventHandler, t.Logger, t.Throttle, t.PedalReadings);
-    }
+//    if (!all(4, t.EventHandler, t.Logger, t.Throttle, t.PedalReadings))
+//    {
+//        while(1) UARTprintln("Some tasks not initialized: %d, %d, %d, %d", t.EventHandler, t.Logger, t.Throttle, t.PedalReadings);
+//    }
 
     StateMachineInit(t);
 }

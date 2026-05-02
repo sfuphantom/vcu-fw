@@ -37,7 +37,7 @@
  *********************************************************************************/
 #define THROTTLE_AGT_STACK_SIZE         200
 #define THROTTLE_ACT_STACK_SIZE         500
-#define LOGGER_STACK_SIZE               700
+#define LOGGER_STACK_SIZE               0
 #define EVENT_HANDLER_STACK_SIZE        128
 // #define EEPROM_TASK_STACK_SIZE          750
 // #define WATCHDOG_TASK_STACK_SIZE        750   // same as idle task

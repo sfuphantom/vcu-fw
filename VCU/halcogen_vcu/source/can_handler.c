@@ -38,6 +38,8 @@ static float g_voltage;
 static PipeTask_t rtos_handles;
 typedef uint64_t segment_t;
 #define SEGMENT_SIZE sizeof(segment_t)
+
+
 // Init
 TaskHandle_t CAN_Handler_Init(void)
 {
@@ -71,9 +73,11 @@ void Task_CAN_Handler(void *pvParameters)
         if (CAN_IsMessageAvailable(canREG1, canMESSAGE_BOX1))
         {
             Log("MESSAGE RECIEVED");
-//            uint32 canId = canGetID(canREG1, CAN_RX_MESSAGE_BOX);
-//
-//            // only parse analog input
+            uint32 canId = canGetID(canREG1, CAN_RX_MESSAGE_BOX);
+            CAN_ReadMessage(canREG1,CAN_RX_MESSAGE_BOX,g_canRxData);
+
+
+            // only parse analog input
 //            if (canId == 0x0A3) {
 //                CAN_ReadMessage(
 //                canREG1,
@@ -81,7 +85,7 @@ void Task_CAN_Handler(void *pvParameters)
 //                g_canRxData
 //            );
 
-            // parsing logic
+//             // parsing logic
 //            int16_t raw_voltage = (int16_t)(g_canRxData[0] | (g_canRxData[1] << 8)); // combine bytes
 //            g_voltage = raw_voltage / 10.0f; // scaling
 //            char buffer[32];

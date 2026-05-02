@@ -394,9 +394,9 @@ void sciSend(sciBASE_t *sci, uint32 length, uint8 * data)
         while (length > 0U)
         {
 	        /*SAFETYMCUSW 28 D MR:NA <APPROVED> "Potentially infinite loop found - Hardware Status check for execution sequence" */
-            while ((sci->FLR & (uint32)SCI_TX_INT) == 0U)
-            { 
-            } /* Wait */
+            //while ((sci->FLR & (uint32)SCI_TX_INT) == 0U)
+            //{
+           // } /* Wait */
 			/*SAFETYMCUSW 45 D MR:21.1 <APPROVED> "Valid non NULL input parameters are only allowed in this driver" */
 			txdata = *data;
             sci->TD = (uint32)(txdata);
@@ -810,7 +810,10 @@ void sciHighLevelInterrupt(void)
 {
     uint32 vec = sciREG->INTVECT0;
 	uint8 byte;
-
+/* USER CODE BEGIN (28) */
+                    // using our own custom callback DO NOT REMOVE
+                    sciReceiveCallback(sciREG, (uint32)SCI_RX_INT, byte); 
+                    /* USER CODE END */
 
     switch (vec)
     {
@@ -836,17 +839,14 @@ void sciHighLevelInterrupt(void)
 
             if (g_sciTransfer_t[0U].rx_length > 0U)
             {
-//                *g_sciTransfer_t[0U].rx_data = byte;
+                *g_sciTransfer_t[0U].rx_data = byte;
                 /*SAFETYMCUSW 567 S MR:17.1,17.4 <APPROVED> "Pointer increment needed" */
-//				g_sciTransfer_t[0U].rx_data++;
-//                g_sciTransfer_t[0U].rx_length--;
-//                if (g_sciTransfer_t[0U].rx_length == 0U)
-//                {
-                    /* USER CODE BEGIN (28) */
-                    // using our own custom callback DO NOT REMOVE
-                    sciReceiveCallback(sciREG, (uint32)SCI_RX_INT, byte); 
-                    /* USER CODE END */
-//                }
+				g_sciTransfer_t[0U].rx_data++;
+                g_sciTransfer_t[0U].rx_length--;
+                if (g_sciTransfer_t[0U].rx_length == 0U)
+                {
+                    sciNotification(sciREG, (uint32)SCI_RX_INT);
+                }
             }
         break;
 

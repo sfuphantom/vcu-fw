@@ -7,7 +7,7 @@
 
 
 //configuration
-#define CAN_TASK_STACK_SIZE    12
+#define CAN_TASK_STACK_SIZE    512
 #define CAN_TASK_PRIORITY      2
 
 #define CAN_RX_MESSAGE_BOX     1

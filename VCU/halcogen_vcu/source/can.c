@@ -216,7 +216,7 @@ void canInit(void)
     } /* Wait */
 
     canREG1->IF2MSK  = 0xC0000000U | (uint32)((uint32)((uint32)0x000007FFU & (uint32)0x1FFFFFFFU) << (uint32)0U);
-    canREG1->IF2ARB  = (uint32)0x80000000U | (uint32)0x40000000U | (uint32)0x00000000U | (uint32)((uint32)((uint32)2U & (uint32)0x1FFFFFFFU) << (uint32)0U);
+    canREG1->IF2ARB  = (uint32)0x80000000U | (uint32)0x40000000U | (uint32)0x20000000U | (uint32)((uint32)((uint32)2U & (uint32)0x1FFFFFFFU) << (uint32)0U);
     canREG1->IF2MCTL = 0x00001000U | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)0x00000000U | (uint32)8U;
     canREG1->IF2CMD  = (uint8) 0xF8U;
     canREG1->IF2NO   = 2U;
@@ -971,10 +971,46 @@ void canEnableErrorNotification(canBASE_t *node)
     /**   @note The function canInit has to be called before this function can be used. */
 
 /* USER CODE BEGIN (29) */
+
 /* USER CODE END */
 }
 
 /* USER CODE BEGIN (30) */
+void canMessageNotification(canBASE_t *node, uint32 messageBox)
+{
+//    NotifyStateMachine(EVENT_COOLANT_FAULT);
+//    //uint8 data[8];
+//    dbg_canNotificationHit = 1U;
+//    dbg_messageBox = messageBox;
+//
+//    if (node != canREG1)
+//    {
+//        return;
+//    }
+//
+//    canGetData(node, messageBox, dbg_canRxData);
+//
+//    char buffer[80];
+//
+//    switch (messageBox)
+//    {
+//        case 1:
+//        {
+//            /* Coolant fault */
+//            dbg_coolantFault = dbg_canRxData[0] & 0x01U;
+//
+//            if (dbg_coolantFault)
+//            {
+//                NotifyStateMachine(EVENT_COOLANT_FAULT);
+//            }
+//
+//            break;
+//        }
+//        default:
+//            break;
+//    }
+}
+
 /* USER CODE END */
 
 /** @fn void canEnableStatusChangeNotification(canBASE_t *node)
